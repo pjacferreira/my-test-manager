@@ -1,0 +1,63 @@
+# Test Center - Compliance Testing Application
+# Copyright (C) 2012 Paulo Ferreira <pf at sourcenotes.org>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+##
+# Default Form Model (Metadata Extension)
+##
+
+form:
+  default:
+    # inherit: [(form name):](form:action) to inherit value from
+    # Title for Form
+    title: 'Form'
+    # Data Store syncronizy directions (relative to Data Store)
+    # Possible Values:
+    # out - outgoing (read-only form)
+    # in - incoming (write-only form)
+    # both - bidirectional (read-write form)
+    # none - not used in data comunication
+    data-direction: none
+    # Specifies field grouping (with or without labels)
+    # Possible Values:
+    # (with labels)
+    # fields: 
+    #   - 'Group Name 1': [ comma seperated field list ] or 'string of comma seperated fields'
+    #   ...
+    #   - [ comma seperated field list ] or 'string of comma seperated fields' (Field Group without a Label)
+    #   ...
+    #   - 'Group Name 1': [ comma seperated field list ]  or 'string of comma seperated fields'
+    # (without labels)
+    # fields: [ comma seperated field list ] or 'string of comma seperated fields'
+    # or
+    # fields: (Creates an Indexed Based Grouping of Fields)
+    #   - [ comma seperated field list ]  or 'string of comma seperated fields'
+    # 
+    # NOTE 
+    # 1. In Javascript Hash Map are Defined through Objects
+    # 2. Object Properties (atleast in Firefox) are sorted
+    # 
+    # So there is no way to garauntee a consist sequence of groups, through
+    # hash maps.
+    fields: ~
+    # Form Level Transformations (applied AFTER any specific field level 
+    # transformations, and BEFORE any specific field level validations)
+    transformations: ~
+    # Form Level Validations (applied AFTER any specific field level validation, 
+    # and BEFORE any actions are executed on the form)
+    validations: ~
+    # Sequence of actions to apply on the form On Submit
+    actions: ~
+    

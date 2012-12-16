@@ -1,0 +1,36 @@
+# Test Center - Compliance Testing Application
+# Copyright (C) 2012 Paulo Ferreira <pf at sourcenotes.org>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+##
+# User Entity (Metadata Extension)
+##
+
+virtual:
+  password-confirmation:
+    inherit: 'user:password'
+    virtual: true
+    data-direction: none
+    label: Confirmation
+    description: User Password Confirmation
+        
+# TODO How to handle Password and Confirmation
+# Possible Solutions:
+# 1. Create a virtual field (never loaded or saved to the database) and
+#    require it to be equal to the actual field.
+# 2. Add a property to the password field, which states that this field
+#    requires confirmation (and allow any forms that use this to create,
+#    automatically, the confirmation field) 
+    
