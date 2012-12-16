@@ -1,0 +1,77 @@
+# Test Center - Compliance Testing Application
+# Copyright (C) 2012 Paulo Ferreira <pf at sourcenotes.org>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+##
+# Session Management
+##
+
+# Login / Logout
+session_login:
+    pattern:  /login/{name}/{password}
+    defaults: { _controller: TestCenterServiceBundle:Session:login}
+  
+session_logout:
+    pattern:  /logout/
+    defaults: { _controller: TestCenterServiceBundle:Session:logout}
+
+# Sudo / SudoExit
+session_sudo_exit:
+    pattern:  /sudo/exit/
+    defaults: { _controller: TestCenterServiceBundle:Session:sudoExit}
+    
+session_sudo:
+    pattern:  /sudo/{name}/{password}
+    defaults: { _controller: TestCenterServiceBundle:Session:sudo}
+
+# Who Am I
+session_whoami:
+    pattern:  /whoami/
+    defaults: { _controller: TestCenterServiceBundle:Session:whoami}
+
+# Get / Set Organization
+session_org_get:
+    pattern:  /org/get/
+    defaults: { _controller: TestCenterServiceBundle:Session:getOrganization}
+
+session_org_set:
+    pattern:  /org/set/{id}
+    defaults: { _controller: TestCenterServiceBundle:Session:setOrganization}
+
+# Get / Set Project
+session_project_get:
+    pattern:  /project/get/
+    defaults: { _controller: TestCenterServiceBundle:Session:getProject}
+
+session_project_set:
+    pattern:  /project/set/{id}
+    defaults: { _controller: TestCenterServiceBundle:Session:setProject}
+
+# Get / Set Session Variable
+session_get:
+    pattern:  /get/{variable}
+    defaults: { _controller: TestCenterServiceBundle:Session:getVariable}
+
+session_set:
+    pattern:  /set/{variable}/{value}
+    defaults: { _controller: TestCenterServiceBundle:Session:setVariable}
+
+session_clear:
+    pattern:  /clear/{variable}
+    defaults: { _controller: TestCenterServiceBundle:Session:clearVariable}
+
+session_isset:
+    pattern:  /isset/{variable}
+    defaults: { _controller: TestCenterServiceBundle:Session:issetVariable}

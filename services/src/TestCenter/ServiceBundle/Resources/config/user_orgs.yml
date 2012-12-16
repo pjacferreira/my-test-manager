@@ -1,0 +1,65 @@
+# Test Center - Compliance Testing Application
+# Copyright (C) 2012 Paulo Ferreira <pf at sourcenotes.org>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+##
+# User Organization Management  (service path /users/orgs)
+##
+
+# Add User to Organization
+users_orgs_add:
+    pattern:  /add/{user_id}/{org_id}/{permissions}
+    defaults: { _controller: TestCenterServiceBundle:UserOrganization:link, permissions: null }
+    requirements:
+        user_id:  \d+
+        org_id:  \d+
+
+# Remove User from Organization
+users_orgs_remove:
+    pattern:  /remove/{user_id}/{org_id}
+    defaults: { _controller: TestCenterServiceBundle:UserOrganization:unlink }
+    requirements:
+        user_id:  \d+
+        org_id:  \d+
+
+# Get User's Organization Settings
+users_orgs_get:
+    pattern:  /get/{user_id}/{org_id}
+    defaults: { _controller: TestCenterServiceBundle:UserOrganization:get }
+    requirements:
+        user_id:  \d+
+        org_id:  \d+
+
+# Set User's Organization Settings
+users_orgs_set:
+    pattern:  /set/{user_id}/{org_id}/{permissions}
+    defaults: { _controller: TestCenterServiceBundle:UserOrganization:set }
+    requirements:
+        user_id:  \d+
+        org_id:  \d+
+
+# List Users in the Organization
+users_orgs_list:
+    pattern:  /list/{user_id}
+    defaults: { _controller: TestCenterServiceBundle:UserOrganization:orgList }
+    requirements:
+        user_id:  \d+
+
+# Count Users in the  Organization
+users_orgs_count:
+    pattern:  /count/{user_id}
+    defaults: { _controller: TestCenterServiceBundle:UserOrganization:orgCount }
+    requirements:
+        user_id:  \d+

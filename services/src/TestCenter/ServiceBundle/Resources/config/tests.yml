@@ -1,0 +1,50 @@
+# Test Center - Compliance Testing Application
+# Copyright (C) 2012 Paulo Ferreira <pf at sourcenotes.org>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+##
+# Test Management (service path /test)
+##
+
+# Read ID
+tests_read_id:
+    pattern:  /read/{id}
+    defaults: { _controller: TestCenterServiceBundle:Tests:read }
+    requirements:
+        id:  \d+
+
+# Update
+tests_update:
+    pattern:  /update/{id}/{fv_settings}
+    defaults: { _controller: TestCenterServiceBundle:Tests:update }
+    requirements:
+        id:  \d+
+
+# Delete (A Single or All Projects : id == null)
+tests_delete:
+    pattern:  /delete/{id}
+    defaults: { _controller: TestCenterServiceBundle:Tests:delete }
+    requirements:
+        id:  \d+
+
+# List Tests (per Project, or if Project ID not specified, for the Current Session Project)
+tests_list:
+    pattern:  /list/{project_id}
+    defaults: { _controller: TestCenterServiceBundle:Tests:listPerProject, project_id: null  }
+
+# Number of Tests (per Project, or if Project ID not specified, for the Current Session Project)
+tests_count:
+    pattern:  /count/{project_id}
+    defaults: { _controller: TestCenterServiceBundle:Tests:countPerProject, project_id: null  }

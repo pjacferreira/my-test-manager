@@ -1,0 +1,57 @@
+# Test Center - Compliance Testing Application
+# Copyright (C) 2012 Paulo Ferreira <pf at sourcenotes.org>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+##
+# Organization User Management (service path /org/users)
+##
+
+# Add User to Organization
+org_users_add:
+    pattern:  /add/{user_id}/{permissions}
+    defaults: { _controller: TestCenterServiceBundle:UserOrganization:userLink, permissions: null }
+    requirements:
+        users_id:  \d+
+
+# Remove User from Organization
+org_users_remove:
+    pattern:  /remove/{user_id}
+    defaults: { _controller: TestCenterServiceBundle:UserOrganization:userUnlink }
+    requirements:
+        users_id:  \d+
+
+# Get User Settings
+org_users_get:
+    pattern:  /get/{user_id}
+    defaults: { _controller: TestCenterServiceBundle:UserOrganization:userGet }
+    requirements:
+        users_id:  \d+
+
+# Set User Settings
+org_users_set:
+    pattern:  /set/{user_id}/{permissions}
+    defaults: { _controller: TestCenterServiceBundle:UserOrganization:userSet }
+    requirements:
+        users_id:  \d+
+
+# List Users in the Organization
+org_users_list:
+    pattern:  /list
+    defaults: { _controller: TestCenterServiceBundle:UserOrganization:userList }
+
+# Count Users in the Organization
+org_users_count:
+    pattern:  /count
+    defaults: { _controller: TestCenterServiceBundle:UserOrganization:userCount }

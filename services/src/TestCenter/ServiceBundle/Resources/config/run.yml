@@ -1,0 +1,80 @@
+# Test Center - Compliance Testing Application
+# Copyright (C) 2012 Paulo Ferreira <pf at sourcenotes.org>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+##
+# Run Execution Management (service path /run)
+##
+
+# Start/Continue Run
+run_start:
+    pattern:  /start/{id}
+    defaults: { _controller: TestCenterServiceBundle:Run:start}
+    requirements:
+        id:  \d+
+
+
+# Close Run
+run_close:
+    pattern:  /close/{id}
+    defaults: { _controller: TestCenterServiceBundle:Run:close}
+    requirements:
+        id:  \d+
+
+# Returns Current Sequence Number and Test
+run_current:
+    pattern:  /current/{id}
+    defaults: { _controller: TestCenterServiceBundle:Run:current}
+    requirements:
+        id:  \d+
+
+# Mark Current Test with Status/Comment and Advance to next Test
+run_next:
+    pattern:  /next/{id}/{status}/{comment}
+    defaults: { _controller: TestCenterServiceBundle:Run:next}
+    requirements:
+        id:  \d+
+        status:  \d+
+
+# Backtrack in Run (all status of tests, will be reset to not-run) 
+run_rewind:
+    pattern:  /rewind/{id}/{next_seq}
+    defaults: { _controller: TestCenterServiceBundle:Run:rewind}
+    requirements:
+        id:  \d+
+        next_seq:  \d+
+
+# Change Run User (Owner)
+run_takeover:
+    pattern:  /takeover/{id}
+    defaults: { _controller: TestCenterServiceBundle:Run:takeover}
+    requirements:
+        id:  \d+
+
+# Change Run User (Owner)
+run_list:
+    pattern:  /list/{id}/{status}
+    defaults: { _controller: TestCenterServiceBundle:Run:list, status: null}
+    requirements:
+        id:  \d+
+        status:  \d+
+
+# Change Run User (Owner)
+run_count:
+    pattern:  /count/{id}/{status}
+    defaults: { _controller: TestCenterServiceBundle:Run:count, status: null}
+    requirements:
+        id:  \d+
+        status:  \d+
