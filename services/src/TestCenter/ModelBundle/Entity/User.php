@@ -223,16 +223,28 @@ class User {
     return strval($this->id);
   }
 
+  /**
+   * 
+   * @param type $array
+   * @param type $prop_name
+   * @return type
+   */
   protected function addPropertyIfNotNull($array, $prop_name) {
+    // Get the Entity Name
+    $entity = strtolower($this->entityName());
+
     if (isset($this->$prop_name)) { // If Propery Set - Add it
-      $array['user:'.$prop_name] = $this->$prop_name;
+      $array["{$entity}:{$prop_name}"] = $this->$prop_name;
     }
     return $array;
   }
-
+  
+  /**
+   * 
+   * @return type
+   */
   protected function entityName() {
     $i = strlen(__NAMESPACE__);
     return substr(__CLASS__, $i + 1);
-  }
-
+  }  
 }

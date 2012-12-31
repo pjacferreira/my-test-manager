@@ -19,7 +19,6 @@
 
 namespace TestCenter\ServiceBundle\API;
 
-use Library\StringUtilities;
 use Library\ArrayUtilities;
 
 /**
@@ -41,9 +40,9 @@ class CrudServiceController
    * @param $action
    * @return bool
    */
-  protected function startAction($action) {
+  protected function startAction($context) {
 
-    switch ($action) {
+    switch ($context->getAction()) {
       case 'Create':
       case 'Update':
       case 'Delete':
@@ -59,9 +58,9 @@ class CrudServiceController
    * @param $action
    * @return bool
    */
-  protected function successAction($action) {
+  protected function successAction($context) {
 
-    switch ($action) {
+    switch ($context->getAction()) {
       case 'Create':
       case 'Update':
       case 'Delete':
@@ -77,9 +76,9 @@ class CrudServiceController
    * @param $action
    * @return bool
    */
-  protected function failedAction($action) {
+  protected function failedAction($context) {
 
-    switch ($action) {
+    switch ($context->getAction()) {
       case 'Create':
       case 'Update':
       case 'Delete':
@@ -96,9 +95,9 @@ class CrudServiceController
    * @return object
    * @throws \Exception
    */
-  protected function doCreateAction($parameters) {
+  protected function doCreateAction($context) {
     // Parameter Validation
-    assert('isset($parameters) && is_array($parameters)');
+    assert('isset($context) && is_object($context)');
 
     // Get Entity MetaData
     $meta = $this->getMetadata();
@@ -108,6 +107,7 @@ class CrudServiceController
      */
 
     // Create the Entity Object and Set it's Parameters
+    $parameters = $context->getParameters();
     $entity = $this->setEntityValues($this->createEntity($parameters),
                                                          $parameters, $meta);
 
@@ -123,13 +123,13 @@ class CrudServiceController
    * @return object
    * @throws \Exception
    */
-  protected function doReadAction($parameters) {
+  protected function doReadAction($context) {
     // Parameter Validation
-    assert('isset($parameters) && is_array($parameters)');
+    assert('isset($context) && is_object($context)');
 
     // Get the Identifier for the Entity
-    $id = ArrayUtilities::extract($parameters, 'id');
-    $name = ArrayUtilities::extract($parameters, 'name');
+    $id = $context->getParameter('id');
+    $name = $context->getParameter('name');
     assert('isset($id) || isset($name)');
 
     // Get Entity
@@ -152,8 +152,11 @@ class CrudServiceController
    * @throws \Exception
    */
   protected function doUpdateAction($parameters) {
+    // Parameter Validation
+    assert('isset($context) && is_object($context)');
+
     // Get the Entity to Update
-    $entity = ArrayUtilities::extract($parameters, 'entity');
+    $entity = $context->getParameter('entity');
     assert('isset($entity)');
 
     // Get Entity MetaData
@@ -172,9 +175,12 @@ class CrudServiceController
    * @return object
    * @throws \Exception
    */
-  protected function doDeleteAction($parameters) {
-    // Get the User to Update
-    $entity = ArrayUtilities::extract($parameters, 'entity');
+  protected function doDeleteAction($context) {
+    // Parameter Validation
+    assert('isset($context) && is_object($context)');
+
+    // Get the Entity to Update
+    $entity = $context->getParameter('entity');
     assert('isset($entity)');
 
     // Delete Entity
@@ -187,7 +193,9 @@ class CrudServiceController
    * @param $parameters
    * @return mixed
    */
-  protected function doListAction($parameters) {
+  protected function doListAction($context) {
+    // Parameter Validation
+    assert('isset($context) && is_object($context)');
 
     // Build Query
     $qb = $this->getEntityManager()->createQueryBuilder();
@@ -197,7 +205,7 @@ class CrudServiceController
       ->from($this->m_oEntity->getEntity(), 'e');
 
     // Prepare Filter
-    $__filter = ArrayUtilities::extract($parameters, '__filter');
+    $__filter = $context->getParameter('__filter');
     if (isset($__filter)) {
       $filters = ParserQueryFilter::parse($__filter);
 
@@ -207,7 +215,7 @@ class CrudServiceController
     }
 
     // Prepare Sort
-    $sort = $this->extractSort($parameters);
+    $sort = $this->extractSort($context);
 
     // Apply Sort
     $byID = false;
@@ -227,7 +235,7 @@ class CrudServiceController
     }
 
     // Apply Limit if it Exists
-    $__limit = ArrayUtilities::extract($parameters, '__limit');
+    $__limit = $context->getParameter('__limit');
     if (isset($__limit)) {
       $__limit = (integer) $__limit;
       if ($__limit > 0) {
@@ -244,7 +252,10 @@ class CrudServiceController
    * @param $parameters
    * @return int
    */
-  protected function doCountAction($parameters) {
+  protected function doCountAction($context) {
+    // Parameter Validation
+    assert('isset($context) && is_object($context)');
+
     // Build Query
     $qb = $this->getEntityManager()->createQueryBuilder();
 
@@ -253,7 +264,7 @@ class CrudServiceController
       ->from($this->m_oEntity->getEntity(), 'e');
 
     // Prepare Filter
-    $__filter = ArrayUtilities::extract($parameters, '__filter');
+    $__filter = $context->getParameter('__filter');
     if (isset($__filter)) {
       $filters = ParserQueryFilter::parse($__filter);
 
@@ -365,9 +376,9 @@ class CrudServiceController
    * @param type $parameters
    * @return type
    */
-  protected function extractFilter($parameters) {
+  protected function extractFilter($context) {
     $filters = array();
-    $__filter = ArrayUtilities::extract($parameters, '__filter');
+    $__filter = $context->getParameter('__filter');
     if (isset($__filter)) {
       return Parsers::queryFilter($__filter);
     }
@@ -380,10 +391,10 @@ class CrudServiceController
    * @param type $parameters
    * @return type
    */
-  protected function extractSort($parameters) {
+  protected function extractSort($context) {
     // Prepare Sort
     $sort = array();
-    $__sort = ArrayUtilities::extract($parameters, '__sort');
+    $__sort = $context->getParameter('__sort');
     if (isset($__sort)) {
       $__sort = explode(';', $__sort);
 
@@ -416,13 +427,94 @@ class CrudServiceController
     return $sort;
   }
 
-  protected function addIfNotNull($array, $key, $value) {
-    if (isset($value) && is_string($value)) {
-      $value = \Library\StringUtilities::nullOnEmpty($value);
+  /**
+   * 
+   * @param type $source
+   * @param type $merge
+   * @return type
+   */
+  protected function cleanURLParameters($source, $merge = null) {
+    // Parameter Validation
+    assert('isset($source) && is_array($source)');
+    assert('!isset($merge) || is_array($merge)');
+
+    $return = isset($merge) ? $merge : array();
+
+    // Escape 
+    foreach ($source as $key => $value) {
+      $return[$key] = htmlentities($value, ENT_QUOTES, "UTF-8");
     }
 
-    if (isset($value)) {
-      $array[$key] = $value;
+    return $return;
+  }
+
+  /**
+   * 
+   * @param type $key
+   * @return type
+   */
+  protected function requestParameter($key) {
+
+    $value = null;
+    if (isset($_GET[$key])) {
+      $value = htmlentities($_GET[$key], ENT_QUOTES, "UTF-8");
+    } else if (isset($_POST[$key])) {
+      $value = htmlentities($_POST[$key], ENT_QUOTES, "UTF-8");
+    }
+
+    return $value;
+  }
+
+  /**
+   * 
+   * @return type
+   */
+  protected function requestParameters() {
+    // Extract Clean (Security) URL Parameters
+    $parameters = $this->cleanURLParameters($_GET);
+    $parameters = $this->cleanURLParameters($_POST, $parameters);
+
+    return $parameters;
+  }
+
+  /**
+   * 
+   * @param type $parameters
+   * @return type
+   */
+  protected function serviceParameters($parameters = null) {
+
+    // Get the Parameters
+    $parameters = isset($parameters) ? $parameters : $this->requestParameters();
+
+    // Get Entity MetaData
+    $meta = $this->getMetadata();
+
+    // Pass through only parameters that are valid for the Entity
+    $array = array();
+    foreach ($parameters as $key => $value) {
+
+      // Check if the Key is Prefixed
+      if (stripos($key, ':')) { // Yes
+        list($type, $field) = explode(':', $key, 2);
+        $key = $field;
+      }
+
+      // Skip Identifier Fields
+      if ($meta->isIdentifier($key)) {
+        continue;
+      }
+
+      // Allow Non-String Values to Pass-through untouched
+      if (isset($value) && is_string($value)) {
+        $value = StringUtilities::nullOnEmpty($value);
+      }
+
+      if (isset($value)) {
+        if ($meta->hasField($key) || $meta->hasAssociation($key)) {
+          $array[$key] = $value;
+        }
+      }
     }
 
     return $array;

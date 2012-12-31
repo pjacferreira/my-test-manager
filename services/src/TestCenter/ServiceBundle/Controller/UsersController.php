@@ -21,7 +21,7 @@ namespace TestCenter\ServiceBundle\Controller;
 
 use Symfony\Component\HttpFoundation\Request;
 use Library\StringUtilities;
-use Library\ArrayUtilities;
+use TestCenter\ServiceBundle\API\ActionContext;
 use TestCenter\ServiceBundle\API\CrudServiceController;
 
 /**
@@ -46,17 +46,15 @@ class UsersController
    * @return null
    */
   public function createAction($name) {
-    // Extract Clean (Security) URL Parameters
-    $parameters = $this->importRequestParameters();
-    
-    // Set Name is Specified as a Route Parameter
-    $name = StringUtilities::nullOnEmpty($name);
-    if(isset($name)) {
-      $parameters['name'] = $name;
-    }
+    // Create Action Context
+    $context = new ActionContext('create');
+    // Extract Clean (Security) URL Parameters (Overwriting with route parameters where necessary)
+    $context = $context
+      ->setParameters($this->serviceParameters())
+      ->setIfNotNull('name', StringUtilities::nullOnEmpty($name));
 
     // Call the Function
-    return $this->doAction('create', $parameters);
+    return $this->doAction($context);
   }
 
   /**
@@ -64,13 +62,14 @@ class UsersController
    * @return null
    */
   public function readAction($id) {
-    // Extract Clean (Security) URL Parameters
-    $parameters = $this->importRequestParameters();
+    // Create Action Context
+    $context = new ActionContext('read');
+    // Extract Clean (Security) URL Parameters (Overwriting with route parameters where necessary)
+    $context = $context
+      ->setParameters($this->serviceParameters())
+      ->setParameter('id', (integer) $id);
 
-    // Fill in the ID 
-    $parameters['id'] = (integer) $id;
-
-    return $this->doAction('read', $parameters);
+    return $this->doAction($context);
   }
 
   /**
@@ -78,13 +77,14 @@ class UsersController
    * @return null
    */
   public function readByNameAction($name) {
-    // Extract Clean (Security) URL Parameters
-    $parameters = $this->importRequestParameters();
+    // Create Action Context
+    $context = new ActionContext('read');
+    // Extract Clean (Security) URL Parameters (Overwriting with route parameters where necessary)
+    $context = $context
+      ->setParameters($this->serviceParameters())
+      ->setIfNotNull('name', StringUtilities::nullOnEmpty($name));
 
-    // Fill in the Name 
-    $parameters['name'] = StringUtilities::nullOnEmpty($name);
-
-    return $this->doAction('read', $parameters);
+    return $this->doAction($context);
   }
 
   /**
@@ -94,13 +94,14 @@ class UsersController
    * @return null
    */
   public function updateAction($id) {
-    // Extract Clean (Security) URL Parameters
-    $parameters = $this->importRequestParameters();
+    // Create Action Context
+    $context = new ActionContext('update');
+    // Extract Clean (Security) URL Parameters (Overwriting with route parameters where necessary)
+    $context = $context
+      ->setParameters($this->serviceParameters())
+      ->setParameter('id', (integer) $id);
 
-    // Fill in the ID 
-    $parameters['id'] = (integer) $id;
-
-    return $this->doAction('update', $parameters);
+    return $this->doAction($context);
   }
 
   /**
@@ -108,7 +109,10 @@ class UsersController
    * @return null
    */
   public function deleteAction($id) {
-    return $this->doAction('delete', array('id' => (integer) $id));
+    // Create Action Context
+    $context = new ActionContext('delete');
+    // Call Action
+    return $this->doAction($context->setParameter('id', (integer) $id));
   }
 
   /**
@@ -121,16 +125,18 @@ class UsersController
    */
   public function listAction(Request $request, $filter = null, $sort = null,
                              $limit = null) {
-    // Build Array
-    $array = array();
-    $array = $this->addIfNotNull($array, '__filter',
-                                 $this->oneOf($filter, $request->get('filter')));
-    $array = $this->addIfNotNull($array, '__sort',
-                                 $this->oneOf($sort, $request->get('sort')));
-    $array = $this->addIfNotNull($array, '__limit',
-                                 $this->oneOf($limit, $request->get('limit')));
+    // Create Action Context
+    $context = new ActionContext('list');
+    // Build Parameters
+    $context = $context
+      ->setFirstNotNullOf('__filter', StringUtilities::nullOnEmpty($filter),
+                                                                   $request->get('filter'))
+      ->setFirstNotNullOf('__sort', StringUtilities::nullOnEmpty($sort),
+                                                                 $request->get('sort'))
+      ->setFirstNotNullOf('__limit', StringUtilities::nullOnEmpty($limit),
+                                                                  $request->get('limit'));
 
-    return $this->doAction('list', count($array) ? $array : null);
+    return $this->doAction($context);
   }
 
   /**
@@ -140,22 +146,29 @@ class UsersController
    * @return type
    */
   public function countAction(Request $request, $filter = null) {
-    // Build Array
-    $array = array();
-    $array = $this->addIfNotNull($array, '__filter',
-                                 $this->oneOf($filter, $request->get('filter')));
+    // Create Action Context
+    $context = new ActionContext('count');
+    // Build Parameters
+    $context = $context->setFirstNotNullOf('__filter',
+                                           StringUtilities::nullOnEmpty($filter),
+                                                                        $request->get('filter'));
 
-    return $this->doAction('count', count($array) ? $array : null);
+    return $this->doAction($context);
   }
 
   /**
    * @param $parameters
    * @return object
    */
-  protected function doDeleteAction($parameters) {
-    // What we have to do
-    // Delete Links Between User and Organization (Automatically Forces the Removal of Links with Organization Projects)
-    return parent::doDeleteAction($parameters);
+  protected function doDeleteAction($context) {
+    // Parameter Validation
+    assert('isset($context) && is_object($context)');
+
+    /* TODO Remove Links to Other Objects
+     * Delete Links Between User and Organization (Automatically Forces the 
+     * Removal of Links with Organization Projects)
+     */
+    return parent::doDeleteAction($context);
   }
 
   /**
@@ -163,12 +176,15 @@ class UsersController
    * @return array
    * @throws \Exception
    */
-  protected function sessionChecksCreate($parameters) {
+  protected function sessionChecksCreate($context) {
+    // Parameter Validation
+    assert('isset($context) && is_object($context)');
+
     // Basic Session Checks
-    $parameters = $this->sessionChecks('create', $parameters);
+    $context = $this->sessionChecks($context);
 
     // Verify Parameters
-    $name = ArrayUtilities::extract($parameters, 'name');
+    $name = $context->getParameter('name');
     if (!isset($name)) {
       throw new \Exception('Missing Required Action Parameter [name].', 1);
     }
@@ -179,33 +195,35 @@ class UsersController
       throw new \Exception("User [$name] already exists.", 2);
     }
 
-    return $parameters;
+    // Even though we didn't change the context, the call to sessionChecks might have
+    return $context;
   }
 
   /**
    * @param $action
    * @param $parameters
    */
-  protected function sessionChecks($action, $parameters) {
+  protected function sessionChecks($context) {
     // Parameter Validation
-    assert('isset($action) && is_string($action)');
-    assert('isset($parameters) && is_array($parameters)');
+    assert('isset($context) && is_object($context)');
 
     // Need a Session for all the Session Commands
     $this->checkInSession();
     $this->checkLoggedIn();
 
     // If Password Specified Encode with MD5
-    $password = ArrayUtilities::extract($parameters, 'password');
+    $password = $context->getParameter('password');
     if (isset($password)) {
-      $parameters['password'] = md5($password);
+      $context->setParameter('password', md5($password));
     }
 
+    $action = $context->getAction();
+    assert('isset($action)');
     switch ($action) {
       case 'Update':
       case 'Delete':
         // Get the Identified for the User
-        $id = ArrayUtilities::extract($parameters, 'id');
+        $id = $context->getParameter('id');
         if (!isset($id)) {
           throw new \Exception('Missing Required Action Parameter [id].', 1);
         }
@@ -217,12 +235,12 @@ class UsersController
         }
 
         // Save the User for the Action
-        $parameters['entity'] = $user;
-        $parameters['user'] = $user;
+        $context->setParameter('entity', $user);
+        $context->setParameter('user', $user);
         break;
     }
 
-    return $parameters;
+    return $context;
   }
 
   /**
@@ -230,12 +248,16 @@ class UsersController
    * @param $results
    * @param $format
    */
-  protected function preRender($action, $results, $format) {
+  protected function preRender($context) {
     // Parameter Validation
-    assert('isset($action) && is_string($action)');
-    assert('isset($format) && is_string($format)');
+    assert('isset($context) && is_object($context)');
 
-    $return = $results;
+    // Get Results
+    $results = $context->getActionResult();
+
+    // Get the Action Name
+    $action = $context->getAction();
+    assert('isset($action)');
     switch ($action) {
       case 'Create':
       case 'Read':
@@ -249,78 +271,11 @@ class UsersController
           $return[] = $user->toArray();
         }
         break;
+      default:
+        $return = $results;
     }
 
     return $return;
-  }
-
-  /**
-   * 
-   * @param type $value1
-   * @param type $value2
-   * @return type
-   */
-  protected function oneOf($value1, $value2) {
-    return isset($value1) ? $value1 : $value2;
-  }
-
-  /**
-   * 
-   * @param type $source
-   * @param type $merge
-   * @return type
-   */
-  protected function cleanURLParameters($source, $merge = null) {
-    // Parameter Validation
-    assert('isset($source) && is_array($source)');
-    assert('!isset($merge) || is_array($merge)');
-
-    $return = isset($merge) ? $merge : array();
-
-    // Escape 
-    foreach ($source as $key => $value) {
-      $return[$key] = htmlentities($value, ENT_QUOTES, "UTF-8");
-    }
-
-    return $return;
-  }
-
-  protected function importRequestParameters() {
-    // Extract Clean (Security) URL Parameters
-    $parameters = $this->cleanURLParameters($_GET);
-    $parameters = $this->cleanURLParameters($_POST, $parameters);
-
-    // Get Entity MetaData
-    $meta = $this->getMetadata();
-
-    // Pass through only parameters that are valid for the Entity
-    $array = array();
-    foreach ($parameters as $key => $value) {
-
-      // Check if the Key is Prefixed
-      if (stripos($key, ':')) { // Yes
-        list($type,$field) = explode(':', $key, 2);
-        $key = $field;
-      }
-
-      // Skip Identifier Fields
-      if ($meta->isIdentifier($key)) {
-        continue;
-      }
-
-      // Allow Non-String Values to Pass-through untouched
-      if (isset($value) && is_string($value)) {
-        $value = StringUtilities::nullOnEmpty($value);
-      }
-
-      if (isset($value)) {
-        if ($meta->hasField($key) || $meta->hasAssociation($key)) {
-          $array[$key] = $value;
-        }
-      }
-    }
-
-    return $array;
   }
 
 }

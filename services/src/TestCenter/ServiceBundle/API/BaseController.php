@@ -32,87 +32,61 @@ class BaseController
 
   /**
    * 
-   * @param type $action
-   * @return type
+   * @param $context
+   * @return TestCenter\ServiceBundle\API\ActionContext
    */
-  public function getActionName($action) {
-    assert('isset($action) && is_string($action)');
-
-    $action = StringUtilities::nullOnEmpty($action);
-    $action = explode('_', $action);
-    $action = array_map('strtolower', $action);
-    $action = array_map('ucfirst', $action);
-    $action = implode($action);
-    return $action;
-  }
-
-  /**
-   * @param $action
-   * @param null $parameters
-   * @return null
-   */
-  protected function doAction($action, $parameters = null) {
+  protected function doAction($context) {
     assert('!isset($parameters) || is_array($parameters)');
-
-    // Clean-up Action
-    $action = $this->getActionName($action);
-
-    // Create an Empty Container to Pass On (Just for Consistency)
-    if (!isset($parameters)) {
-      $parameters = array();
-    }
 
     try {
       // Initialize Action/Checks
-      $parameters = $this->do_initAction($action, $parameters);
+      $context = $this->do_initAction($context);
 
       // Pre-Action Validation/Transformation
-      $parameters = $this->do_preAction($action, $parameters);
+      $context = $this->do_preAction($context);
 
       // Action
-      $results = $this->do_call($action, $parameters);
+      $context = $this->do_call($context);
 
       // Post-Action Validation/Transformation
-      $results = $this->do_postAction($action, $parameters, $results);
+      $context = $this->do_postAction($context);
 
       // Render Results
-      $results = $this->do_render($action, $results);
+      $context = $this->do_render($context);
 
       // Mark Action as Complete
-      $this->do_success($action);
+      $this->do_success($context);
     } catch (\Exception $e) {
       // Render Exception
-      $results = $this->do_renderException($action, $parameters, $e);
+      $context = $this->do_renderException($context->setActionResult($e));
 
       // Mark Action as Failed
-      $this->do_failed($action);
+      $this->do_failed($context);
     }
 
-    return $results;
+    return $context->getResponse();
   }
 
   /**
-   * @param $action
-   * @param $parameters
-   * @return null
+   * 
+   * @param $context
+   * @return TestCenter\ServiceBundle\API\ActionContext
    */
-  protected function do_initAction($action, $parameters) {
+  protected function do_initAction($context) {
     // Parameter Validation
-    assert('isset($action) && is_string($action)');
-    assert('isset($parameters) && is_array($parameters)');
+    assert('isset($context) && is_object($context)');
+
+    $action = $context->getAction();
+    assert('isset($action)');
 
     /* Function: initAction[{Action}]
      * Called to Initialize Action and Perform Startup Checks
      * - Parameters
-     * -- For Default (Global initAction) Function
-     * --- (1st) $action - the name of the action (all-lower-case)
-     * --- (2nd) $parameters - parameters array (map)
-     * -- Action Specific Function (initAction{Action})
-     * --- (1st) $parameters - parameters array (map)
+     * -- (1st) $context - Action Context
      *
      * - Return
-     * -- array (map) - representing the parameters, OR
-     * -- null - in the case of no changes to the parameters
+     * -- objext - Modified Action Context, OR
+     * -- null - in the case of no changes to the context
      *
      * - Exceptions
      * -- Raise an exception on any fail state
@@ -124,32 +98,30 @@ class BaseController
     $method = $defaultMethod . ucfirst($action);
 
     // Call the Function
-    $return = $this->callMethod($method, $defaultMethod, $action, $parameters);
-    return isset($return) ? $return : $parameters;
+    $return = $this->callMethod($method, $defaultMethod, $context);
+    return isset($return) ? $return : $context;
   }
 
   /**
-   * @param $action
-   * @param $parameters
-   * @return null
+   * 
+   * @param $context
+   * @return TestCenter\ServiceBundle\API\ActionContext
    */
-  protected function do_preAction($action, $parameters) {
+  protected function do_preAction($context) {
     // Parameter Validation
-    assert('isset($action) && is_string($action)');
-    assert('isset($parameters) && is_array($parameters)');
+    assert('isset($context) && is_object($context)');
+
+    $action = $context->getAction();
+    assert('isset($action)');
 
     /* Function: preAction[{Action}]
      * Called before Action Function is invoked
      * - Parameters
-     * -- For Default (Global preAction) Function
-     * --- (1st) $action - the name of the action (all-lower-case)
-     * --- (2nd) $parameters - parameters array (map)
-     * -- Action Specific Function (preAction{Action})
-     * --- (1st) $parameters - parameters array (map)
+     * -- (1st) $context - Action Context
      *
      * - Return
-     * -- array (map) - representing the parameters, OR
-     * -- null - in the case of no changes to the parameters
+     * -- objext (map) - Modified Action Context, OR
+     * -- null - in the case of no changes to the context
      *
      * - Exceptions
      * -- Raise an exception on any fail state
@@ -161,29 +133,29 @@ class BaseController
     $method = $defaultMethod . ucfirst($action);
 
     // Call the Function
-    $return = $this->callMethod($method, $defaultMethod, $action, $parameters);
-    return isset($return) ? $return : $parameters;
+    $return = $this->callMethod($method, $defaultMethod, $context);
+    return isset($return) ? $return : $context;
   }
 
   /**
-   * @param $action
-   * @param null $parameters
-   * @return null
+   * 
+   * @param $context
+   * @return TestCenter\ServiceBundle\API\ActionContext
    */
-  protected function do_call($action, $parameters = null) {
+  protected function do_call($context) {
     // Parameter Validation
-    assert('isset($action) && is_string($action)');
-    assert('isset($parameters) && is_array($parameters)');
+    assert('isset($context) && is_object($context)');
+
+    $action = $context->getAction();
+    assert('isset($action)');
 
     /* Function: do{Action}Action
      * Action to be Invoked
      * - Parameters
-     * -- Action Specific Function (preAction{Action})
-     * --- (1st) $parameters - parameters array (map)
+     * -- (1st) $context - Action Context
      *
      * - Return
-     * -- array / object / value - representing the results of the action, OR
-     *    null in the case of no results
+     * -- (value or null)
      *
      * - Exceptions
      * -- Raise an exception on any fail state
@@ -195,35 +167,30 @@ class BaseController
     $method = 'do' . ucfirst($action) . 'Action';
 
     // Call the Function
-    return $this->callMethod($method, null, $action, $parameters, null,
-                             new \Exception("Missing or Invalid Action Method [$method].", 1));
+    return $context->setActionResult($this->callMethod($method, null, $context,
+                                                       new \Exception("Missing or Invalid Action Method [$method].", 1)));
   }
 
   /**
-   * @param $action
-   * @param $parameters
-   * @param $results
-   * @return null
+   * 
+   * @param $context
+   * @return TestCenter\ServiceBundle\API\ActionContext
    */
-  protected function do_postAction($action, $parameters, $results) {
+  protected function do_postAction($context) {
     // Parameter Validation
-    assert('isset($action) && is_string($action)');
-    assert('isset($parameters) && is_array($parameters)');
+    assert('isset($context) && is_object($context)');
+
+    $action = $context->getAction();
+    assert('isset($action)');
 
     /* Function: postAction[{Action}]
      * Called after Action Function invoked
      * - Parameters
-     * -- For Default (Global preAction) Function
-     * --- (1st) $action - the name of the action (all-lower-case)
-     * --- (2nd) $parameters - parameters array (map)
-     * --- (3rd) $results - results of action call
-     * -- Action Specific Function (preAction{Action})
-     * --- (1st) $parameters - parameters array (map)
-     * --- (2nd) $results - results of action call
+     * -- (1st) $context - Action Context
      *
      * - Return
-     * -- array / object / value - representing the modified results, OR
-     *    null in the case of no results
+     * -- objext (map) - Modified Action Context, OR
+     * -- null - in the case of no changes to the context
      *
      * - Exceptions
      * -- Raise an exception on any fail state
@@ -236,36 +203,33 @@ class BaseController
     $method = $defaultMethod . ucfirst($action);
 
     // Call the Function
-    $return = $this->callMethod($method, $defaultMethod, $action, $parameters,
-                                $results);
-    return isset($return) ? $return : $results;
+    $return = $this->callMethod($method, $defaultMethod, $context);
+    return isset($return) ? $return : $context;
   }
 
   /**
-   * @param $action
-   * @param $results
-   * @param string $format
-   * @return null
+   * 
+   * @param $context
+   * @return TestCenter\ServiceBundle\API\ActionContext
    */
-  protected function do_render($action, $results, $format = 'json') {
+  protected function do_render($context, $format = 'json') {
     // Parameter Validation
-    assert('isset($action) && is_string($action)');
+    assert('isset($context) && is_object($context)');
     assert('isset($format) && is_string($format)');
+
+    $action = $context->getAction();
+    assert('isset($action)');
+
+    // Set the Response Format
+    $context->setParameter('__format', $format);
 
     /* Function: preRender[{Action}]
      * Called to Prepare Results for Rendering
      * - Parameters
-     * -- For Default (Global preAction) Function
-     * --- (1st) $action  - the name of the action (all-lower-case)
-     * --- (2nd) $results - results of action call
-     * --- (3rd) $format  - output format for rendered results
-     * -- Action Specific Function (preAction{Action})
-     * --- (1st) $results - results of action call
-     * --- (2nd) $format  - output format for rendered results
+     * -- (1st) $context - Action Context (Read Only)
      *
      * - Return
-     * -- array / object / value - representing the modified results, OR
-     *    null in the case of no results
+     * -- (results) - Modified Action Results
      *
      * - Exceptions
      * -- Raise an exception on any fail state
@@ -278,24 +242,16 @@ class BaseController
     $method = $defaultMethod . ucfirst($action);
 
     // Call the Function
-    $return = $this->callMethod($method, $defaultMethod, $action, $results,
-                                $format);
-    if (isset($return)) {
-      $results = $return;
-    }
+    $context->setActionResult($this->callMethod($method, $defaultMethod,
+                                                $context));
 
     /* Function: render{Format}[{Action}]
      * Called to Prepare Results for Rendering
      * - Parameters
-     * -- For Default (Global preAction) Function
-     * --- (1st) $action - the name of the action (all-lower-case)
-     * --- (2nd) $results - prepared results of action call
-     * -- Action Specific Function (preAction{Action})
-     * --- (1st) $results - prepared results of action call
+     * -- (1st) $context - Action Context (Read Only)
      *
      * - Return
-     * -- array / object / value - representing the modified results, OR
-     *    null in the case of no results
+     * -- (response) response object
      *
      * - Exceptions
      * -- Raise an exception on any fail state
@@ -308,36 +264,33 @@ class BaseController
     $method = $defaultMethod . ucfirst($action);
 
     // Call the Function
-    return $this->callMethod($method, $defaultMethod, $action, $results);
+    return $context->setResponse($this->callMethod($method, $defaultMethod,
+                                                   $context));
   }
 
   /**
-   * @param $action
-   * @param $parameters
-   * @param $exception
-   * @param string $format
-   * @return null
+   * 
+   * @param $context
+   * @return TestCenter\ServiceBundle\API\ActionContext
    */
-  protected function do_renderException($action, $parameters, $exception,
-                                        $format = 'json') {
+  protected function do_renderException($context, $format = 'json') {
     // Parameter Validation
-    assert('isset($action) && is_string($action)');
+    assert('isset($context) && is_object($context)');
     assert('isset($format) && is_string($format)');
+
+    $action = $context->getAction();
+    assert('isset($action)');
+
+    // Set the Response Format
+    $context->setParameter('__format', $format);
 
     /* Function: render{Format}[{Action}]
      * Called to Prepare Results for Rendering
      * - Parameters
-     * -- For Default (Global preAction) Function
-     * --- (1st) $action     - the name of the action (all-lower-case)
-     * --- (2nd) $parameters - the parameters passed to the action
-     * --- (3rd) $exception  - exception to render
-     * -- Action Specific Function (preAction{Action})
-     * --- (1st) $parameters - the parameters passed to the action
-     * --- (2nd) $exception  - exception to render
+     * -- (1st) $context - Action Context
      *
      * - Return
-     * -- array / object / value - representing the modified results, OR
-     *    null in the case of no results
+     * -- (response) response object
      *
      * - Exceptions
      * -- Raise an exception on any fail state
@@ -349,34 +302,29 @@ class BaseController
     $defaultMethod = 'renderException' . ucfirst($format);
 
     // Call the Function
-    return $this->callMethod(null, $defaultMethod, $action, $parameters,
-                             $exception);
+    return $context->setResponse($this->callMethod(null, $defaultMethod,
+                                                   $context));
   }
 
   /**
-   * @param $action
-   * @param $parameters
-   * @param $results
-   * @return null
+   * 
+   * @param $context
+   * @return TestCenter\ServiceBundle\API\ActionContext
    */
-  protected function do_success($action) {
+  protected function do_success($context) {
     // Parameter Validation
-    assert('isset($action) && is_string($action)');
+    assert('isset($context) && is_object($context)');
+
+    $action = $context->getAction();
+    assert('isset($action)');
 
     /* Function: {action}Success (Default: successAction )
      * Called after Action Function invoked
      * - Parameters
-     * -- For Default (Global preAction) Function
-     * --- (1st) $action - the name of the action (all-lower-case)
-     * --- (2nd) $parameters - parameters array (map)
-     * --- (3rd) $results - results of action call
-     * -- Action Specific Function (preAction{Action})
-     * --- (1st) $parameters - parameters array (map)
-     * --- (2nd) $results - results of action call
+     * -- (1st) $context - Action Context
      *
      * - Return
-     * -- array / object / value - representing the modified results, OR
-     *    null in the case of no results
+     * -- (nothing)
      *
      * - Exceptions
      * -- Raise an exception on any fail state
@@ -389,34 +337,29 @@ class BaseController
     $method = strtolower($action) . 'Success';
 
     // Call the Function
-    return $this->callMethod($method, $defaultMethod, $action);
+    $this->callMethod($method, $defaultMethod, $context);
   }
 
   /**
-   * @param $action
-   * @param $parameters
-   * @param $results
-   * @return null
+   * 
+   * @param $context
+   * @return TestCenter\ServiceBundle\API\ActionContext
    */
-  protected function do_failed($action) {
+  protected function do_failed($context) {
     // Parameter Validation
-    assert('isset($action) && is_string($action)');
+    assert('isset($context) && is_object($context)');
+
+    $action = $context->getAction();
+    assert('isset($action)');
 
     /* Function: {action}Failed (Default: failedAction )
       /* Function: failed[{Action}]
      * Called after Action Function invoked
      * - Parameters
-     * -- For Default (Global preAction) Function
-     * --- (1st) $action - the name of the action (all-lower-case)
-     * --- (2nd) $parameters - parameters array (map)
-     * --- (3rd) $results - results of action call
-     * -- Action Specific Function (preAction{Action})
-     * --- (1st) $parameters - parameters array (map)
-     * --- (2nd) $results - results of action call
+     * -- (1st) $context - Action Context
      *
      * - Return
-     * -- array / object / value - representing the modified results, OR
-     *    null in the case of no results
+     * -- (nothing)
      *
      * - Exceptions
      * -- Raise an exception on any fail state
@@ -429,7 +372,7 @@ class BaseController
     $method = strtolower($action) . 'Failed';
 
     // Call the Function
-    return $this->callMethod($method, $defaultMethod, $action);
+    $this->callMethod($method, $defaultMethod, $context);
   }
 
   /**
@@ -439,25 +382,26 @@ class BaseController
    * @param $function
    * @return array
    */
-  protected function processParameter($action, $parameters, $in_actions,
-                                      $function) {
+  protected function processParameter($context, $in_actions, $function) {
     // Parameter Validation
-    assert('isset($action) && is_string($action)');
-    assert('isset($parameters) && is_array($parameters)');
-    assert('isset($in_actions) && is_array($in_actions)');
+    assert('isset($context) && is_object($context)');
+    assert('!isset($in_actions) || is_array($in_actions)');
     assert('isset($function) && is_callable($function)');
+
+    $action = $context->getAction();
+    assert('isset($action)');
 
     if (is_array($in_actions)) {
       if (array_search($action, $in_actions) !== FALSE) {
-        return $function($this, $parameters);
+        return $function($this, $context);
       }
     } else if (is_string($in_actions)) {
       if ($action === $in_actions) {
-        return $function($this, $parameters);
+        return $function($this, $context);
       }
     }
 
-    return $parameters;
+    return $context;
   }
 
   /**
@@ -467,12 +411,16 @@ class BaseController
    * @param $function
    * @return mixed
    */
-  protected function processResults($action, $results, $in_actions, $function) {
+  protected function processResults($context, $in_actions, $function) {
     // Parameter Validation
-    assert('isset($action) && is_string($action)');
-    assert('isset($in_actions) && is_array($in_actions)');
+    assert('isset($context) && is_object($context)');
+    assert('!isset($in_actions) || is_array($in_actions)');
     assert('isset($function) && is_callable($function)');
 
+    $action = $context->getAction();
+    assert('isset($action)');
+
+    $results = $context->getActionResult();
     if (is_array($in_actions)) {
       if (array_search($action, $in_actions) !== FALSE) {
         return $function($this, $results);
@@ -493,11 +441,14 @@ class BaseController
    * @param $function
    * @return bool
    */
-  protected function processChecks($action, $in_actions, $parameters, $function) {
+  protected function processChecks($context, $in_actions, $function) {
     // Parameter Validation
-    assert('isset($action) && is_string($action)');
+    assert('isset($context) && is_object($context)');
     assert('!isset($in_actions) || is_array($in_actions)');
     assert('isset($function) && is_callable($function)');
+
+    $action = $context->getAction();
+    assert('isset($action)');
 
     $call_function = false;
     if (!isset($in_actions)) {
@@ -512,7 +463,7 @@ class BaseController
       }
     }
 
-    return $call_function ? $function($this, $action, $parameters) : $parameters;
+    return $call_function ? $function($this, $context) : $context;
   }
 
   /**
@@ -525,27 +476,15 @@ class BaseController
    * @return null
    * @throws null
    */
-  protected function callMethod($method, $defaultMethod, $action,
-                                $parameter1 = null, $parameter2 = null,
+  protected function callMethod($method, $defaultMethod, $context,
                                 $exception = null) {
     // Discover Method to Call
     if (isset($method) && is_callable(array($this, $method))) {
       // Method is Defined for Action
-      if (isset($parameter2)) {
-        return $this->$method($parameter1, $parameter2);
-      }
-      return $this->$method($parameter1);
+      return $this->$method($context);
     } else if (isset($defaultMethod) && is_callable(array($this, $defaultMethod))) {
       // Use Default Handler for Action
-      if (isset($parameter2)) {
-        return $this->$defaultMethod($action, $parameter1, $parameter2);
-      } else if (isset($parameter1)) {
-        return $this->$defaultMethod($action, $parameter1);
-      } else {
-        return $this->$defaultMethod($action);
-      }
-
-      // TODO Need a Better Way to Identify Parameters (i.e. if the action requires none, 1 or 2 parameters
+      return $this->$defaultMethod($context);
     }
 
     // Exception Set - In case we have no method to call
@@ -559,11 +498,14 @@ class BaseController
   /**
    * Default JSON Render Results
    *
-   * @param $action
-   * @param $results
-   * @return \Symfony\Component\HttpFoundation\Response
+   * @param $context
+   * @return TestCenter\ServiceBundle\API\ActionContext
    */
-  protected function renderJson($action, $results = null) {
+  protected function renderJson($context) {
+    // Parameter Validation
+    assert('isset($context) && is_object($context)');
+
+    $results = $context->getActionResult();
     if (isset($results)) {
       $response = $this->render('TestCenterServiceBundle::service-base.json.twig',
                                 array('results' => $results));
@@ -579,15 +521,18 @@ class BaseController
   /**
    * Default JSON Render Exception
    *
-   * @param $action
-   * @param $parameters
+   * @param $context
    * @param $exception
-   * @return \Symfony\Component\HttpFoundation\Response
+   * @return TestCenter\ServiceBundle\API\ActionContext
    */
-  protected function renderExceptionJson($action, $parameters, $exception) {
+  protected function renderExceptionJson($context) {
     // Parameter Validation
-    assert('isset($action) && is_string($action)');
-    assert('isset($parameters) && is_array($parameters)');
+    assert('isset($context) && is_object($context)');
+
+    $action = $context->getAction();
+    assert('isset($action)');
+
+    $exception = $context->getActionResult();
     assert('isset($exception)');
 
     $error_code = $exception->getCode();
@@ -596,7 +541,7 @@ class BaseController
     $response = $this->render('TestCenterServiceBundle::service-base.json.twig',
                               array(
       'error' => array('code' => $error_code, 'message' => $exception->getMessage()),
-      'results' => array('action' => $action, 'parameters' => $parameters)));
+      'results' => array('action' => $action, 'parameters' => isset($parameters) ? $parameters : array())));
 
     // Set Content Type to JSON
     $response->headers->set('Content-Type', 'application/json');

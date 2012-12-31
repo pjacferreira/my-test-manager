@@ -20,7 +20,7 @@
 namespace TestCenter\ServiceBundle\Controller;
 
 use Library\StringUtilities;
-use Library\ArrayUtilities;
+use TestCenter\ServiceBundle\API\ActionContext;
 use TestCenter\ServiceBundle\API\BaseServiceController;
 use TestCenter\ServiceBundle\API\SessionManager;
 
@@ -38,16 +38,19 @@ class SessionController
    * @return \Symfony\Component\HttpFoundation\Response
    */
   public function loginAction($name, $password) {
-    return $this->doAction('login',
-                           array('name' => StringUtilities::nullOnEmpty($name),
-        'password' => StringUtilities::nullOnEmpty($password)));
+    // Create Action Context
+    $context = new ActionContext('login');
+    // Set Parameters for Context and Call Action
+    return $this->doAction($context
+          ->setIfNotNull('name', StringUtilities::nullOnEmpty($name))
+          ->setIfNotNull('password', StringUtilities::nullOnEmpty($password)));
   }
 
   /**
    * @return \Symfony\Component\HttpFoundation\Response
    */
   public function logoutAction() {
-    return $this->doAction('logout');
+    return $this->doAction(new ActionContext('logout'));
   }
 
   /**
@@ -56,30 +59,33 @@ class SessionController
    * @return \Symfony\Component\HttpFoundation\Response
    */
   public function sudoAction($name, $password) {
-    return $this->doAction('sudo',
-                           array('name' => StringUtilities::nullOnEmpty($name),
-        'password' => StringUtilities::nullOnEmpty($password)));
+    // Create Action Context
+    $context = new ActionContext('sudo');
+    // Set Parameters for Context and Call Action
+    return $this->doAction($context
+          ->setIfNotNull('name', StringUtilities::nullOnEmpty($name))
+          ->setIfNotNull('password', StringUtilities::nullOnEmpty($password)));
   }
 
   /**
    * @return \Symfony\Component\HttpFoundation\Response
    */
   public function sudoExitAction() {
-    return $this->doAction('sudoexit');
+    return $this->doAction(new ActionContext('sudoexit'));
   }
 
   /**
    * @return \Symfony\Component\HttpFoundation\Response
    */
   public function whoamiAction() {
-    return $this->doAction('whoami');
+    return $this->doAction(new ActionContext('whoami'));
   }
 
   /**
    * @return \Symfony\Component\HttpFoundation\Response
    */
   public function getOrganizationAction() {
-    return $this->doAction('get_organization');
+    return $this->doAction(new ActionContext('get_organization'));
   }
 
   /**
@@ -87,14 +93,18 @@ class SessionController
    * @return \Symfony\Component\HttpFoundation\Response
    */
   public function setOrganizationAction($id) {
-    return $this->doAction('set_organization', array('id' => (integer) $id));
+    // Create Action Context
+    $context = new ActionContext('set_organization');
+    // Set Parameters for Context and Call Action
+    return $this->doAction($context
+          ->setParameter('id', (integer) $id));
   }
 
   /**
    * @return \Symfony\Component\HttpFoundation\Response
    */
   public function getProjectAction() {
-    return $this->doAction('get_project');
+    return $this->doAction(new ActionContext('get_project'));
   }
 
   /**
@@ -102,14 +112,22 @@ class SessionController
    * @return \Symfony\Component\HttpFoundation\Response
    */
   public function setProjectAction($id) {
-    return $this->doAction('set_project', array('id' => (integer) $id));
+    // Create Action Context
+    $context = new ActionContext('set_project');
+    // Set Parameters for Context and Call Action
+    return $this->doAction($context
+          ->setParameter('id', (integer) $id));
   }
 
   /**
    * @return \Symfony\Component\HttpFoundation\Response
    */
   public function getVariableAction($variable) {
-    return $this->doAction('get', array('variable' => $variable));
+    // Create Action Context
+    $context = new ActionContext('get');
+    // Set Parameters for Context and Call Action
+    return $this->doAction($context
+          ->setIfNotNull('variable', StringUtilities::nullOnEmpty($variable)));
   }
 
   /**
@@ -117,22 +135,34 @@ class SessionController
    * @return \Symfony\Component\HttpFoundation\Response
    */
   public function setVariableAction($variable, $value) {
-    return $this->doAction('set',
-                           array('variable' => $variable, 'value' => $value));
+    // Create Action Context
+    $context = new ActionContext('set');
+    // Set Parameters for Context and Call Action
+    return $this->doAction($context
+          ->setIfNotNull('variable', StringUtilities::nullOnEmpty($variable))
+          ->setParameter('value', $value));
   }
 
   /**
    * @return \Symfony\Component\HttpFoundation\Response
    */
   public function clearVariableAction($variable) {
-    return $this->doAction('clear', array('variable' => $variable));
+    // Create Action Context
+    $context = new ActionContext('clear');
+    // Set Parameters for Context and Call Action
+    return $this->doAction($context
+          ->setIfNotNull('variable', StringUtilities::nullOnEmpty($variable)));
   }
 
   /**
    * @return \Symfony\Component\HttpFoundation\Response
    */
   public function issetVariableAction($variable) {
-    return $this->doAction('isset', array('variable' => $variable));
+    // Create Action Context
+    $context = new ActionContext('isset');
+    // Set Parameters for Context and Call Action
+    return $this->doAction($context
+          ->setIfNotNull('variable', StringUtilities::nullOnEmpty($variable)));
   }
 
   /**
@@ -140,12 +170,12 @@ class SessionController
    * @return mixed
    * @throws \Exception
    */
-  protected function doLoginAction($parameters = null) {
+  protected function doLoginAction($context) {
     // Parameter Validation
-    assert('isset($parameters) && is_array($parameters)');
+    assert('isset($context) && is_object($context)');
 
-    $name = ArrayUtilities::extract($parameters, 'name');
-    $password = ArrayUtilities::extract($parameters, 'password', '');
+    $name = $context->getParameter('name');
+    $password = $context->getParameter('password', '');
 
     // Test that we have Required Parameters
     if (!isset($name)) {
@@ -181,12 +211,12 @@ class SessionController
    * @return mixed
    * @throws \Exception
    */
-  protected function doSudoAction($parameters) {
+  protected function doSudoAction($context) {
     // Parameter Validation
-    assert('isset($parameters) && is_array($parameters)');
+    assert('isset($context) && is_object($context)');
 
-    $name = ArrayUtilities::extract($parameters, 'name');
-    $password = ArrayUtilities::extract($parameters, 'password', '');
+    $name = $context->getParameter('name');
+    $password = $context->getParameter('password', '');
 
     // Test that we have Required Parameters
     if (!isset($name)) {
@@ -221,7 +251,7 @@ class SessionController
   /**
    * @return null
    */
-  protected function doLogoutAction() {
+  protected function doLogoutAction($context) {
     SessionManager::logout();
     return true;
   }
@@ -229,7 +259,7 @@ class SessionController
   /**
    * @return bool
    */
-  protected function doSudoexitAction() {
+  protected function doSudoexitAction($context) {
 
     if (SessionManager::isSudoActive()) {
       SessionManager::leaveSudo();
@@ -242,7 +272,7 @@ class SessionController
    * @return object
    * @throws \Exception
    */
-  protected function doWhoamiAction() {
+  protected function doWhoamiAction($context) {
     $id = SessionManager::getUser();
 
     // Extract User and Test Password
@@ -250,6 +280,7 @@ class SessionController
     if (isset($user)) {
       return $user;
     }
+
     throw new \Exception('Not Logged in.', 1);
   }
 
@@ -257,7 +288,7 @@ class SessionController
    * @return object
    * @throws \Exception
    */
-  protected function doGetOrganizationAction() {
+  protected function doGetOrganizationAction($context) {
     // Get the Current Organization ID
     $id = SessionManager::getOrganization();
 
@@ -280,12 +311,12 @@ class SessionController
    * @return object
    * @throws \Exception
    */
-  protected function doSetOrganizationAction($parameters) {
+  protected function doSetOrganizationAction($context) {
     // Parameter Validation
-    assert('isset($parameters) && is_array($parameters)');
-    $id = ArrayUtilities::extract($parameters, 'id');
+    assert('isset($context) && is_object($context)');
 
     // Get the Organization
+    $id = $context->getParameter('id');
     $org = $this->getDoctrine()->getRepository('TestCenterModelBundle:Organization')->find($id);
     if (isset($org)) {
       // TODO Verify if user has access to the Organization and the Project (i.e. is linked to the organization with the correct permissions)
@@ -300,7 +331,7 @@ class SessionController
    * @return object
    * @throws \Exception
    */
-  protected function doGetProjectAction() {
+  protected function doGetProjectAction($context) {
     // Get the Current Project ID
     $id = SessionManager::getProject();
 
@@ -323,12 +354,12 @@ class SessionController
    * @return object
    * @throws \Exception
    */
-  protected function doSetProjectAction($parameters) {
+  protected function doSetProjectAction($context) {
     // Parameter Validation
-    assert('isset($parameters) && is_array($parameters)');
-    $id = ArrayUtilities::extract($parameters, 'id');
+    assert('isset($context) && is_object($context)');
 
     // Get the Project
+    $id = $context->getParameter('id');
     $project = $this->getDoctrine()->getRepository('TestCenterModelBundle:Project')->find($id);
     if (isset($project)) {
       // Get the Organization Associated with the Project
@@ -349,11 +380,11 @@ class SessionController
    * @param type $parameters
    * @return type
    */
-  protected function doGetAction($parameters) {
+  protected function doGetAction($context) {
     // Parameter Validation
-    assert('isset($parameters) && is_array($parameters)');
-    $variable = ArrayUtilities::extract($parameters, 'variable');
+    assert('isset($context) && is_object($context)');
 
+    $variable = $context->getParameter('variable');
     return SessionManager::getVariable("user_$variable");
   }
 
@@ -362,12 +393,12 @@ class SessionController
    * @param type $parameters
    * @return type
    */
-  protected function doSetAction($parameters) {
+  protected function doSetAction($context) {
     // Parameter Validation
-    assert('isset($parameters) && is_array($parameters)');
+    assert('isset($context) && is_object($context)');
 
-    $variable = ArrayUtilities::extract($parameters, 'variable');
-    $value = ArrayUtilities::extract($parameters, 'value');
+    $variable = $context->getParameter('variable');
+    $value = $context->getParameter('value');
 
     return SessionManager::setVariable("user_$variable", $value);
   }
@@ -377,12 +408,11 @@ class SessionController
    * @param type $parameters
    * @return type
    */
-  protected function doClearAction($parameters) {
+  protected function doClearAction($context) {
     // Parameter Validation
-    assert('isset($parameters) && is_array($parameters)');
+    assert('isset($context) && is_object($context)');
 
-    $variable = ArrayUtilities::extract($parameters, 'variable');
-
+    $variable = $context->getParameter('variable');
     return SessionManager::clearVariable("user_$variable");
   }
 
@@ -391,12 +421,11 @@ class SessionController
    * @param type $parameters
    * @return type
    */
-  protected function doIssetAction($parameters) {
+  protected function doIssetAction($context) {
     // Parameter Validation
-    assert('isset($parameters) && is_array($parameters)');
+    assert('isset($context) && is_object($context)');
 
-    $variable = ArrayUtilities::extract($parameters, 'variable');
-
+    $variable = $context->getParameter('variable');
     return SessionManager::issetVaraible("user_$variable");
   }
 
@@ -404,14 +433,16 @@ class SessionController
    * @param $action
    * @param $parameters
    */
-  protected function sessionChecks($action, $parameters) {
+  protected function sessionChecks($context) {
     // Parameter Validation
-    assert('isset($action) && is_string($action)');
-    assert('isset($parameters) && is_array($parameters)');
+    assert('isset($context) && is_object($context)');
 
     // Need a Session for all the Session Commands
     $this->checkInSession();
 
+    // Get the Action Name
+    $action = $context->getAction();
+    assert('isset($action)');
     switch ($action) {
       case 'Whoami':
       case 'SetOrganization':
@@ -429,7 +460,8 @@ class SessionController
         break;
     }
 
-    return $parameters;
+    // Nothing Changed
+    return null;
   }
 
   /**
@@ -437,18 +469,22 @@ class SessionController
    * @param $results
    * @param $format
    */
-  protected function preRender($action, $results, $format) {
+  protected function preRender($context) {
     // Parameter Validation
-    assert('isset($action) && is_string($action)');
-    assert('isset($format) && is_string($format)');
+    assert('isset($context) && is_object($context)');
 
-    $return = $results;
+    // Get Results
+    $results = $context->getActionResult();
+
+    // Get the Action Name
+    $action = $context->getAction();
+    assert('isset($action)');
     switch ($action) {
       case 'Sudo':
       case 'Whoami':
       case 'Login':
         assert('isset($results)');
-        $return = $results->toArray();        
+        $return = $results->toArray();
         break;
       case 'GetOrganization':
       case 'SetOrganization':
@@ -456,6 +492,8 @@ class SessionController
       case 'SetProject':
         $return = isset($results) ? $results->toArray() : null;
         break;
+      default:
+        $return = $results;
     }
 
     return $return;

@@ -20,19 +20,19 @@
 
 # Create (Within a Current Session Organization)
 org_projects_create_session:
-    pattern:  /create/{name}/{fv_settings}
-    defaults: { _controller: TestCenterServiceBundle:Projects:create, fv_settings: null }
+    pattern:  /create/{name}
+    defaults: { _controller: TestCenterServiceBundle:Projects:create }
 
 # List Projects in the Organization  (if org_id = null, the current session organization id is used)
 org_projects_list:
-    pattern:  /list/{org_id}
-    defaults: { _controller: TestCenterServiceBundle:Projects:list, org_id: null }
+    pattern:  /list/{org_id}/{filter}/{sort}/{limit}
+    defaults: { _controller: TestCenterServiceBundle:Projects:listPerOrg, org_id: null, filter: null, sort: null, limit: null }
     requirements:
        id:  \d+
 
 # Count Projects in the  Organization (if org_id = null, the current session organization id is used)
 orgs_projects_count:
-    pattern:  /count/{org_id}
-    defaults: { _controller: TestCenterServiceBundle:Projects:count, org_id: null  }
+    pattern:  /count/{org_id}/{filter}
+    defaults: { _controller: TestCenterServiceBundle:Projects:listPerCount, org_id: null, filter: null }
     requirements:
        id:  \d+

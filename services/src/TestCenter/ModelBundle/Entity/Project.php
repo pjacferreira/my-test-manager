@@ -1,4 +1,5 @@
 <?php
+
 /* Test Center - Compliance Testing Application
  * Copyright (C) 2012 Paulo Ferreira <pf at sourcenotes.org>
  *
@@ -15,6 +16,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 namespace TestCenter\ModelBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
@@ -39,12 +41,11 @@ class Project {
   private $id;
 
   /**
-   * @var integer $organization
+   * @var string $name
    *
-   * @ORM\ManyToOne(targetEntity="Organization", inversedBy="projects")
-   * @ORM\JoinColumn(name="id_organization", referencedColumnName="id")
-   * */
-  private $organization;
+   * @ORM\Column(name="name", type="string", length=40)
+   */
+  private $name;
 
   /**
    * @var text $description
@@ -54,19 +55,20 @@ class Project {
   private $description;
 
   /**
+   * @var integer $organization
+   *
+   * @ORM\ManyToOne(targetEntity="Organization", inversedBy="projects")
+   * @ORM\JoinColumn(name="id_organization", referencedColumnName="id")
+   * */
+  private $organization;
+
+  /**
    * @var integer $container
    *
    * @ORM\OneToOne(targetEntity="Container")
    * @ORM\JoinColumn(name="id_root", referencedColumnName="id")
    * */
   private $container;
-
-  /**
-   * @var string $name
-   *
-   * @ORM\Column(name="name", type="string", length=40)
-   */
-  private $name;
 
   /**
    * Get id
@@ -154,13 +156,17 @@ class Project {
    */
   public function toArray() {
     $array = array(
-      'id' => $this->id,
-      'name' => $this->name,
-      'organization' => $this->organization->getID());
+      '__entity' => $this->entityName(),
+    );
 
-    if (isset($this->description)) { // If Description Set - Add it
-      $array['description'] = $this->description;
-    }
+    $array = $this->addPropertyIfNotNull($array, 'id');
+    $array = $this->addPropertyIfNotNull($array, 'name');
+    $array = $this->addPropertyIfNotNull($array, 'description');
+    $array =
+      $this->addProperty(
+      $this->addProperty($array, 'organization', $this->organization->getID()),
+                         'container', $this->container->getID());
+
     return $array;
   }
 
@@ -170,4 +176,39 @@ class Project {
   public function __toString() {
     return strval($this->id);
   }
+
+  /**
+   * 
+   * @param type $array
+   * @param type $prop_name
+   * @return type
+   */
+  protected function addProperty($array, $name, $value) {
+    // Get the Entity Name
+    $entity = strtolower($this->entityName());
+    $array["{$entity}:{$name}"] = $value;
+    return $array;
+  }
+
+  /**
+   * 
+   * @param type $array
+   * @param type $prop_name
+   * @return type
+   */
+  protected function addPropertyIfNotNull($array, $prop_name) {
+    // Get the Entity Name
+    return isset($this->$prop_name) ? $this->addProperty($array, $prop_name,
+                                                         $this->$prop_name) : $array;
+  }
+
+  /**
+   * 
+   * @return type
+   */
+  protected function entityName() {
+    $i = strlen(__NAMESPACE__);
+    return substr(__CLASS__, $i + 1);
+  }
+
 }

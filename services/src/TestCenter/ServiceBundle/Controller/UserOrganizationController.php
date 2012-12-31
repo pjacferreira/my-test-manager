@@ -1,4 +1,5 @@
 <?php
+
 /* Test Center - Compliance Testing Application
  * Copyright (C) 2012 Paulo Ferreira <pf at sourcenotes.org>
  *
@@ -15,13 +16,15 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 namespace TestCenter\ServiceBundle\Controller;
 
 use Library\StringUtilities;
 use Library\ArrayUtilities;
-use TestCenter\ServiceBundle\API\BaseServiceController;
+use TestCenter\ServiceBundle\API\ActionContext;
 use TestCenter\ServiceBundle\API\EntityWrapper;
 use TestCenter\ServiceBundle\API\SessionManager;
+use TestCenter\ServiceBundle\API\BaseServiceController;
 
 /**
  * Description of UserOrganizationController
@@ -31,6 +34,14 @@ use TestCenter\ServiceBundle\API\SessionManager;
 class UserOrganizationController
   extends BaseServiceController {
 
+  /* TODO Integrate this as a CRUD Service, by converting all these action
+   * to a more standard CRUD actions
+   * i.e.
+   * link == create
+   * get == read
+   * set == update
+   * unlink == delete
+   */ 
   // Entity Managed
   protected $m_oEntity;
 
@@ -69,8 +80,14 @@ class UserOrganizationController
    * @throws \Exception
    */
   public function userLinkAction($user_id, $permissions = null) {
-    $permissions = StringUtilities::nullOnEmpty($permissions);
-    return $this->doAction('link', array('user_id' => (integer)$user_id, 'permissions' => isset($permissions) ? $permissions : ''));
+    // Create Action Context
+    $context = new ActionContext('link');
+
+    $context = $context
+      ->setParameter('user_id', (integer) $user_id)
+      ->setIfNotNull('permissions', StringUtilities::nullOnEmpty($permissions));
+
+    return $this->doAction($context);
   }
 
   /**
@@ -80,8 +97,15 @@ class UserOrganizationController
    * @return null
    */
   public function linkAction($user_id, $org_id, $permissions = null) {
-    $permissions = StringUtilities::nullOnEmpty($permissions);
-    return $this->doAction('link', array('user_id' => (integer)$user_id, 'org_id' => (integer)$org_id, 'permissions' => isset($permissions) ? $permissions : ''));
+    // Create Action Context
+    $context = new ActionContext('link');
+
+    $context = $context
+      ->setParameter('user_id', (integer) $user_id)
+      ->setParameter('org_id', (integer) $org_id)
+      ->setIfNotNull('permissions', StringUtilities::nullOnEmpty($permissions));
+
+    return $this->doAction($context);
   }
 
   /**
@@ -90,7 +114,11 @@ class UserOrganizationController
    * @throws \Exception
    */
   public function userUnlinkAction($user_id) {
-    return $this->doAction('unlink', array('user_id' => (integer)$user_id));
+    // Create Action Context
+    $context = new ActionContext('unlink');
+
+    return $this->doAction($context
+          ->setParameter('user_id', (integer) $user_id));
   }
 
   /**
@@ -99,7 +127,12 @@ class UserOrganizationController
    * @return null
    */
   public function unlinkAction($user_id, $org_id) {
-    return $this->doAction('unlink', array('user_id' => (integer)$user_id, 'org_id' => (integer)$org_id));
+    // Create Action Context
+    $context = new ActionContext('unlink');
+
+    return $this->doAction($context
+          ->setParameter('user_id', (integer) $user_id)
+          ->setParameter('org_id', (integer) $org_id));
   }
 
   /**
@@ -107,7 +140,10 @@ class UserOrganizationController
    * @throws \Exception
    */
   public function userListAction() {
-    return $this->doAction('list_users');
+    // Create Action Context
+    $context = new ActionContext('list_users');
+
+    return $this->doAction($context);
   }
 
   /**
@@ -115,23 +151,58 @@ class UserOrganizationController
    * @throws \Exception
    */
   public function userCountAction() {
-    return $this->doAction('count_users');
+    // Create Action Context
+    $context = new ActionContext('count_users');
+
+    return $this->doAction($context);
   }
 
   /**
    * @param $user_id
    * @return null
    */
-  public function orgListAction($user_id) {
-    return $this->doAction('list_orgs', array('user_id' => (integer)$user_id));
+  public function listPerUserAction($user_id) {
+    // Create Action Context
+    $context = new ActionContext('list_per_user');
+
+    return $this->doAction($context
+          ->setParameter('user_id', (integer) $user_id));
   }
 
   /**
    * @param $user_id
    * @return null
    */
-  public function orgCountAction($user_id) {
-    return $this->doAction('count_orgs', array('user_id' => (integer)$user_id));
+  public function countPerUserAction($user_id) {
+    // Create Action Context
+    $context = new ActionContext('count_per_user');
+
+    return $this->doAction($context
+          ->setParameter('user_id', (integer) $user_id));
+  }
+
+  /**
+   * @param $org_id
+   * @return null
+   */
+  public function listPerOrgAction($org_id) {
+    // Create Action Context
+    $context = new ActionContext('list_per_org');
+
+    return $this->doAction($context
+          ->setParameter('org_id', (integer) $org_id));
+  }
+
+  /**
+   * @param $org_id
+   * @return null
+   */
+  public function countPerOrgAction($org_id) {
+    // Create Action Context
+    $context = new ActionContext('count_per_org');
+
+    return $this->doAction($context
+          ->setParameter('org_id', (integer) $org_id));
   }
 
   /**
@@ -140,7 +211,11 @@ class UserOrganizationController
    * @throws \Exception
    */
   public function userGetAction($user_id) {
-    return $this->doAction('get', array('user_id' => (integer)$user_id));
+    // Create Action Context
+    $context = new ActionContext('get');
+
+    return $this->doAction($context
+          ->setParameter('user_id', (integer) $user_id));
   }
 
   /**
@@ -149,7 +224,12 @@ class UserOrganizationController
    * @return null
    */
   public function getAction($user_id, $org_id) {
-    return $this->doAction('get', array('user_id' => (integer)$user_id, 'org_id' => (integer)$org_id));
+    // Create Action Context
+    $context = new ActionContext('get');
+
+    return $this->doAction($context
+          ->setParameter('user_id', (integer) $user_id)
+          ->setParameter('org_id', (integer) $org_id));
   }
 
   /**
@@ -159,8 +239,13 @@ class UserOrganizationController
    * @throws \Exception
    */
   public function userSetAction($user_id, $permissions) {
-    $permissions = StringUtilities::nullOnEmpty($permissions);
-    return $this->doAction('set', array('user_id' => (integer)$user_id, 'permissions' => isset($permissions) ? $permissions : ''));
+    // Create Action Context
+    $context = new ActionContext('set');
+
+    return $this->doAction($context
+          ->setParameter('user_id', (integer) $user_id)
+          ->setIfNotNull('permissions',
+                         StringUtilities::nullOnEmpty($permissions)));
   }
 
   /**
@@ -170,112 +255,112 @@ class UserOrganizationController
    * @return null
    */
   public function setAction($user_id, $org_id, $permissions) {
-    $permissions = StringUtilities::nullOnEmpty($permissions);
-    return $this->doAction('set', array('user_id' => (integer)$user_id, 'org_id' => (integer)$org_id, 'permissions' => isset($permissions) ? $permissions : ''));
+    // Create Action Context
+    $context = new ActionContext('set');
+
+    return $this->doAction($context
+          ->setParameter('user_id', (integer) $user_id)
+          ->setParameter('org_id', (integer) $org_id)
+          ->setIfNotNull('permissions',
+                         StringUtilities::nullOnEmpty($permissions)));
   }
 
   /**
    * @param $parameters
    * @return mixed
    */
-  protected function doLinkAction($parameters) {
-    $user = ArrayUtilities::extract($parameters, 'user');
-    $org = ArrayUtilities::extract($parameters, 'org');
-    $permissions = ArrayUtilities::extract($parameters, 'permissions', '');
+  protected function doLinkAction($context) {
     $repository = $this->getRepository();
-    return $repository->addLink($user, $org, $permissions);
+    return $repository->addLink(
+        $context->getParameter('user'), $context->getParameter('org'),
+                                                               $context->getParameter('permissions',
+                                                                                      '')
+    );
   }
 
   /**
    * @param $parameters
    * @return mixed
    */
-  protected function doUnlinkAction($parameters) {
-    $user = ArrayUtilities::extract($parameters, 'user');
-    $org = ArrayUtilities::extract($parameters, 'org');
+  protected function doUnlinkAction($context) {
     $repository = $this->getRepository();
-    return $repository->removeLink($user, $org);
+    return $repository->removeLink(
+        $context->getParameter('user'), $context->getParameter('org')
+    );
   }
 
   /**
    * @param $parameters
    * @return mixed
    */
-  protected function doListUsersAction($parameters) {
-    $org = ArrayUtilities::extract($parameters, 'org');
+  protected function doListPerOrgAction($context) {
     $repository = $this->getRepository();
-    return $repository->listUsers($org);
+    return $repository->listUsers($context->getParameter('org'));
   }
 
   /**
    * @param $parameters
    * @return mixed
    */
-  protected function doCountUsersAction($parameters) {
-    $org = ArrayUtilities::extract($parameters, 'org');
+  protected function doCountPerOrgAction($context) {
     $repository = $this->getRepository();
-    return $repository->countUsers($org);
+    return $repository->countUsers($context->getParameter('org'));
   }
 
   /**
    * @param $parameters
    * @return mixed
    */
-  protected function doListOrgsAction($parameters) {
-    $user = ArrayUtilities::extract($parameters, 'user');
+  protected function doListPerUserAction($context) {
     $repository = $this->getRepository();
-    return $repository->listOrganizations($user);
+    return $repository->listOrganizations($context->getParameter('user'));
   }
 
   /**
    * @param $parameters
    * @return mixed
    */
-  protected function doCountOrgsAction($parameters) {
-    $user = ArrayUtilities::extract($parameters, 'user');
+  protected function doCountPerUserAction($context) {
     $repository = $this->getRepository();
-    return $repository->countOrganizations($user);
+    return $repository->countOrganizations($context->getParameter('user'));
   }
 
   /**
    * @param $parameters
    * @return mixed
    */
-  protected function doGetAction($parameters) {
-    $user = ArrayUtilities::extract($parameters, 'user');
-    $org = ArrayUtilities::extract($parameters, 'org');
-    return $this->getRepository()->findLink($user, $org);
+  protected function doGetAction($context) {
+    return $this->getRepository()->findLink($context->getParameter('user'),
+                                                                   $context->getParameter('org'));
   }
 
   /**
    * @param $parameters
    * @return mixed
    */
-  protected function doSetAction($parameters) {
+  protected function doSetAction($context) {
     // Add Link will Just Update the Link if it already exists
-    return $this->doLinkAction($parameters);
+    return $this->doLinkAction($context);
   }
 
   /**
    * @param $action
    * @param $parameters
    */
-  protected function sessionChecks($action, $parameters) {
+  protected function sessionChecks($context) {
     // Parameter Validation
-    assert('isset($action) && is_string($action)');
-    assert('isset($parameters) && is_array($parameters)');
+    assert('isset($context) && is_object($context)');
 
     // Need a Session for all the Session Commands
     $this->checkInSession();
     $this->checkLoggedIn();
 
     // Extract User ID
-    $parameters = $this->processChecks($action,
+    $parameters = $this->processChecks($context,
                                        array('Link', 'Unlink', 'Get', 'Set', 'ListUsers', 'CountUsers', 'ListOrgs', 'CountOrgs'),
-                                       $parameters,
-      function($controller, $action, $parameters) {
+                                       function($controller, $context) {
         // Get the Identified for the User
-        $id = ArrayUtilities::extract($parameters, 'user_id');
+        $id = $context->getParameter('user_id');
         if (!isset($id)) {
           $id = SessionManager::getUser();
           if (!isset($id)) {
@@ -289,8 +374,7 @@ class UserOrganizationController
           throw new \Exception("User not found[$id]", 1);
         }
 
-        $parameters['user'] = $user;
-        return $parameters;
+        return $context->setParameter('user', $user);
       });
 
 
@@ -298,9 +382,9 @@ class UserOrganizationController
     $parameters = $this->processChecks($action,
                                        array('Link', 'Unlink', 'Get', 'Set', 'ListUsers', 'CountUsers'),
                                        $parameters,
-      function($controller, $action, $parameters) {
+                                       function($controller, $action, $parameters) {
         // Get the Identifier for the User
-        $id = ArrayUtilities::extract($parameters, 'org_id');
+        $id = $context->getParameter('org_id');
         if (!isset($id)) {
           $id = SessionManager::getOrganization();
           if (!isset($id)) {
@@ -314,16 +398,16 @@ class UserOrganizationController
           throw new \Exception("Organization not found[$id]", 1);
         }
 
-        if ($action !== 'Link') {
+        if ($context->getAction() !== 'Link') {
           // Check if user has access to Organization
-          $controller->checkOrganizationAccess($parameters['user'], $org);
+          $controller->checkOrganizationAccess($context->getParameter('user'),
+                                                                      $org);
         }
 
         // Save the Organization for the Action
-        $parameters['entity'] = $org;
-        $parameters['org'] = $org;
-
-        return $parameters;
+        return $context
+            ->setParameter('entity', $org)
+            ->setParameter('org', $org);
       });
 
     return $parameters;
@@ -334,13 +418,15 @@ class UserOrganizationController
    * @param $results
    * @param $format
    */
-  protected function preRender($action, $results, $format) {
+  protected function preRender($context) {
     // Parameter Validation
-    assert('isset($action) && is_string($action)');
-    assert('isset($format) && is_string($format)');
+    assert('isset($context) && is_object($context)');
 
-    $return = $results;
-    switch ($action) {
+    // Get Results
+    $results = $context->getActionResult();
+
+    // Get the Action Name
+    switch ($context->getAction()) {
       case 'Set':
         assert('isset($results)');
         $return = $results->toArray();
@@ -351,7 +437,7 @@ class UserOrganizationController
       case 'Set':
         $return = isset($results) ? $results->toArray() : null;
         break;
-      case 'ListUsers':
+      case 'ListPerOrg':
         $return = array();
         foreach ($results as $uo) {
           $user = $uo->getUser();
@@ -360,7 +446,7 @@ class UserOrganizationController
           unset($return[$id]['id']);
         }
         break;
-      case 'ListOrgs':
+      case 'ListPerUser':
         $return = array();
         foreach ($results as $uo) {
           $org = $uo->getOrganization();
@@ -369,6 +455,8 @@ class UserOrganizationController
           unset($return[$id]['id']);
         }
         break;
+      default:
+        $return = $results;
     }
 
     return $return;
@@ -383,7 +471,6 @@ class UserOrganizationController
    */
   public function checkOrganizationAccess($user, $organization, $required = null) {
     // TODO Implement Actual Permissions Check (not just link exists)
-
     // Get Link Between User and Project
     $repository = $this->getRepository();
     $link = $repository->findLink($user, $organization);
@@ -393,4 +480,5 @@ class UserOrganizationController
 
     return true;
   }
+
 }

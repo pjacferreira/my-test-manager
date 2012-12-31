@@ -19,13 +19,11 @@
 
 namespace TestCenter\ServiceBundle\Controller;
 
+use Symfony\Component\HttpFoundation\Request;
 use Library\StringUtilities;
-use Library\ArrayUtilities;
-use TestCenter\ServiceBundle\API\CrudServiceController;
-use TestCenter\ModelBundle\Entity\Organization;
-use TestCenter\ModelBundle\Entity\Container;
-use TestCenter\ModelBundle\Entity\TCType;
+use TestCenter\ServiceBundle\API\ActionContext;
 use TestCenter\ServiceBundle\API\SessionManager;
+use TestCenter\ServiceBundle\API\CrudServiceController;
 
 /**
  * Description of OrganizationsController
@@ -43,76 +41,129 @@ class OrganizationsController
   }
 
   /**
-   * @param $name
-   * @param $password
-   * @param null $fv_settings
-   * @return null
+   * 
+   * @param type $name
+   * @return type
    */
-  public function createAction($name, $fv_settings = null) {
-    // Expand Options to Array
-    $array = $this->optionsToArray($fv_settings);
-
-    // Add Name
-    $array['name'] = StringUtilities::nullOnEmpty($name);
+  public function createAction($name) {
+    // Create Action Context
+    $context = new ActionContext('create');
+    // Extract Clean (Security) URL Parameters (Overwriting with route parameters where necessary)
+    $context = $context
+      ->setParameters($this->serviceParameters())
+      ->setIfNotNull('name', StringUtilities::nullOnEmpty($name));
 
     // Call the Function
-    return $this->doAction('create', $array);
+    return $this->doAction($context);
   }
 
   /**
+   * 
    * @param $id
    * @return null
    */
   public function readAction($id) {
-    return $this->doAction('read', array('id' => (integer) $id));
+    // Create Action Context
+    $context = new ActionContext('read');
+    // Extract Clean (Security) URL Parameters (Overwriting with route parameters where necessary)
+    $context = $context
+      ->setParameters($this->serviceParameters())
+      ->setParameter('id', (integer) $id);
+
+    return $this->doAction($context);
   }
 
   /**
+   * 
    * @param $name
    * @return null
    */
   public function readByNameAction($name) {
-    return $this->doAction('read',
-                           array('name' => StringUtilities::nullOnEmpty($name)));
+    // Create Action Context
+    $context = new ActionContext('read');
+    // Extract Clean (Security) URL Parameters (Overwriting with route parameters where necessary)
+    $context = $context
+      ->setParameters($this->serviceParameters())
+      ->setIfNotNull('name', StringUtilities::nullOnEmpty($name));
+
+    return $this->doAction($context);
   }
 
   /**
-   * @param $id
-   * @param $fields
-   * @param $values
-   * @return null
+   * 
+   * @param type $id
+   * @return type
    */
-  public function updateAction($id, $fv_settings) {
-    // Expand Options to Array
-    $array = $this->optionsToArray($fv_settings);
-    $array['id'] = (integer) $id;
+  public function updateAction($id) {
+    // Create Action Context
+    $context = new ActionContext('update');
+    // Extract Clean (Security) URL Parameters (Overwriting with route parameters where necessary)
+    $context = $context
+      ->setParameters($this->serviceParameters())
+      ->setParameter('id', (integer) $id);
 
-    return $this->doAction('update', $array);
+    return $this->doAction($context);
   }
 
   /**
+   * 
    * @param $id
    * @return null
    */
   public function deleteAction($id) {
-    return $this->doAction('delete', array('id' => (integer) $id));
+    // Create Action Context
+    $context = new ActionContext('delete');
+    // Call Action
+    return $this->doAction($context->setParameter('id', (integer) $id));
   }
 
   /**
-   * @return null
+   * 
+   * @param \TestCenter\ServiceBundle\Controller\Request $request
+   * @param type $filter
+   * @param type $sort
+   * @param type $limit
+   * @return type
    */
-  public function listAction() {
-    return $this->doAction('list', null);
+  public function listAction(Request $request, $filter = null, $sort = null,
+                             $limit = null) {
+    // Create Action Context
+    $context = new ActionContext('list');
+    // Build Parameters
+    $context = $context
+      ->setFirstNotNullOf('__filter', StringUtilities::nullOnEmpty($filter),
+                                                                   $request->get('filter'))
+      ->setFirstNotNullOf('__sort', StringUtilities::nullOnEmpty($sort),
+                                                                 $request->get('sort'))
+      ->setFirstNotNullOf('__limit', StringUtilities::nullOnEmpty($limit),
+                                                                  $request->get('limit'));
+
+    return $this->doAction($context);
   }
 
   /**
-   * @return null
+   * 
+   * @param \TestCenter\ServiceBundle\Controller\Request $request
+   * @param type $filter
+   * @return type
    */
-  public function countAction() {
-    return $this->doAction('count', null);
+  public function countAction(Request $request, $filter = null) {
+    // Create Action Context
+    $context = new ActionContext('count');
+    // Build Parameters
+    $context = $context->setFirstNotNullOf('__filter',
+                                           StringUtilities::nullOnEmpty($filter),
+                                                                        $request->get('filter'));
+
+    return $this->doAction($context);
   }
 
-  protected function doDeleteAction($parameters) {
+  /**
+   * 
+   * @param type $context
+   * @return type
+   */
+  protected function doDeleteAction($context) {
     /* Implementation Notes:
      * Deleting the Organization, requires that we delete all references to the organization, before we can continue
      * Therefor, there are 2 options available:
@@ -129,12 +180,12 @@ class OrganizationsController
 
     // Unlink ALL Users from the Organization
     $repository = $this->getRepository('TestCenter\ModelBundle\Entity\UserOrganization');
-    $repository->removeOrganization($parameters['organization']);
+    $repository->removeOrganization($context->getParameter('organization'));
 
     // What we have to do
     // Delete Projects Associated with the Project
     // Delete User Organization Links
-    return parent::doDeleteAction($parameters);
+    return parent::doDeleteAction($context);
   }
 
   /**
@@ -142,13 +193,15 @@ class OrganizationsController
    * @return array
    * @throws \Exception
    */
-  protected function sessionChecksCreate($parameters) {
-    // Basic Session Checks
-    $parameters = $this->sessionChecks('Create', $parameters);
+  protected function sessionChecksCreate($context) {
+    // Parameter Validation
+    assert('isset($context) && is_object($context)');
 
-    // TODO Create Transaction, so in case of failure, we can rollback the system.
+    // Basic Session Checks
+    $context = $this->sessionChecks($context);
+
     // Verify Parameters
-    $name = ArrayUtilities::extract($parameters, 'name');
+    $name = $context->getParameter('name');
     if (!isset($name)) {
       throw new \Exception('Missing Required Action Parameter [name].', 1);
     }
@@ -159,17 +212,16 @@ class OrganizationsController
       throw new \Exception("Organization [$name] already exists.", 2);
     }
 
-    return $parameters;
+    return $context;
   }
 
   /**
    * @param $action
    * @param $parameters
    */
-  protected function sessionChecks($action, $parameters) {
+  protected function sessionChecks($context) {
     // Parameter Validation
-    assert('isset($action) && is_string($action)');
-    assert('isset($parameters) && is_array($parameters)');
+    assert('isset($context) && is_object($context)');
 
     // Need a Session for all the Session Commands
     $this->checkInSession();
@@ -184,14 +236,13 @@ class OrganizationsController
       throw new \Exception("User not found[$id]", 1);
     }
 
-    $parameters['user'] = $user;
+    $context->setParameter('user', $user);
 
     // Process Organization ID
-    $parameters = $this->processChecks($action, array('Update', 'Delete'),
-                                       $parameters,
-                                       function($controller, $action, $parameters) {
+    $context = $this->processChecks($context, array('Update', 'Delete'),
+                                    function($controller, $context) {
         // Get the Identifier for the User
-        $id = ArrayUtilities::extract($parameters, 'id');
+        $id = $context->getParameter('id');
         if (!isset($id)) {
           throw new \Exception('Missing Required Action Parameter [id].', 1);
         }
@@ -203,15 +254,18 @@ class OrganizationsController
         }
 
         // Save the Organization for the Action
-        $parameters['entity'] = $org;
-        $parameters['organization'] = $org;
+        $context->setParameter('entity', $org);
+        $context->setParameter('organization', $org);
         return $parameters;
       });
 
+    $action = $context->getAction();
+    assert('isset($action)');
+      
     if ($action === 'Delete') {
       // Check that we have no projects linked to the organization before we delete it
       $repository = $this->getRepository();
-      $organization = $parameters['organization'];
+      $organization = $context->getParameter('organization');
       $count = $repository->countProjects($organization);
       if ($count != 0) {
         throw new \Exception("Organization [{$organization->getId()}] has [$count] Projects associated. Delete all Projects, before deleting Organization.", 1);
@@ -220,7 +274,7 @@ class OrganizationsController
       // TODO Remove Organization Container
     }
 
-    return $parameters;
+    return $context;
   }
 
   /**
@@ -228,7 +282,13 @@ class OrganizationsController
    * @param $organization
    * @return mixed
    */
-  protected function postActionCreate($parameters, $organization) {
+  protected function postActionCreate($context) {
+    // Parameter Validation
+    assert('isset($context) && is_object($context)');
+
+    $organization = $context->getParameter('organization');
+    assert('isset($organization)');
+
     // Link the New Organization to the Current User
     $repository = $this->getRepository('TestCenter\ModelBundle\Entity\UserOrganization');
     $repository->addLink($parameters['user'], $organization, '');
@@ -244,7 +304,8 @@ class OrganizationsController
     $this->getEntityManager()->persist($container);
     $this->getEntityManager()->flush();
 
-    return $organization;
+    // No change to the context
+    return null;
   }
 
   /**
@@ -252,12 +313,16 @@ class OrganizationsController
    * @param $results
    * @param $format
    */
-  protected function preRender($action, $results, $format) {
+  protected function preRender($context) {
     // Parameter Validation
-    assert('isset($action) && is_string($action)');
-    assert('isset($format) && is_string($format)');
+    assert('isset($context) && is_object($context)');
 
-    $return = $results;
+    // Get Results
+    $results = $context->getActionResult();
+
+    // Get the Action Name
+    $action = $context->getAction();
+    assert('isset($action)');
     switch ($action) {
       case 'UserAdd':
       case 'UserRemove':
@@ -271,10 +336,8 @@ class OrganizationsController
         break;
       case 'List':
         $return = array();
-        foreach ($results as $organization) {
-          $id = $organization->getId();
-          $return[$id] = $organization->toArray();
-          unset($return[$id]['id']);
+        foreach ($results as $user) {
+          $return[] = $user->toArray();
         }
         break;
       case 'UsersList':
@@ -286,6 +349,8 @@ class OrganizationsController
           unset($return[$id]['id']);
         }
         break;
+      default:
+        $return = $results;
     }
 
     return $return;

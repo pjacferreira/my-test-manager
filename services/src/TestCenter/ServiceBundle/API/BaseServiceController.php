@@ -34,22 +34,23 @@ class BaseServiceController
    * @param $parameters
    * @return null
    */
-  protected function do_initAction($action, $parameters) {
+  protected function do_initAction($context) {
     // Parameter Validation
-    assert('isset($action) && is_string($action)');
-    assert('isset($parameters) && is_array($parameters)');
+    assert('isset($context) && is_object($context)');
+
+    $action = $context->getAction();
+    assert('isset($action)');
 
     /* Function: {action}Start (Default: startAction )
      * Perform zero or more checks, to validate the Required Session State
-     * -- For Default Function
-     * --- (1st) $action - the name of the action (all-lower-case)
-     * --- (2nd) $parameters - parameters array (map)
-     * -- Action Specific Function
-     * --- (1st) $parameters - parameters array (map)
+     * - Parameters
+     * -- (1st) $context - Action Context
      *
      * - Return
-     * -- array (map) - representing the parameters, OR
-     * -- null - in the case of no changes to the parameters
+     * -- nothing
+     *
+     * - Return
+     * -- nothing
      *
      * - Exceptions
      * -- All Checks Generate an Exception in Case of Failure
@@ -58,22 +59,19 @@ class BaseServiceController
      * --- $message - error message
      */
     $defaultMethod = 'startAction';
-    $method = strtolower($action) . 'Start';
+    $method = lcfirst($action) . 'Start';
 
     // Call the Function
-    $this->callMethod($method, $defaultMethod, $action);
+    $this->callMethod($method, $defaultMethod, $context);
 
     /* Function: sessionChecks{Action} (Default: sessionChecks)
      * Perform zero or more checks, to validate the Required Session State
-     * -- For Default Function
-     * --- (1st) $action - the name of the action (all-lower-case)
-     * --- (2nd) $parameters - parameters array (map)
-     * -- Action Specific Function
-     * --- (1st) $parameters - parameters array (map)
+     * - Parameters
+     * -- (1st) $context - Action Context
      *
      * - Return
-     * -- array (map) - representing the parameters, OR
-     * -- null - in the case of no changes to the parameters
+     * -- objext - Modified Action Context, OR
+     * -- null - in the case of no changes to the context
      *
      * - Exceptions
      * -- All Checks Generate an Exception in Case of Failure
@@ -85,8 +83,8 @@ class BaseServiceController
     $method = $defaultMethod . ucfirst($action);
 
     // Call the Function
-    $return = $this->callMethod($method, $defaultMethod, $action, $parameters);
-    $parameters = isset($return) ? $return : $parameters;
+    $return = $this->callMethod($method, $defaultMethod, $context);
+    $context = isset($return) ? $return : $context;
 
     /* Function: {action}PrivilegeChecks (Default: privilegeChecks)
      * Perform zero or more checks, to validate the Privileges/Permissions
@@ -110,9 +108,8 @@ class BaseServiceController
     $method = $defaultMethod . ucfirst($action);
 
     // Call the Function
-    $return = $this->callMethod($method, $defaultMethod, $action, $parameters);
-
-    return parent::do_initAction($action, isset($return) ? $return : $parameters);
+    $return = $this->callMethod($method, $defaultMethod, $context);
+    return parent::do_initAction(isset($return) ? $return : $context);
   }
 
   /**

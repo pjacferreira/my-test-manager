@@ -1,4 +1,5 @@
 <?php
+
 /* Test Center - Compliance Testing Application
  * Copyright (C) 2012 Paulo Ferreira <pf at sourcenotes.org>
  *
@@ -15,6 +16,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 namespace TestCenter\ModelBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
@@ -28,6 +30,7 @@ use Doctrine\ORM\Mapping as ORM;
  * @author Paulo Ferreira
  */
 class Organization {
+
   /**
    * @var integer $id
    *
@@ -65,38 +68,12 @@ class Organization {
    * @ORM\JoinColumn(name="id_docroot", referencedColumnName="id")
    * */
   private $container;
-  
+
   /**
    *
    */
   public function __construct() {
     $this->projects = new \Doctrine\Common\Collections\ArrayCollection();
-  }
-
-  /**
-   * @return array
-   */
-  public function toArray() {
-    $array = array(
-      'id' => $this->id, 
-      'name' => $this->name
-      );
-    
-    if (isset($this->description)) {
-      $array['description'] = $this->description;
-    }
-    
-    if (isset($this->container)) {
-      $array['container'] = $this->container->getId();
-    }
-    return $array;
-  }
-
-  /**
-   * @return string
-   */
-  public function __toString() {
-    return strval($this->id);
   }
 
   /**
@@ -162,23 +139,69 @@ class Organization {
     return $this->projects;
   }
 
-    /**
-     * Set container
-     *
-     * @param TestCenter\ModelBundle\Entity\Container $container
-     */
-    public function setContainer(\TestCenter\ModelBundle\Entity\Container $container)
-    {
-        $this->container = $container;
-    }
+  /**
+   * Set container
+   *
+   * @param TestCenter\ModelBundle\Entity\Container $container
+   */
+  public function setContainer(\TestCenter\ModelBundle\Entity\Container $container) {
+    $this->container = $container;
+  }
 
-    /**
-     * Get container
-     *
-     * @return TestCenter\ModelBundle\Entity\Container 
-     */
-    public function getContainer()
-    {
-        return $this->container;
+  /**
+   * Get container
+   *
+   * @return TestCenter\ModelBundle\Entity\Container 
+   */
+  public function getContainer() {
+    return $this->container;
+  }
+
+  /**
+   * @return array
+   */
+  public function toArray() {
+    $array = array(
+      '__entity' => $this->entityName(),
+    );
+
+    $array = $this->addPropertyIfNotNull($array, 'id');
+    $array = $this->addPropertyIfNotNull($array, 'name');
+    $array = $this->addPropertyIfNotNull($array, 'description');
+    $array['container'] = $this->container->getID();
+    return $array;
+  }
+
+  /**
+   * 
+   * @return type
+   */
+  public function __toString() {
+    return strval($this->id);
+  }
+ 
+  /**
+   * 
+   * @param type $array
+   * @param type $prop_name
+   * @return type
+   */
+  protected function addPropertyIfNotNull($array, $prop_name) {
+    // Get the Entity Name
+    $entity = strtolower($this->entityName());
+
+    if (isset($this->$prop_name)) { // If Propery Set - Add it
+      $array["{$entity}:{$prop_name}"] = $this->$prop_name;
     }
+    return $array;
+  }
+  
+  /**
+   * 
+   * @return type
+   */
+  protected function entityName() {
+    $i = strlen(__NAMESPACE__);
+    return substr(__CLASS__, $i + 1);
+  }  
 }

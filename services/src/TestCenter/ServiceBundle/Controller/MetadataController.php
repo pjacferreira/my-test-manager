@@ -24,6 +24,7 @@ use Symfony\Component\Yaml\Parser;
 use Symfony\Component\Yaml\Exception\ParseException;
 use Library\StringUtilities;
 use Library\ArrayUtilities;
+use TestCenter\ServiceBundle\API\ActionContext;
 use TestCenter\ServiceBundle\API\BaseServiceController;
 
 /**
@@ -109,8 +110,11 @@ class MetadataController
    * @return \Symfony\Component\HttpFoundation\Response
    */
   public function tableAction($id) {
-    return $this->doAction('table_model',
-                           array('id' => StringUtilities::nullOnEmpty($id)));
+    // Create Action Context
+    $context = new ActionContext('table_model');
+    // Set Parameters for Context and Call Action
+    return $this->doAction($context
+          ->setIfNotNull('id', StringUtilities::nullOnEmpty($id)));
   }
 
   /**
@@ -119,10 +123,11 @@ class MetadataController
    * @return \Symfony\Component\HttpFoundation\Response
    */
   public function formAction($id) {
-
-    return $this->doAction('form_model',
-                           array('id' => StringUtilities::nullOnEmpty($id))
-    );
+    // Create Action Context
+    $context = new ActionContext('form_model');
+    // Set Parameters for Context and Call Action
+    return $this->doAction($context
+          ->setIfNotNull('id', StringUtilities::nullOnEmpty($id)));
   }
 
   /**
@@ -131,8 +136,11 @@ class MetadataController
    * @return \Symfony\Component\HttpFoundation\Response
    */
   public function fieldAction($id) {
-    return $this->doAction('field',
-                           array('id' => StringUtilities::nullOnEmpty($id)));
+    // Create Action Context
+    $context = new ActionContext('field');
+    // Set Parameters for Context and Call Action
+    return $this->doAction($context
+          ->setIfNotNull('id', StringUtilities::nullOnEmpty($id)));
   }
 
   /**
@@ -142,14 +150,25 @@ class MetadataController
    * @return \Symfony\Component\HttpFoundation\Response
    */
   public function fieldsAction(Request $request, $list = null) {
+    // Create Action Context
+    $context = new ActionContext('fields');
 
-    // Get Field List
-    $list = StringUtilities::nullOnEmpty($this->oneOf($list,
-                                                      $request->get('list')));
+    // 1st Use the Parameter
+    if (isset($list)) {
+      $list = StringUtilities::nullOnEmpty($list);
+    }
+
+    // 2nd Try the Request Get/Post Parameters
+    if (!isset($list)) {
+      $list = StringUtilities::nullOnEmpty($request->get('list'));
+    }
+
     if (isset($list)) { // If we have a Field List (expand it to an array)
       $list = explode(',', $list);
     }
-    return $this->doAction('fields', array('list' => $list));
+
+    return $this->doAction($context
+          ->setIfNotNull('list', $list));
   }
 
   /**
@@ -158,8 +177,11 @@ class MetadataController
    * @return \Symfony\Component\HttpFoundation\Response
    */
   public function actionAction($id) {
-    return $this->doAction('action_meta',
-                           array('id' => StringUtilities::nullOnEmpty($id)));
+    // Create Action Context
+    $context = new ActionContext('action_meta');
+    // Set Parameters for Context and Call Action
+    return $this->doAction($context
+          ->setIfNotNull('id', StringUtilities::nullOnEmpty($id)));
   }
 
   /**
@@ -169,9 +191,25 @@ class MetadataController
    * @return \Symfony\Component\HttpFoundation\Response
    */
   public function actionsAction(Request $request, $list = null) {
-    return $this->doAction('actions_meta',
-                           array('list' => $this->oneOf($list,
-                                                        $request->get('list'))));
+    // Create Action Context
+    $context = new ActionContext('actions_meta');
+
+    // 1st Use the Parameter
+    if (isset($list)) {
+      $list = StringUtilities::nullOnEmpty($list);
+    }
+
+    // 2nd Try the Request Get/Post Parameters
+    if (!isset($list)) {
+      $list = StringUtilities::nullOnEmpty($request->get('list'));
+    }
+
+    if (isset($list)) { // If we have a Field List (expand it to an array)
+      $list = explode(',', $list);
+    }
+
+    return $this->doAction($context
+          ->setIfNotNull('list', $list));
   }
 
   /**
@@ -180,9 +218,14 @@ class MetadataController
    * @param type $testset
    * @return type
    */
-  protected function doTableModelAction($parameters) {
-    // Get the Form Metadata
-    $id = $parameters['id'];
+  protected function doTableModelAction($context) {
+    // Parameter Validation
+    assert('isset($context) && is_object($context)');
+
+    // Get the Table Model
+    $id = $context->getParameter('id');
+    assert('isset($id)');
+
     $metadata = $this->buildTableMetadata($id);
     if (isset($metadata)) {
       list($table, $variation) = $this->explodeTableID($id);
@@ -197,9 +240,14 @@ class MetadataController
    * @param type $parameters
    * @return null
    */
-  protected function doFormModelAction($parameters) {
-    // Get the Form Metadata
-    $id = $parameters['id'];
+  protected function doFormModelAction($context) {
+    // Parameter Validation
+    assert('isset($context) && is_object($context)');
+
+    // Get the Form Model
+    $id = $context->getParameter('id');
+    assert('isset($id)');
+    
     $metadata = $this->buildFormMetadata($id);
     if (isset($metadata)) {
       list($form, $action) = $this->explodeFormID($id);
@@ -214,8 +262,14 @@ class MetadataController
    * @param type $parameters
    * @return type
    */
-  protected function doFieldAction($parameters) {
+  protected function doFieldAction($context) {
+    // Parameter Validation
+    assert('isset($context) && is_object($context)');
+
     // Get the Fields Metadata
+    $id = $context->getParameter('id');
+    assert('isset($id)');
+
     list($field, $metadata) = $this->getFieldMetadata($parameters['id']);
 
     // Resolve any Inheritance Issues
@@ -237,7 +291,14 @@ class MetadataController
    * @param type $parameters
    * @return type
    */
-  protected function doFieldsAction($parameters) {
+  protected function doFieldsAction($context) {
+    // Parameter Validation
+    assert('isset($context) && is_object($context)');
+
+    // Get the Fields Metadata
+    $list = $context->getParameter('list');
+    assert('isset($list)');
+
     /**
      * How to Build MetaModel for an Entity
      * 1. Entity Manager, build the basic MetaModel fields (length, data directions, etc.)
@@ -247,7 +308,6 @@ class MetadataController
      * 4. (CACHE) The previously built Metadata, so as to not to have to go through this process again, 
      *    unless a change has been made.
      */
-    $list = $parameters['list'];
 
     // 1st Load Only Metadata for Entities
     $fields = array();
@@ -319,7 +379,7 @@ class MetadataController
    * @param type $parameters
    * @return type
    */
-  protected function doActionMetaAction($parameters) {
+  protected function doActionMetaAction($context) {
 
     return array(
       'user:create' => array(
@@ -337,7 +397,7 @@ class MetadataController
    * @param type $parameters
    * @return type
    */
-  protected function doActionsMetaAction($parameters) {
+  protected function doActionsMetaAction($context) {
 
     return array(
       'user:create' => array(
@@ -396,16 +456,15 @@ class MetadataController
    * @param $action
    * @param $parameters
    */
-  protected function sessionChecks($action, $parameters) {
+  protected function sessionChecks($context) {
     // Parameter Validation
-    assert('isset($action) && is_string($action)');
-    assert('isset($parameters) && is_array($parameters)');
+    assert('isset($context) && is_object($context)');
 
     // Need a Session for all the Session Commands
     $this->checkInSession();
     $this->checkLoggedIn();
 
-    return $parameters;
+    return null;
   }
 
   /**
@@ -413,12 +472,11 @@ class MetadataController
    * @param $results
    * @param $format
    */
-  protected function preRender($action, $results, $format) {
+  protected function preRender($context) {
     // Parameter Validation
-    assert('isset($action) && is_string($action)');
-    assert('isset($format) && is_string($format)');
+    assert('isset($context) && is_object($context)');
 
-    return $results;
+    return $context->getActionResult();
   }
 
   /**

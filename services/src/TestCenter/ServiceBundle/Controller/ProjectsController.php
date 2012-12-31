@@ -19,10 +19,11 @@
 
 namespace TestCenter\ServiceBundle\Controller;
 
+use Symfony\Component\HttpFoundation\Request;
 use Library\StringUtilities;
-use Library\ArrayUtilities;
-use TestCenter\ServiceBundle\API\CrudServiceController;
 use TestCenter\ServiceBundle\API\SessionManager;
+use TestCenter\ServiceBundle\API\ActionContext;
+use TestCenter\ServiceBundle\API\CrudServiceController;
 
 /**
  * Description of ProjectsController
@@ -40,40 +41,21 @@ class ProjectsController
   }
 
   /**
-   * Create a Project, within an Organization
-   *
-   * @param $org_id Organization within which we will be creating the Project
-   * @param $name Project Name (Unique within the Organization it belongs to)
-   * @param $fv_settings Optional Project Object Settings
-   * @return Response Object or throw Exception
-   */
-  public function createInOrgAction($org_id, $name, $fv_settings = null) {
-    // Expand Options to Array
-    $array = $this->optionsToArray($fv_settings);
-
-    // Add Organization ID and Name
-    $array['org_id'] = (integer) $org_id;
-    $array['name'] = StringUtilities::nullOnEmpty($name);
-
-    // Call the Function
-    return $this->doAction('create', $array);
-  }
-
-  /**
    * Create a Project, within Current Session Organization
    *
    * @param $name Project Name (Unique within the Organization it belongs to)
-   * @param $fv_settings Optional Project Object Settings
    * @return Response Object or throw Exception
    */
-  public function createAction($name, $fv_settings = null) {
-    // Expand Options to Array
-    $array = $this->optionsToArray($fv_settings);
-
-    $array['name'] = StringUtilities::nullOnEmpty($name);
+  public function createAction($name) {
+    // Create Action Context
+    $context = new ActionContext('create');
+    // Extract Clean (Security) URL Parameters (Overwriting with route parameters where necessary)
+    $context = $context
+      ->setParameters($this->serviceParameters())
+      ->setIfNotNull('name', StringUtilities::nullOnEmpty($name));
 
     // Call the Function
-    return $this->doAction('create', $array);
+    return $this->doAction($context);
   }
 
   /**
@@ -81,21 +63,30 @@ class ProjectsController
    * @return null
    */
   public function readAction($id) {
-    return $this->doAction('read', array('id' => (integer) $id));
+    // Create Action Context
+    $context = new ActionContext('read');
+    // Extract Clean (Security) URL Parameters (Overwriting with route parameters where necessary)
+    $context = $context
+      ->setParameters($this->serviceParameters())
+      ->setParameter('id', (integer) $id);
+
+    return $this->doAction($context);
   }
 
   /**
-   * @param $id
-   * @param $fields
-   * @param $values
-   * @return null
+   * 
+   * @param type $id
+   * @return type
    */
-  public function updateAction($id, $fv_settings) {
-    // Expand Options to Array
-    $array = $this->optionsToArray($fv_settings);
-    $array['id'] = (integer) $id;
+  public function updateAction($id) {
+    // Create Action Context
+    $context = new ActionContext('update');
+    // Extract Clean (Security) URL Parameters (Overwriting with route parameters where necessary)
+    $context = $context
+      ->setParameters($this->serviceParameters())
+      ->setParameter('id', (integer) $id);
 
-    return $this->doAction('update', $array);
+    return $this->doAction($context);
   }
 
   /**
@@ -103,29 +94,101 @@ class ProjectsController
    * @return null
    */
   public function deleteAction($id) {
-    return $this->doAction('delete', array('id' => (integer) $id));
+    // Create Action Context
+    $context = new ActionContext('delete');
+    // Call Action
+    return $this->doAction($context->setParameter('id', (integer) $id));
   }
 
   /**
-   * @param null $org_id
-   * @return null
+   * 
+   * @param \TestCenter\ServiceBundle\Controller\Request $request
+   * @param type $filter
+   * @param type $sort
+   * @param type $limit
+   * @return type
    */
-  public function listAction($org_id = null) {
+  public function listAction(Request $request, $filter = null, $sort = null,
+                             $limit = null) {
+    // Create Action Context
+    $context = new ActionContext('list');
+    // Build Parameters
+    $context = $context
+      ->setFirstNotNullOf('__filter', StringUtilities::nullOnEmpty($filter),
+                                                                   $request->get('filter'))
+      ->setFirstNotNullOf('__sort', StringUtilities::nullOnEmpty($sort),
+                                                                 $request->get('sort'))
+      ->setFirstNotNullOf('__limit', StringUtilities::nullOnEmpty($limit),
+                                                                  $request->get('limit'));
+
+    return $this->doAction($context);
+  }
+
+  /**
+   * 
+   * @param \TestCenter\ServiceBundle\Controller\Request $request
+   * @param type $filter
+   * @return type
+   */
+  public function countAction(Request $request, $filter = null) {
+    // Create Action Context
+    $context = new ActionContext('count');
+    // Build Parameters
+    $context = $context->setFirstNotNullOf('__filter',
+                                           StringUtilities::nullOnEmpty($filter),
+                                                                        $request->get('filter'));
+
+    return $this->doAction($context);
+  }
+
+  /**
+   * 
+   * @param \TestCenter\ServiceBundle\Controller\Request $request
+   * @param type $org_id
+   * @param type $filter
+   * @param type $sort
+   * @param type $limit
+   * @return type
+   */
+  public function listPerOrgAction(Request $request, $org_id = null,
+                                   $filter = null, $sort = null, $limit = null) {
     /* Allowing a NULL org_id is a win-win situation
-     * 1. Allows us to override the CrudService method (which has no parameters)
-     * 2. Allows for the scenario that the service is listing the project for the current session organization
+     * 1. Allows for the scenario that the service is listing the project for the current session organization
      */
-    return $this->doAction('list_per_org',
-                           isset($org_id) ? array('org_id' => (integer) $org_id) : null);
+
+    // Create Action Context
+    $context = new ActionContext('list_per_org');
+    // Build Parameters
+    $context = $context
+      ->setFirstNotNullOf('__filter', StringUtilities::nullOnEmpty($filter),
+                                                                   $request->get('filter'))
+      ->setFirstNotNullOf('__sort', StringUtilities::nullOnEmpty($sort),
+                                                                 $request->get('sort'))
+      ->setFirstNotNullOf('__limit', StringUtilities::nullOnEmpty($limit),
+                                                                  $request->get('limit'))
+      ->setIfNotNull('org_id', isset($org_id) ? (integer) $org_id : null);
+
+    return $this->doAction($context);
   }
 
   /**
-   * @param null $org_id
-   * @return null
+   * 
+   * @param \TestCenter\ServiceBundle\Controller\Request $request
+   * @param type $org_id
+   * @param type $filter
+   * @return type
    */
-  public function countAction($org_id = null) {
-    return $this->doAction('count_per_org',
-                           isset($org_id) ? array('org_id' => (integer) $org_id) : null);
+  public function countPerOrgAction(Request $request, $org_id = null,
+                                    $filter = null) {
+    // Create Action Context
+    $context = new ActionContext('count_per_org');
+    // Build Parameters
+    $context = $context
+      ->setFirstNotNullOf('__filter', StringUtilities::nullOnEmpty($filter),
+                                                                   $request->get('filter'))
+      ->setIfNotNull('org_id', isset($org_id) ? (integer) $org_id : null);
+
+    return $this->doAction($context);
   }
 
   /**
@@ -133,8 +196,12 @@ class ProjectsController
    * @param $project
    * @return mixed
    */
-  protected function postActionCreate($parameters, $project) {
+  protected function postActionCreate($context) {
+    // Parameter Validation
+    assert('isset($context) && is_object($context)');
+
     // Create Root Container for Project
+    $project = $context->getParameter('project');
     $repository = $this->getRepository('TestCenter\ModelBundle\Entity\Container');
     $container = $repository->createContainer("ROOT Project [{$project->getId()}]",
                                               $project);
@@ -144,89 +211,109 @@ class ProjectsController
     // TODO Remove Project Container on Delete
     // Link the New Organization to the Current User
     $repository = $this->getRepository('TestCenter\ModelBundle\Entity\UserProject');
-    $repository->addLink($parameters['user'], $project, '');
+    $repository->addLink($$context->getParameter('user'), $project, '');
 
     // Flush Changes to the Container and the Project Objects
     $this->getEntityManager()->flush();
 
-    return $project;
+    // No change to the context
+    return null;
   }
 
   /**
-   * @param $parameters
-   * @return object
+   * 
+   * @param type $context
+   * @return type
    */
-  protected function doDeleteAction($parameters) {
+  protected function doDeleteAction($context) {
     // Unlink all users from the Project
     $repository = $this->getRepository('TestCenter\ModelBundle\Entity\UserProject');
-    $repository->removeProject($parameters['project']);
+    $repository->removeProject($context->getParameter('project'));
 
-    return parent::doDeleteAction($parameters);
+    return parent::doDeleteAction($context);
   }
 
   /**
    * @param $parameters
    * @return mixed
    */
-  protected function doListPerOrgAction($parameters) {
-    // TODO Create a System by Which the CRUD Controller can also handle the WHERE by way of the parameters
-    $org = ArrayUtilities::extract($parameters, 'organization');
-    $query = $this->getEntityManager()->createQuery("SELECT p" .
-      " FROM " . $this->m_oEntity->getEntity() . " p" .
-      " WHERE p.organization = ?1");
-    $query->setParameter(1, $org);
-    $projects = $query->getResult();
-    return $projects;
+  protected function doListPerOrgAction($context) {
+    // Get the Organization
+    $organization = $context->getParameter('organization');
+
+    // Modify the Filter for the Action
+    $__filter = $context->getParameter('__filter');
+    if (isset($__filter)) {
+      $__filter = "project.organization:={$organization->getId()};{$__filter}";
+    } else {
+      $__filter = "project.organization:={$organization->getId()}";
+    }
+    $context->setParameter('__filter', $__filter);
+
+    return $this->doListAction($context);
   }
 
   /**
    * @param $parameters
    * @return int
    */
-  protected function doCountPerOrgAction($parameters) {
-    $org = ArrayUtilities::extract($parameters, 'organization');
-    $query = $this->getEntityManager()->createQuery("SELECT count(p)" .
-      " FROM " . $this->m_oEntity->getEntity() . " p" .
-      " WHERE p.organization = ?1");
-    $query->setParameter(1, $org);
-    $result = $query->getScalarResult();
-    return (integer) $result[0][1];
+  protected function doCountPerOrgAction($context) {
+    // Get the Organization
+    $organization = $context->getParameter('organization');
+
+    // Modify the Filter for the Action
+    $__filter = $context->getParameter('__filter');
+    if (isset($__filter)) {
+      $__filter = "project.organization:={$organization->getId()};{$__filter}";
+    } else {
+      $__filter = "project.organization:={$organization->getId()}";
+    }
+    $context->setParameter('__filter', $__filter);
+
+    return $this->doCountAction($context);
   }
 
   /**
-   * @param $parameters
-   * @return array
+   * 
+   * @param type $context
+   * @return type
    * @throws \Exception
    */
-  protected function sessionChecksCreate($parameters) {
+  protected function sessionChecksCreate($context) {
+    // Parameter Validation
+    assert('isset($context) && is_object($context)');
+
     // TODO Required Verification that User Has Required Permission against this Organization and/or Project for the Actions
     // Basic Session Checks
-    $parameters = $this->sessionChecks('Create', $parameters);
+    $context = $this->sessionChecks($context);
 
     // Verify Parameters
-    $name = ArrayUtilities::extract($parameters, 'name');
+    $name = $context->getParameter('name');
     if (!isset($name)) {
       throw new \Exception('Missing Required Action Parameter [name].', 1);
     }
 
     // Test if the Project Name already exists
-    $project = $this->getRepository()->findOneBy(array('organization' => $parameters['organization'], 'name' => $name));
+    $project = $this->getRepository()->findOneBy(array(
+      'organization' => $context->getParameter('organization'),
+      'name' => $name
+      ));
     if (isset($project)) {
       throw new \Exception("Project [$name] already exists.", 2);
     }
 
-    return $parameters;
+    return $context;
   }
 
   /**
-   * @param $action
-   * @param $parameters
+   * 
+   * @param type $context
+   * @return type
+   * @throws \Exception
    */
-  protected function sessionChecks($action, $parameters) {
-    // TODO Required Verification that User Has Required Permission against this Organization and/or Project for the Actions
+  protected function sessionChecks($context) {
     // Parameter Validation
-    assert('isset($action) && is_string($action)');
-    assert('isset($parameters) && is_array($parameters)');
+    assert('isset($context) && is_object($context)');
 
     // Need a Session for all the Session Commands
     $this->checkInSession();
@@ -240,16 +327,14 @@ class ProjectsController
     if (!isset($user)) {
       throw new \Exception("User not found[$id]", 1);
     }
-
-    $parameters['user'] = $user;
+    $context->setParameter('user', $user);
 
     // Process Organization ID
-    $parameters = $this->processChecks($action,
-                                       array('Create', 'ListPerOrg', 'CountPerOrg'),
-                                       $parameters,
-                                       function($controller, $action, $parameters) {
+    $context = $this->processChecks($context,
+                                    array('Create', 'ListPerOrg', 'CountPerOrg'),
+                                    function($controller, $context) {
         // Get the Organization  ID (either through parameter or the Current Session Settings)
-        $org_id = ArrayUtilities::extract($parameters, 'org_id');
+        $org_id = $context->getParameter('org_id');
         if (!isset($org_id)) {
           $controller->checkOrganization();
 
@@ -263,22 +348,18 @@ class ProjectsController
         }
 
         // Check if we have access to the Organization
-        $controller->checkOrganizationAccess($parameters['user'], $org);
+        $controller->checkOrganizationAccess($context->getParameter('user'),
+                                                                    $org);
 
-        $parameters['organization'] = $org;
-        // Set a Filter for the Action
-        $parameters['_filter'] = array('organization' => $org);
-
-        return $parameters;
+        return $context->setParameter('organization', $org);
+        ;
       });
 
     // Process Project ID
-    $parameters = $this->processChecks($action,
-                                       array('Read', 'Update', 'Delete'),
-                                       $parameters,
-                                       function($controller, $action, $parameters) {
+    $context = $this->processChecks($context, array('Read', 'Update', 'Delete'),
+                                    function($controller, $context) {
         // Get the Identified for the User
-        $id = ArrayUtilities::extract($parameters, 'id');
+        $id = $context->getParameter('id');
         if (!isset($id)) {
           throw new \Exception('Missing Required Action Parameter [id].', 1);
         }
@@ -289,39 +370,45 @@ class ProjectsController
           throw new \Exception('Project not found', 1);
         }
 
+        $user = $context->getParameter('user');
+        $action = $context->getAction();
         if ($action === 'Delete') {
           // User Only Requires Access to Organization
-          $controller->checkOrganizationAccess($parameters['user'],
+          $controller->checkOrganizationAccess($user,
                                                $project->getOrganization());
         } else {
           // Check if User Has Access to Project (and by consequence to the Organization)
-          $controller->checkProjectAccess($parameters['user'], $project);
+          $controller->checkProjectAccess($user, $project);
         }
 
         // Check if we have access to the Organization
-        $controller->checkProjectAccess($parameters['user'], $project);
+        $controller->checkProjectAccess($user, $project);
 
         // Save the Project for the Action
-        $parameters['entity'] = $project;
-        $parameters['project'] = $project;
+        $context->setParameter('entity', $project);
+        $context->setParameter('project', $project);
 
-        return $parameters;
+        return $context;
       });
 
-    return $parameters;
+    return $context;
   }
 
   /**
-   * @param $action
-   * @param $results
-   * @param $format
+   * 
+   * @param type $context
+   * @return type
    */
-  protected function preRender($action, $results, $format) {
+  protected function preRender($context) {
     // Parameter Validation
-    assert('isset($action) && is_string($action)');
-    assert('isset($format) && is_string($format)');
+    assert('isset($context) && is_object($context)');
 
-    $return = $results;
+    // Get Results
+    $results = $context->getActionResult();
+
+    // Get the Action Name
+    $action = $context->getAction();
+    assert('isset($action)');
     switch ($action) {
       case 'Create':
       case 'Read':
@@ -329,14 +416,15 @@ class ProjectsController
         assert('isset($results)');
         $return = $results->toArray();
         break;
+      case 'List':
       case 'ListPerOrg':
         $return = array();
         foreach ($results as $project) {
-          $id = $project->getId();
-          $return[$id] = $project->toArray();
-          unset($return[$id]['id']);
+          $return[] = $project->toArray();
         }
         break;
+      default:
+        $return = $results;
     }
 
     return $return;

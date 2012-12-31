@@ -20,8 +20,8 @@
 
 # Create
 orgs_create:
-    pattern:  /create/{name}/{fv_settings}
-    defaults: { _controller: TestCenterServiceBundle:Organizations:create, fv_settings: null }
+    pattern:  /create/{name}
+    defaults: { _controller: TestCenterServiceBundle:Organizations:create, name: null }
 
 # Read (By Name or ID)
 orgs_read_id:
@@ -36,7 +36,7 @@ orgs_read_name:
         
 # Update
 orgs_update:
-    pattern:  /update/{id}/{fv_settings}
+    pattern:  /update/{id}
     defaults: { _controller: TestCenterServiceBundle:Organizations:update }
     requirements:
         id:  \d+
@@ -50,14 +50,14 @@ orgs_delete:
 
 # List Organizations (The Results will depend on the user that is logged in, and the the users permissions)
 orgs_list:
-    pattern:  /list/
-    defaults: { _controller: TestCenterServiceBundle:Organizations:list }
+    pattern:  /list/{filter}/{sort}/{limit}
+    defaults: { _controller: TestCenterServiceBundle:Organizations:list, filter: null, sort: null, limit: null  }
 
 # Number of Organizations (The Results will depend on the user that is logged in, and the the users permissions)
 # (i.e. the count, should return the number of orgs, that would be listed)
 orgs_count:
-    pattern:  /count/
-    defaults: { _controller: TestCenterServiceBundle:Organizations:count }
+    pattern:  /count/{filter}
+    defaults: { _controller: TestCenterServiceBundle:Organizations:count, filter: null }
 
 ##
 # Organization User Management

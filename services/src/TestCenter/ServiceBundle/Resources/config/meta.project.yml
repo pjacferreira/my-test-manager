@@ -15,14 +15,23 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ##
-# Map between Metadata Name and ORM Entity
-#
-# Note: 
-# If an entry does not exist, in this file, than no ORM Entity Information will
-# be used to build the metadata, only data contained in a specific file, with
-# a name like (name).meta.yml
+# Project Entity (Properties Metadata)
 ##
 
-user: 'TestCenter\ModelBundle\Entity\User'
-organization: 'TestCenter\ModelBundle\Entity\Organization'
-project: 'TestCenter\ModelBundle\Entity\Project'
+project:
+  id: 
+    label: ID
+    description: Unique Project Identifier
+  name:
+    length: 40,
+    label: Name
+    description: Unique Project Name
+  description:
+    type: html
+    label: Description
+    description: Project Information
+  organization:
+    type: integer
+    label: Organization
+    description: Organization Project Belongs To
+    

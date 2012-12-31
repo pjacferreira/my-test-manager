@@ -1,0 +1,59 @@
+# Test Center - Compliance Testing Application
+# Copyright (C) 2012 Paulo Ferreira <pf at sourcenotes.org>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+##
+# Project Table (Metadata Model)
+##
+project:
+  default:
+    inherit: ':default'
+    title: Project List
+    #
+    # Datastore Information
+    #
+    datastore:
+      # Source : Service Url (Base)
+      source:
+        url: 'project'
+      # Source : Fields List
+      fields:
+        - 'project:id'
+        - 'project:name'
+        - 'project:organization'
+    #
+    # Table Display Properties
+    #    
+    # Columns to Display
+    columns:
+        - 'project:id'
+        - 'project:name'
+        - 'project:organization'
+    # Initially Hidden Columns
+    hidden:
+        - 'project:id'
+    # Is Sortable
+    sortable: true
+    # Columns that can be sorted
+    sort-on:
+      - 'project:id'
+      - 'project:name'
+    # Is Filterable?
+    filterable: true
+    # Columns that can be filtered
+    filter-on:
+      - 'project:id'
+      - 'project:name'
+      - 'project:organization'

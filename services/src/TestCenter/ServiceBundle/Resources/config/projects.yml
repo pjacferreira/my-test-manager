@@ -20,8 +20,8 @@
 
 # Create (Within a Specific Organization)
 project_create:
-    pattern:  /create/{org_id}/{name}/{fv_settings}
-    defaults: { _controller: TestCenterServiceBundle:Projects:createInOrg, fv_settings: null }
+    pattern:  /create/{org_id}/{name}
+    defaults: { _controller: TestCenterServiceBundle:Projects:createInOrg, name: null }
     requirements:
         org_id:  \d+
 
@@ -38,7 +38,7 @@ project_read_name:
 
 # Update
 project_update:
-    pattern:  /update/{id}/{fv_settings}
+    pattern:  /update/{id}
     defaults: { _controller: TestCenterServiceBundle:Projects:update }
     requirements:
         id:  \d+
@@ -49,6 +49,16 @@ project_delete:
     defaults: { _controller: TestCenterServiceBundle:Projects:delete, id: null }
     requirements:
         id:  \d+
+
+# List Projects (Global - All Projects Independently of the Organization They Belong To)
+project_list:
+    pattern:  /list/{filter}/{sort}/{limit}
+    defaults: { _controller: TestCenterServiceBundle:Projects:list, filter: null, sort: null, limit: null  }
+
+# Projects Count (Global - All Projects Independently of the Organization They Belong To)
+project_count:
+    pattern:  /count/{filter}
+    defaults: { _controller: TestCenterServiceBundle:Projects:count, filter: null }
 
 ##
 # Project User Management
