@@ -106,6 +106,23 @@ class OrganizationsController
   }
 
   /**
+   * @param $name
+   * @param $fields
+   * @param $values
+   * @return null
+   */
+  public function updateByNameAction($name) {
+    // Create Action Context
+    $context = new ActionContext('update');
+    // Extract Clean (Security) URL Parameters (Overwriting with route parameters where necessary)
+    $context = $context
+      ->setParameters($this->serviceParameters())
+      ->setIfNotNull('name', StringUtilities::nullOnEmpty($name));
+
+    return $this->doAction($context);
+  }
+
+  /**
    * 
    * @param $id
    * @return null
@@ -115,6 +132,18 @@ class OrganizationsController
     $context = new ActionContext('delete');
     // Call Action
     return $this->doAction($context->setParameter('id', (integer) $id));
+  }
+
+  /**
+   * @param $name
+   * @return null
+   */
+  public function deleteByNameAction($name) {
+    // Create Action Context
+    $context = new ActionContext('delete');
+    // Call Action
+    return $this->doAction($context->setIfNotNull('name',
+                                                  StringUtilities::nullOnEmpty($name)));
   }
 
   /**
@@ -189,33 +218,6 @@ class OrganizationsController
   }
 
   /**
-   * @param $parameters
-   * @return array
-   * @throws \Exception
-   */
-  protected function sessionChecksCreate($context) {
-    // Parameter Validation
-    assert('isset($context) && is_object($context)');
-
-    // Basic Session Checks
-    $context = $this->sessionChecks($context);
-
-    // Verify Parameters
-    $name = $context->getParameter('name');
-    if (!isset($name)) {
-      throw new \Exception('Missing Required Action Parameter [name].', 1);
-    }
-
-    // Test if the user name already exists
-    $user = $this->getRepository()->findOneByName($name);
-    if (isset($user)) {
-      throw new \Exception("Organization [$name] already exists.", 2);
-    }
-
-    return $context;
-  }
-
-  /**
    * @param $action
    * @param $parameters
    */
@@ -238,30 +240,51 @@ class OrganizationsController
 
     $context->setParameter('user', $user);
 
-    // Process Organization ID
-    $context = $this->processChecks($context, array('Update', 'Delete'),
-                                    function($controller, $context) {
-        // Get the Identifier for the User
-        $id = $context->getParameter('id');
-        if (!isset($id)) {
-          throw new \Exception('Missing Required Action Parameter [id].', 1);
+    // Process 'name' Parameter (if it exists)
+    $context = $this->onParameterDo($context, 'name',
+                                    function($controller, $context, $action, $value) {
+        // Try to Find the Organization by Name
+        $org = $controller->getRepository()->findOneByName($value);
+        if ($action === 'Create') {
+          if (isset($org)) {
+            throw new \Exception("Organization [$value] already exists.", 2);
+          }
+        } else {
+          if (!isset($org)) {
+            throw new \Exception("Organization [$value] not found", 1);
+          }
+
+          // Save the Organization for the Action
+          $context->setParameter('entity', $org);
+          $context->setParameter('organization', $org);
         }
 
-        // Get Organization for Action
-        $org = $controller->getRepository()->find($id);
-        if (!isset($org)) {
-          throw new \Exception('Organization not found', 1);
-        }
+        return $context;
+      }, array('Read', 'Update', 'Delete'), 'Create');
 
-        // Save the Organization for the Action
-        $context->setParameter('entity', $org);
-        $context->setParameter('organization', $org);
-        return $parameters;
-      });
+    // Process 'id' Parameter (if it exists)
+    if (!$context->hasParameter('entity')) {
+      $context = $this->onParameterDo($context, 'id',
+                                      function($controller, $context, $action, $value) {
+
+          // Try to Find the Organization by Name
+          $org = $controller->getRepository()->find($value);
+          if (!isset($org)) {
+            throw new \Exception("Organization [$value]not found", 1);
+          }
+
+
+          // Save the Organization for the Action
+          $context->setParameter('entity', $org);
+          $context->setParameter('organization', $org);
+
+          return $context;
+        }, null, array('Read', 'Update', 'Delete'));
+    }
 
     $action = $context->getAction();
     assert('isset($action)');
-      
+
     if ($action === 'Delete') {
       // Check that we have no projects linked to the organization before we delete it
       $repository = $this->getRepository();
@@ -286,12 +309,21 @@ class OrganizationsController
     // Parameter Validation
     assert('isset($context) && is_object($context)');
 
-    $organization = $context->getParameter('organization');
+    // Get the Organization that was Previously Created
+    $organization = $context->getActionResult();
     assert('isset($organization)');
+
+    // Save the Organization for the Action
+    $context->setParameter('entity', $organization);
+    $context->setParameter('organization', $organization);
+
+    // Get the User Associated with the Organization
+    $user = $context->getParameter('user');
+    assert('isset($user)');
 
     // Link the New Organization to the Current User
     $repository = $this->getRepository('TestCenter\ModelBundle\Entity\UserOrganization');
-    $repository->addLink($parameters['user'], $organization, '');
+    $repository->addLink($user, $organization, '');
 
     // Create the Container for the Organization
     $repository = $this->getRepository('TestCenter\ModelBundle\Entity\Container');
@@ -305,7 +337,7 @@ class OrganizationsController
     $this->getEntityManager()->flush();
 
     // No change to the context
-    return null;
+    return $context;
   }
 
   /**

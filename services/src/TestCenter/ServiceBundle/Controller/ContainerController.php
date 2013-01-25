@@ -20,7 +20,7 @@
 namespace TestCenter\ServiceBundle\Controller;
 
 use Library\StringUtilities;
-use TestCenter\ModelBundle\Entity\ContainerEntry;
+use TestCenter\ServiceBundle\API\ActionContext;
 use TestCenter\ServiceBundle\API\EntityServiceController;
 use TestCenter\ServiceBundle\API\SessionManager;
 
@@ -43,7 +43,9 @@ class ContainerController
    * @return null
    */
   public function rootAction() {
-    return $this->doAction('root', null);
+    // Create Action Context
+    $context = new ActionContext('cwd');
+    return $this->doAction($context);
   }
 
   /**
@@ -51,8 +53,13 @@ class ContainerController
    * @return null
    */
   public function cdByIdAction($id = null) {
-    return $this->doAction('cd',
-                           isset($id) ? array('id' => (integer) $id) : null);
+    // Create Action Context
+    $context = new ActionContext('cd');
+    $context = $context
+      ->setIfNotNull('id', isset($id) ? array('id' => (integer) $id) : null);
+
+    // Call the Function
+    return $this->doAction($context);
   }
 
   /**
@@ -60,37 +67,53 @@ class ContainerController
    * @return null
    */
   public function cdByNameAction($name) {
-    return $this->doAction('cd',
-                           array('name' => StringUtilities::nullOnEmpty($name)));
+    // Create Action Context
+    $context = new ActionContext('cd');
+    $context = $context
+      ->setIfNotNull('name', StringUtilities::nullOnEmpty($name));
+
+    // Call the Function
+    return $this->doAction($context);
   }
 
   /**
    * @return null
    */
   public function cwdAction() {
-    return $this->doAction('cwd', null);
+    // Create Action Context
+    $context = new ActionContext('cwd');
+    return $this->doAction($context);
   }
 
   /**
    * @return null
    */
   public function mkdirAction($name) {
-    return $this->doAction('mkdir',
-                           array('name' => StringUtilities::nullOnEmpty($name)));
+    // Create Action Context
+    $context = new ActionContext('mkdir');
+    $context = $context
+      ->setIfNotNull('name', StringUtilities::nullOnEmpty($name));
+
+    // Call the Function
+    return $this->doAction($context);
   }
 
   /**
    * @return null
    */
   public function lsAction() {
-    return $this->doAction('ls', null);
+    // Create Action Context
+    $context = new ActionContext('ls');
+    return $this->doAction($context);
   }
 
   /**
    * @return null
    */
   public function countAction() {
-    return $this->doAction('count', null);
+    // Create Action Context
+    $context = new ActionContext('count');
+    return $this->doAction($context);
   }
 
   /**
@@ -136,12 +159,12 @@ class ContainerController
   }
 
   /**
-   * @param $parameters
+   * @param $context
    * @return object
    */
-  protected function doRootAction($parameters) {
+  protected function doRootAction($context) {
     // Get the Current Container
-    $current = $parameters['container'];
+    $current = $context->getParameter('container');
     assert(isset($current));
 
     // Get Session Project
@@ -161,23 +184,23 @@ class ContainerController
   }
 
   /**
-   * @param $parameters
+   * @param $context
    * @throws \Exception
    */
-  protected function doCdAction($parameters) {
+  protected function doCdAction($context) {
     // Get the Current Container
-    $current = $parameters['container'];
+    $current = $context->getParameter('container');
     assert(isset($current));
 
     $next = null;
-    $name = $parameters['name'];
+    $name = $context->getParameter('name');
     if (isset($name)) { // CD by Container Name
       $next = $this->getRepository()->findChildContainer($current, $name);
       if (!isset($next)) {
         throw new \Exception("Container [$name] does not exist.", 1);
       }
-    } else if (isset($parameters['id'])) { // CD by Container ID
-      $id = $parameters['id'];
+    } else if ($context->hasParameter('id')) { // CD by Container ID
+      $id = $context->getParameter('id');
       $next = $this->getRepository()->findChildContainer($current, $id);
       if (!isset($next)) {
         throw new \Exception("Container [$id] does not exist.", 1);
@@ -197,63 +220,69 @@ class ContainerController
   }
 
   /**
-   * @param $parameters
+   * @param $context
    * @return mixed
    */
-  protected function doCwdAction($parameters) {
+  protected function doCwdAction($context) {
     // Get the Current Container
-    $current = $parameters['container'];
+    $current = $context->getParameter('container');
     assert(isset($current));
 
     return $current;
   }
 
   /**
-   * @param $parameters
+   * @param $context
    * @return mixed
    */
-  protected function doMkdirAction($parameters) {
+  protected function doMkdirAction($context) {
     // Get the Current Container
-    $current = $parameters['container'];
+    $current = $context->getParameter('container');
     assert(isset($current));
 
     // Create the Child Container
     // TODO Verify if the name already exists
     $repository = $this->getRepository();
-    $container = $repository->createChildContainer($current, $parameters['name']);
+    $container = $repository->createChildContainer($current,
+                                                   $context->getParameter('name'));
 
     return $container;
   }
 
   /**
-   * @param $parameters
+   * @param $context
    * @return mixed
    */
-  protected function doLsAction($parameters) {
+  protected function doLsAction($context) {
     // Get the Current Container
-    $current = $parameters['container'];
+    $current = $context->getParameter('container');
     assert(isset($current));
 
     return $this->getRepository()->listEntries($current);
   }
 
   /**
-   * @param $parameters
+   * @param $context
    * @return mixed
    */
-  protected function doCountAction($parameters) {
+  protected function doCountAction($context) {
     // Get the Current Container
-    $current = $parameters['container'];
+    $current = $context->getParameter('container');
     assert(isset($current));
 
     return $this->getRepository()->countEntries($current);
   }
 
   /**
-   * @param $action
-   * @param $parameters
+   * 
+   * @param type $context
+   * @return type
+   * @throws \Exception
    */
-  protected function sessionChecks($action, $parameters) {
+  protected function sessionChecks($context) {
+    // Parameter Validation
+    assert('isset($context) && is_object($context)');
+
     // Check we have Basic Requirements
     $this->checkInSession();
     $this->checkLoggedIn();
@@ -280,35 +309,27 @@ class ContainerController
     }
 
     // TODO If Container Doesn't Exist - Clear it
-    $parameters['container_id'] = $id;
-    $parameters['container'] = $container;
+    $context->setParameter('container_id', $id);
+    $context->setParameter('container', $container);
 
-    return $parameters;
+    return $context;
   }
 
   /**
-   * @return bool
-   * @throws \Exception
+   * 
+   * @param type $context
+   * @return type
    */
-  public function checkContainer() {
-    if (!SessionManager::hasContainer()) {
-      throw new \Exception('No Active Container.', 1);
-    }
-
-    return true;
-  }
-
-  /**
-   * @param $action
-   * @param $results
-   * @param $format
-   */
-  protected function preRender($action, $results, $format) {
+  protected function preRender($context) {
     // Parameter Validation
-    assert('isset($action) && is_string($action)');
-    assert('isset($format) && is_string($format)');
+    assert('isset($context) && is_object($context)');
 
-    $return = $results;
+    // Get Results
+    $results = $context->getActionResult();
+
+    // Get the Action Name
+    $action = $context->getAction();
+    assert('isset($action)');
     switch ($action) {
       case 'Root':
       case 'Cd':
@@ -325,9 +346,23 @@ class ContainerController
           unset($return[$id]['id']);
         }
         break;
+      default:
+        $return = $results;
     }
 
     return $return;
+  }
+
+  /**
+   * @return bool
+   * @throws \Exception
+   */
+  public function checkContainer() {
+    if (!SessionManager::hasContainer()) {
+      throw new \Exception('No Active Container.', 1);
+    }
+
+    return true;
   }
 
 }

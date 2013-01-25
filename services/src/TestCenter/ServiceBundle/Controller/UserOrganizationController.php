@@ -20,7 +20,6 @@
 namespace TestCenter\ServiceBundle\Controller;
 
 use Library\StringUtilities;
-use Library\ArrayUtilities;
 use TestCenter\ServiceBundle\API\ActionContext;
 use TestCenter\ServiceBundle\API\EntityWrapper;
 use TestCenter\ServiceBundle\API\SessionManager;
@@ -33,7 +32,6 @@ use TestCenter\ServiceBundle\API\BaseServiceController;
  */
 class UserOrganizationController
   extends BaseServiceController {
-
   /* TODO Integrate this as a CRUD Service, by converting all these action
    * to a more standard CRUD actions
    * i.e.
@@ -41,7 +39,8 @@ class UserOrganizationController
    * get == read
    * set == update
    * unlink == delete
-   */ 
+   */
+
   // Entity Managed
   protected $m_oEntity;
 
@@ -75,23 +74,6 @@ class UserOrganizationController
 
   /**
    * @param $user_id
-   * @param null $permissions
-   * @return null
-   * @throws \Exception
-   */
-  public function userLinkAction($user_id, $permissions = null) {
-    // Create Action Context
-    $context = new ActionContext('link');
-
-    $context = $context
-      ->setParameter('user_id', (integer) $user_id)
-      ->setIfNotNull('permissions', StringUtilities::nullOnEmpty($permissions));
-
-    return $this->doAction($context);
-  }
-
-  /**
-   * @param $user_id
    * @param $org_id
    * @param null $permissions
    * @return null
@@ -110,19 +92,6 @@ class UserOrganizationController
 
   /**
    * @param $user_id
-   * @return null
-   * @throws \Exception
-   */
-  public function userUnlinkAction($user_id) {
-    // Create Action Context
-    $context = new ActionContext('unlink');
-
-    return $this->doAction($context
-          ->setParameter('user_id', (integer) $user_id));
-  }
-
-  /**
-   * @param $user_id
    * @param $org_id
    * @return null
    */
@@ -133,89 +102,6 @@ class UserOrganizationController
     return $this->doAction($context
           ->setParameter('user_id', (integer) $user_id)
           ->setParameter('org_id', (integer) $org_id));
-  }
-
-  /**
-   * @return null
-   * @throws \Exception
-   */
-  public function userListAction() {
-    // Create Action Context
-    $context = new ActionContext('list_users');
-
-    return $this->doAction($context);
-  }
-
-  /**
-   * @return null
-   * @throws \Exception
-   */
-  public function userCountAction() {
-    // Create Action Context
-    $context = new ActionContext('count_users');
-
-    return $this->doAction($context);
-  }
-
-  /**
-   * @param $user_id
-   * @return null
-   */
-  public function listPerUserAction($user_id) {
-    // Create Action Context
-    $context = new ActionContext('list_per_user');
-
-    return $this->doAction($context
-          ->setParameter('user_id', (integer) $user_id));
-  }
-
-  /**
-   * @param $user_id
-   * @return null
-   */
-  public function countPerUserAction($user_id) {
-    // Create Action Context
-    $context = new ActionContext('count_per_user');
-
-    return $this->doAction($context
-          ->setParameter('user_id', (integer) $user_id));
-  }
-
-  /**
-   * @param $org_id
-   * @return null
-   */
-  public function listPerOrgAction($org_id) {
-    // Create Action Context
-    $context = new ActionContext('list_per_org');
-
-    return $this->doAction($context
-          ->setParameter('org_id', (integer) $org_id));
-  }
-
-  /**
-   * @param $org_id
-   * @return null
-   */
-  public function countPerOrgAction($org_id) {
-    // Create Action Context
-    $context = new ActionContext('count_per_org');
-
-    return $this->doAction($context
-          ->setParameter('org_id', (integer) $org_id));
-  }
-
-  /**
-   * @param $user_id
-   * @return null
-   * @throws \Exception
-   */
-  public function userGetAction($user_id) {
-    // Create Action Context
-    $context = new ActionContext('get');
-
-    return $this->doAction($context
-          ->setParameter('user_id', (integer) $user_id));
   }
 
   /**
@@ -230,22 +116,6 @@ class UserOrganizationController
     return $this->doAction($context
           ->setParameter('user_id', (integer) $user_id)
           ->setParameter('org_id', (integer) $org_id));
-  }
-
-  /**
-   * @param $user_id
-   * @param $permissions
-   * @return null
-   * @throws \Exception
-   */
-  public function userSetAction($user_id, $permissions) {
-    // Create Action Context
-    $context = new ActionContext('set');
-
-    return $this->doAction($context
-          ->setParameter('user_id', (integer) $user_id)
-          ->setIfNotNull('permissions',
-                         StringUtilities::nullOnEmpty($permissions)));
   }
 
   /**
@@ -266,13 +136,120 @@ class UserOrganizationController
   }
 
   /**
+   * @param $user_id
+   * @param null $permissions
+   * @return null
+   * @throws \Exception
+   */
+  public function userLinkAction($user_id, $permissions = null) {
+    // Create Action Context
+    $context = new ActionContext('link');
+
+    $context = $context
+      ->setParameter('user_id', (integer) $user_id)
+      ->setIfNotNull('permissions', StringUtilities::nullOnEmpty($permissions));
+
+    return $this->doAction($context);
+  }
+
+  /**
+   * @param $user_id
+   * @return null
+   * @throws \Exception
+   */
+  public function userUnlinkAction($user_id) {
+    // Create Action Context
+    $context = new ActionContext('unlink');
+
+    return $this->doAction($context
+          ->setParameter('user_id', (integer) $user_id));
+  }
+
+  /**
+   * @param $user_id
+   * @return null
+   * @throws \Exception
+   */
+  public function userGetAction($user_id) {
+    // Create Action Context
+    $context = new ActionContext('get');
+
+    return $this->doAction($context
+          ->setParameter('user_id', (integer) $user_id));
+  }
+
+  /**
+   * @param $user_id
+   * @param $permissions
+   * @return null
+   * @throws \Exception
+   */
+  public function userSetAction($user_id, $permissions) {
+    // Create Action Context
+    $context = new ActionContext('set');
+
+    return $this->doAction($context
+          ->setParameter('user_id', (integer) $user_id)
+          ->setIfNotNull('permissions',
+                         StringUtilities::nullOnEmpty($permissions)));
+  }
+
+  /**
+   * @param $user_id
+   * @return null
+   */
+  public function listPerUserAction($user_id = null) {
+    // Create Action Context
+    $context = new ActionContext('list_per_user');
+
+    return $this->doAction($context
+          ->setIfNotNull('user_id', isset($user_id) ? (integer) $user_id : null));
+  }
+
+  /**
+   * @param $user_id
+   * @return null
+   */
+  public function countPerUserAction($user_id = null) {
+    // Create Action Context
+    $context = new ActionContext('count_per_user');
+
+    return $this->doAction($context
+          ->setIfNotNull('user_id', isset($user_id) ? (integer) $user_id : null));
+  }
+
+  /**
+   * @param $org_id
+   * @return null
+   */
+  public function listPerOrgAction($org_id = null) {
+    // Create Action Context
+    $context = new ActionContext('list_per_org');
+
+    return $this->doAction($context
+          ->setIfNotNull('org_id', isset($org_id) ? (integer) $org_id : null));
+  }
+
+  /**
+   * @param $org_id
+   * @return null
+   */
+  public function countPerOrgAction($org_id = null) {
+    // Create Action Context
+    $context = new ActionContext('count_per_org');
+
+    return $this->doAction($context
+          ->setIfNotNull('org_id', isset($org_id) ? (integer) $org_id : null));
+  }
+
+  /**
    * @param $parameters
    * @return mixed
    */
   protected function doLinkAction($context) {
     $repository = $this->getRepository();
     return $repository->addLink(
-        $context->getParameter('user'), $context->getParameter('org'),
+        $context->getParameter('user'), $context->getParameter('organization'),
                                                                $context->getParameter('permissions',
                                                                                       '')
     );
@@ -283,10 +260,16 @@ class UserOrganizationController
    * @return mixed
    */
   protected function doUnlinkAction($context) {
-    $repository = $this->getRepository();
-    return $repository->removeLink(
-        $context->getParameter('user'), $context->getParameter('org')
-    );
+    $user = $context->getParameter('user');
+    $organization = $context->getParameter('organization');
+
+    // Find the Link
+    $link = $this->getRepository()->removeLink($user, $organization);
+    if (!isset($link)) {
+      throw new \Exception("User [{$user->getId()}] does not have access to Organization [{$organization->getId()}].", 1);
+    }
+
+    return $link;
   }
 
   /**
@@ -295,7 +278,7 @@ class UserOrganizationController
    */
   protected function doListPerOrgAction($context) {
     $repository = $this->getRepository();
-    return $repository->listUsers($context->getParameter('org'));
+    return $repository->listUsers($context->getParameter('organization'));
   }
 
   /**
@@ -304,7 +287,7 @@ class UserOrganizationController
    */
   protected function doCountPerOrgAction($context) {
     $repository = $this->getRepository();
-    return $repository->countUsers($context->getParameter('org'));
+    return $repository->countUsers($context->getParameter('organization'));
   }
 
   /**
@@ -330,12 +313,20 @@ class UserOrganizationController
    * @return mixed
    */
   protected function doGetAction($context) {
-    return $this->getRepository()->findLink($context->getParameter('user'),
-                                                                   $context->getParameter('org'));
+    $user = $context->getParameter('user');
+    $organization = $context->getParameter('organization');
+
+    // Find the Link
+    $link = $this->getRepository()->findLink($user, $organization);
+    if (!isset($link)) {
+      throw new \Exception("User [{$user->getId()}] does not have access to Organization [{$organization->getId()}].", 1);
+    }
+
+    return $link;
   }
 
   /**
-   * @param $parameters
+   * @param $context
    * @return mixed
    */
   protected function doSetAction($context) {
@@ -344,8 +335,10 @@ class UserOrganizationController
   }
 
   /**
-   * @param $action
-   * @param $parameters
+   * 
+   * @param type $context
+   * @return type
+   * @throws \Exception
    */
   protected function sessionChecks($context) {
     // Parameter Validation
@@ -355,68 +348,69 @@ class UserOrganizationController
     $this->checkInSession();
     $this->checkLoggedIn();
 
-    // Extract User ID
-    $parameters = $this->processChecks($context,
-                                       array('Link', 'Unlink', 'Get', 'Set', 'ListUsers', 'CountUsers', 'ListOrgs', 'CountOrgs'),
-                                       function($controller, $context) {
-        // Get the Identified for the User
-        $id = $context->getParameter('user_id');
-        if (!isset($id)) {
-          $id = SessionManager::getUser();
-          if (!isset($id)) {
-            throw new \Exception('Missing Required Action Parameter [user_id].', 1);
-          }
-        }
-
+    // Process 'user_id' Parameter (if it exists)
+    $context = $this->onParameterDo($context, 'user_id',
+                                    function($controller, $context, $action, $value) {
         // Get User for Action
-        $user = $controller->getRepository('TestCenter\ModelBundle\Entity\User')->find($id);
+        $user = $controller->getRepository('TestCenter\ModelBundle\Entity\User')->find($value);
         if (!isset($user)) {
-          throw new \Exception("User not found[$id]", 1);
+          throw new \Exception("User not found[$value]", 1);
         }
 
         return $context->setParameter('user', $user);
+      }, null,
+                                      array('Link', 'Unlink', 'Get', 'Set', 'ListPerUser', 'CountPerUser', 'ListPerOrg', 'CountPerOrg'),
+                                      function($controller, $context, $action) {
+        // Missing User ID, so use the current Session User
+        return SessionManager::getUser();
       });
 
 
     // Extract Organization ID
-    $parameters = $this->processChecks($action,
-                                       array('Link', 'Unlink', 'Get', 'Set', 'ListUsers', 'CountUsers'),
-                                       $parameters,
-                                       function($controller, $action, $parameters) {
-        // Get the Identifier for the User
-        $id = $context->getParameter('org_id');
-        if (!isset($id)) {
-          $id = SessionManager::getOrganization();
-          if (!isset($id)) {
-            throw new \Exception('Missing Required Action Parameter [org_id].', 1);
-          }
-        }
-
+    $context = $this->onParameterDo($context, 'org_id',
+                                    function($controller, $context, $action, $value) {
         // Get Organization for Action
-        $org = $controller->getRepository('TestCenter\ModelBundle\Entity\Organization')->find($id);
+        $org = $controller->getRepository('TestCenter\ModelBundle\Entity\Organization')->find($value);
         if (!isset($org)) {
-          throw new \Exception("Organization not found[$id]", 1);
-        }
-
-        if ($context->getAction() !== 'Link') {
-          // Check if user has access to Organization
-          $controller->checkOrganizationAccess($context->getParameter('user'),
-                                                                      $org);
+          throw new \Exception("Organization not found[$value]", 1);
         }
 
         // Save the Organization for the Action
         return $context
-            ->setParameter('entity', $org)
-            ->setParameter('org', $org);
+            ->setParameter('organization', $org);
+      }, null,
+                           array('Link', 'Unlink', 'Get', 'Set', 'ListPerUser', 'CountPerUser'),
+                           function($controller, $context, $action) {
+        // Missing Organization ID, so use the current Session Organization
+        $controller->checkOrganization();
+
+        // Get the Current Session Organization
+        return SessionManager::getOrganization();
       });
 
-    return $parameters;
+    // Do Access Checks
+    /*
+      $context = $this->onActionDo($context, array('Link'),
+      function($controller, $context, $action) {
+      // Required Parameters
+      $user = $context->getParameter('user');
+      $organization = $context->getParameter('organization');
+      assert('isset($user) && isset($organization)');
+
+      // Check if user has access to Organization
+      $controller->checkOrganizationAccess($user, $organization);
+
+      return null;
+      });
+     */
+
+    return $context;
   }
 
   /**
-   * @param $action
-   * @param $results
-   * @param $format
+   * 
+   * @param type $context
+   * @return type
    */
   protected function preRender($context) {
     // Parameter Validation

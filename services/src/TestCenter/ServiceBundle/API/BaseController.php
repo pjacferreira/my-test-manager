@@ -376,28 +376,63 @@ class BaseController
   }
 
   /**
-   * @param $action
-   * @param $parameters
-   * @param $in_actions
-   * @param $function
-   * @return array
+   * 
+   * @param type $context
+   * @param type $parameter
+   * @param type $function
+   * @param type $actions
+   * @param type $reqActions
+   * @return type
+   * @throws \Exception
    */
-  protected function processParameter($context, $in_actions, $function) {
+  protected function onParameterDo($context, $parameter, $function,
+                                   $actions = null, $reqActions = null,
+                                   $functionOnMissing = null) {
     // Parameter Validation
     assert('isset($context) && is_object($context)');
-    assert('!isset($in_actions) || is_array($in_actions)');
+    assert('isset($parameter) && is_string($parameter)');
     assert('isset($function) && is_callable($function)');
+    assert('!isset($functionOnMissing) || is_callable($functionOnMissing)');
 
+    // Process Incoming Parameters
+    if (isset($actions) && !is_array($actions)) {
+      $actions = $this->arrayOfString((string) $actions);
+    }
+    if (isset($reqActions) && !is_array($reqActions)) {
+      $reqActions = $this->arrayOfString((string) $reqActions);
+    }
+
+    // Get the Context Action
     $action = $context->getAction();
     assert('isset($action)');
 
-    if (is_array($in_actions)) {
-      if (array_search($action, $in_actions) !== FALSE) {
-        return $function($this, $context);
+    // See if we have to call the function for 
+    $required = isset($reqActions) && (array_search($action, $reqActions) !== FALSE);
+    $process = true;
+    if (!$required) {
+      if (isset($actions)) {
+        $process = array_search($action, $actions) !== FALSE;
+      } else { // If BOTH, $actions AND $reqActions (NULL) - Assume we are Procssing for All Actions (Otherwise - Only Specifica Actions)
+        $process = !isset($reqActions);
       }
-    } else if (is_string($in_actions)) {
-      if ($action === $in_actions) {
-        return $function($this, $context);
+    }
+
+    // Handle the Process
+    if ($process) {
+      $value = $context->getParameter($parameter);
+
+      // If no Value is Set, then see if we have a function that can get an alternative value
+      if (!isset($value) && isset($functionOnMissing)) {
+        $value = $functionOnMissing($this, $context, $action);
+        if (isset($value)) {
+          $context->setParameter($parameter, $value);
+        }
+      }
+
+      if (isset($value)) {
+        return $function($this, $context, $action, $value);
+      } else if ($required) {
+        throw new \Exception("Missing Required Action Parameter [{$parameter}].", 1);
       }
     }
 
@@ -441,7 +476,7 @@ class BaseController
    * @param $function
    * @return bool
    */
-  protected function processChecks($context, $in_actions, $function) {
+  protected function onActionDo($context, $in_actions, $function) {
     // Parameter Validation
     assert('isset($context) && is_object($context)');
     assert('!isset($in_actions) || is_array($in_actions)');
@@ -463,7 +498,7 @@ class BaseController
       }
     }
 
-    return $call_function ? $function($this, $context) : $context;
+    return $call_function ? $function($this, $context, $action) : $context;
   }
 
   /**
@@ -532,6 +567,9 @@ class BaseController
     $action = $context->getAction();
     assert('isset($action)');
 
+    // Extract Context Parameters
+    $parameters = $context->getParameters();
+
     $exception = $context->getActionResult();
     assert('isset($exception)');
 
@@ -546,6 +584,20 @@ class BaseController
     // Set Content Type to JSON
     $response->headers->set('Content-Type', 'application/json');
     return $response;
+  }
+
+  /**
+   * 
+   * @param type $value
+   * @return type
+   */
+  protected function arrayOfString($value) {
+    assert('!isset($value) || is_string($value)');
+    if (isset($value)) {
+      $value = StringUtilities::nullOnEmpty($value);
+    }
+
+    return isset($value) ? array($value) : null;
   }
 
 }

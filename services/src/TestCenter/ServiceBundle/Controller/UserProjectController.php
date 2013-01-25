@@ -1,4 +1,5 @@
 <?php
+
 /* Test Center - Compliance Testing Application
  * Copyright (C) 2012 Paulo Ferreira <pf at sourcenotes.org>
  *
@@ -15,10 +16,11 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 namespace TestCenter\ServiceBundle\Controller;
 
 use Library\StringUtilities;
-use Library\ArrayUtilities;
+use TestCenter\ServiceBundle\API\ActionContext;
 use TestCenter\ServiceBundle\API\BaseServiceController;
 use TestCenter\ServiceBundle\API\EntityWrapper;
 use TestCenter\ServiceBundle\API\SessionManager;
@@ -64,83 +66,34 @@ class UserProjectController
 
   /**
    * @param $user_id
-   * @param null $permissions
-   * @return null
-   * @throws \Exception
-   */
-  public function userLinkAction($user_id, $permissions = null) {
-    $permissions = StringUtilities::nullOnEmpty($permissions);
-    return $this->doAction('link', array('user_id' => (integer)$user_id, 'permissions' => isset($permissions) ? $permissions : ''));
-  }
-
-  /**
-   * @param $user_id
    * @param $project_id
    * @param null $permissions
    * @return null
    */
   public function linkAction($user_id, $project_id, $permissions = null) {
-    $permissions = StringUtilities::nullOnEmpty($permissions);
-    return $this->doAction('link', array('user_id' => (integer)$user_id, 'project_id' => (integer)$project_id, 'permissions' => isset($permissions) ? $permissions : ''));
+    // Create Action Context
+    $context = new ActionContext('link');
+
+    $context = $context
+      ->setParameter('user_id', (integer) $user_id)
+      ->setParameter('project_id', (integer) $project_id)
+      ->setIfNotNull('permissions', StringUtilities::nullOnEmpty($permissions));
+
+    return $this->doAction($context);
   }
 
   /**
    * @param $user_id
-   * @return null
-   * @throws \Exception
-   */
-  public function userUnlinkAction($user_id) {
-    return $this->doAction('unlink', array('user_id' => (integer)$user_id));
-  }
-
-  /**
-   * @param $user_id
-   * @param $org_id
+   * @param $project_id
    * @return null
    */
   public function unlinkAction($user_id, $project_id) {
-    return $this->doAction('unlink', array('user_id' => (integer)$user_id, 'project_id' => (integer)$project_id));
-  }
+    // Create Action Context
+    $context = new ActionContext('unlink');
 
-  /**
-   * @return null
-   * @throws \Exception
-   */
-  public function userListAction() {
-    return $this->doAction('list_users');
-  }
-
-  /**
-   * @return null
-   * @throws \Exception
-   */
-  public function userCountAction() {
-    return $this->doAction('count_users');
-  }
-
-  /**
-   * @param $user_id
-   * @return null
-   */
-  public function projectListAction($user_id) {
-    return $this->doAction('list_projects', array('user_id' => (integer)$user_id));
-  }
-
-  /**
-   * @param $user_id
-   * @return null
-   */
-  public function projectCountAction($user_id) {
-    return $this->doAction('count_projects', array('user_id' => (integer)$user_id));
-  }
-
-  /**
-   * @param $user_id
-   * @return null
-   * @throws \Exception
-   */
-  public function userGetAction($user_id) {
-    return $this->doAction('get', array('user_id' => (integer)$user_id));
+    return $this->doAction($context
+          ->setParameter('user_id', (integer) $user_id)
+          ->setParameter('project_id', (integer) $project_id));
   }
 
   /**
@@ -149,18 +102,12 @@ class UserProjectController
    * @return null
    */
   public function getAction($user_id, $project_id) {
-    return $this->doAction('get', array('user_id' => (integer)$user_id, 'project_id' => (integer)$project_id));
-  }
+    // Create Action Context
+    $context = new ActionContext('get');
 
-  /**
-   * @param $user_id
-   * @param $permissions
-   * @return null
-   * @throws \Exception
-   */
-  public function userSetAction($user_id, $permissions) {
-    $permissions = StringUtilities::nullOnEmpty($permissions);
-    return $this->doAction('set', array('user_id' => (integer)$user_id, 'permissions' => isset($permissions) ? $permissions : ''));
+    return $this->doAction($context
+          ->setParameter('user_id', (integer) $user_id)
+          ->setParameter('project_id', (integer) $project_id));
   }
 
   /**
@@ -170,179 +117,286 @@ class UserProjectController
    * @return null
    */
   public function setAction($user_id, $project_id, $permissions) {
-    $permissions = StringUtilities::nullOnEmpty($permissions);
-    return $this->doAction('set', array('user_id' => (integer)$user_id, 'project_id' => (integer)$project_id, 'permissions' => isset($permissions) ? $permissions : ''));
+    // Create Action Context
+    $context = new ActionContext('set');
+
+    return $this->doAction($context
+          ->setParameter('user_id', (integer) $user_id)
+          ->setParameter('project_id', (integer) $project_id)
+          ->setIfNotNull('permissions',
+                         StringUtilities::nullOnEmpty($permissions)));
   }
 
   /**
-   * @param $parameters
+   * @param $user_id
+   * @param null $permissions
+   * @return null
+   * @throws \Exception
+   */
+  public function userLinkAction($user_id, $permissions = null) {
+    // Create Action Context
+    $context = new ActionContext('link');
+
+    $context = $context
+      ->setParameter('user_id', (integer) $user_id)
+      ->setIfNotNull('permissions', StringUtilities::nullOnEmpty($permissions));
+
+    return $this->doAction($context);
+  }
+
+  /**
+   * @param $user_id
+   * @return null
+   * @throws \Exception
+   */
+  public function userUnlinkAction($user_id) {
+    // Create Action Context
+    $context = new ActionContext('unlink');
+
+    return $this->doAction($context
+          ->setParameter('user_id', (integer) $user_id));
+  }
+
+  /**
+   * @param $user_id
+   * @return null
+   * @throws \Exception
+   */
+  public function userGetAction($user_id) {
+    // Create Action Context
+    $context = new ActionContext('get');
+
+    return $this->doAction($context
+          ->setParameter('user_id', (integer) $user_id));
+  }
+
+  /**
+   * @param $user_id
+   * @param $permissions
+   * @return null
+   * @throws \Exception
+   */
+  public function userSetAction($user_id, $permissions) {
+    // Create Action Context
+    $context = new ActionContext('set');
+
+    return $this->doAction($context
+          ->setParameter('user_id', (integer) $user_id)
+          ->setIfNotNull('permissions',
+                         StringUtilities::nullOnEmpty($permissions)));
+  }
+
+  /**
+   * @return null
+   * @throws \Exception
+   */
+  public function listPerUserAction() {
+    // Create Action Context
+    $context = new ActionContext('list_per_user');
+
+    return $this->doAction($context
+          ->setIfNotNull('user_id', isset($user_id) ? (integer) $user_id : null));
+  }
+
+  /**
+   * @param $user_id
+   * @return null
+   */
+  public function countPerUserAction($user_id) {
+    // Create Action Context
+    $context = new ActionContext('count_per_user');
+
+    return $this->doAction($context
+          ->setIfNotNull('user_id', isset($user_id) ? (integer) $user_id : null));
+  }
+
+  /**
+   * @param $project_id
+   * @return null
+   */
+  public function listPerProjectAction($project_id = null) {
+    // Create Action Context
+    $context = new ActionContext('list_per_project');
+
+    return $this->doAction($context
+          ->setIfNotNull('project_id',
+                         isset($project_id) ? (integer) $project_id : null));
+  }
+
+  /**
+   * @param $project_id
+   * @return null
+   */
+  public function countPerProjectAction($project_id = null) {
+    // Create Action Context
+    $context = new ActionContext('count_per_project');
+
+    return $this->doAction($context
+          ->setIfNotNull('project_id',
+                         isset($project_id) ? (integer) $project_id : null));
+  }
+
+  /**
+   * @param $context
    * @return mixed
    */
-  protected function doLinkAction($parameters) {
-    $user = ArrayUtilities::extract($parameters, 'user');
-    $project = ArrayUtilities::extract($parameters, 'project');
-    $permissions = ArrayUtilities::extract($parameters, 'permissions', '');
+  protected function doLinkAction($context) {
     $repository = $this->getRepository();
-    return $repository->addLink($user, $project, $permissions);
+    return $repository->addLink(
+        $context->getParameter('user'), $context->getParameter('project'),
+                                                               $context->getParameter('permissions',
+                                                                                      '')
+    );
+  }
+
+  /**
+   * @param $context
+   * @return mixed
+   */
+  protected function doUnlinkAction($context) {
+    $user = $context->getParameter('user');
+    $project = $context->getParameter('project');
+
+    // Find the Link
+    $link = $this->getRepository()->removeLink($user, $project);
+    if (!isset($link)) {
+      throw new \Exception("User [{$user->getId()}] does not have access to Project [{$project->getId()}].", 1);
+    }
+    return $link;
   }
 
   /**
    * @param $parameters
    * @return mixed
    */
-  protected function doUnlinkAction($parameters) {
-    $user = ArrayUtilities::extract($parameters, 'user');
-    $project = ArrayUtilities::extract($parameters, 'project');
+  protected function doListPerProjectAction($context) {
     $repository = $this->getRepository();
-    return $repository->removeLink($user, $project);
+    return $repository->listUsers($context->getParameter('project'));
   }
 
   /**
-   * @param $parameters
+   * @param $context
    * @return mixed
    */
-  protected function doListUsersAction($parameters) {
-    $project = ArrayUtilities::extract($parameters, 'project');
+  protected function doCountPerProjectAction($context) {
     $repository = $this->getRepository();
-    return $repository->listUsers($project);
+    return $repository->countUsers($context->getParameter('project'));
   }
 
   /**
-   * @param $parameters
+   * @param $context
    * @return mixed
    */
-  protected function doCountUsersAction($parameters) {
-    $project = ArrayUtilities::extract($parameters, 'project');
+  protected function doListPerUserAction($context) {
     $repository = $this->getRepository();
-    return $repository->countUsers($project);
+    return $repository->listProjects($context->getParameter('user'));
   }
 
   /**
-   * @param $parameters
+   * @param $context
    * @return mixed
    */
-  protected function doListProjectsAction($parameters) {
-    $user = ArrayUtilities::extract($parameters, 'user');
+  protected function doCountPerUserAction($context) {
     $repository = $this->getRepository();
-    return $repository->listProjects($user);
+    return $repository->countProjects($context->getParameter('user'));
   }
 
   /**
-   * @param $parameters
+   * @param $context
    * @return mixed
    */
-  protected function doCountProjectsAction($parameters) {
-    $user = ArrayUtilities::extract($parameters, 'user');
-    $repository = $this->getRepository();
-    return $repository->countProjects($user);
+  protected function doGetAction($context) {
+    $user = $context->getParameter('user');
+    $project = $context->getParameter('project');
+
+    // Find the Link
+    $link = $this->getRepository()->findLink($user, $project);
+    if (!isset($link)) {
+      throw new \Exception("User [{$user->getId()}] does not have access to Project [{$project->getId()}].", 1);
+    }
+
+    return $link;
   }
 
   /**
-   * @param $parameters
+   * @param $context
    * @return mixed
    */
-  protected function doGetAction($parameters) {
-    $user = ArrayUtilities::extract($parameters, 'user');
-    $project = ArrayUtilities::extract($parameters, 'project');
-    return $this->getRepository()->findLink($user, $project);
-  }
-
-  /**
-   * @param $parameters
-   * @return mixed
-   */
-  protected function doSetAction($parameters) {
+  protected function doSetAction($context) {
     // Add Link will Just Update the Link if it already exists
-    return $this->doLinkAction($parameters);
+    return $this->doLinkAction($context);
   }
 
   /**
-   * @param $action
-   * @param $parameters
+   * 
+   * @param type $context
+   * @return type
+   * @throws \Exception
    */
-  protected function sessionChecks($action, $parameters) {
+  protected function sessionChecks($context) {
     // Parameter Validation
-    assert('isset($action) && is_string($action)');
-    assert('isset($parameters) && is_array($parameters)');
+    assert('isset($context) && is_object($context)');
 
     // Need a Session for all the Session Commands
     $this->checkInSession();
     $this->checkLoggedIn();
 
-    // Process User ID
-    $parameters = $this->processChecks($action,
-                                       array('Link', 'Unlink', 'Get', 'Set', 'ListUsers', 'CountUsers', 'ListProjects', 'CountProjects'),
-                                       $parameters,
-      function($controller, $action, $parameters) {
-        // Get the Identified for the User
-        $id = ArrayUtilities::extract($parameters, 'user_id');
-        if (!isset($id)) {
-          $id = SessionManager::getUser();
-          if (!isset($id)) {
-            throw new \Exception('Missing Required Action Parameter [user_id].', 1);
-          }
-        }
-
+    // Process 'user_id' Parameter (if it exists)
+    $context = $this->onParameterDo($context, 'user_id',
+                                    function($controller, $context, $action, $value) {
         // Get User for Action
-        $user = $controller->getRepository('TestCenter\ModelBundle\Entity\User')->find($id);
+        $user = $controller->getRepository('TestCenter\ModelBundle\Entity\User')->find($value);
         if (!isset($user)) {
-          throw new \Exception("User not found[$id]", 1);
+          throw new \Exception("User not found[$value]", 1);
         }
 
-        $parameters['user'] = $user;
-        return $parameters;
+        return $context->setParameter('user', $user);
+      }, null,
+                                      array('Link', 'Unlink', 'Get', 'Set', 'ListPerUser', 'CountPerUser', 'ListPerProject', 'CountPerProject'),
+                                      function($controller, $context, $action) {
+        // Missing User ID, so use the current Session User
+        return SessionManager::getUser();
       });
 
-    // Process Project ID
-    $parameters = $this->processChecks($action,
-                                       array('Link', 'Unlink', 'Get', 'Set', 'ListUsers', 'CountUsers'),
-                                       $parameters,
-      function($controller, $action, $parameters) {
-        // Get the Project ID (either through parameter or the Current Session Settings)
-        $id = ArrayUtilities::extract($parameters, 'project_id');
-        if (!isset($id)) {
-          $controller->checkProject();
-
-          // Get the Current Session Project
-          $id = SessionManager::getProject();
-        }
-
+    // Extract Organization ID
+    $context = $this->onParameterDo($context, 'project_id',
+                                    function($controller, $context, $action, $value) {
         // Get Project for Action
-        $project = $controller->getRepository('TestCenter\ModelBundle\Entity\Project')->find($id);
+        $project = $controller->getRepository('TestCenter\ModelBundle\Entity\Project')->find($value);
         if (!isset($project)) {
-          throw new \Exception("Project not found[$id]", 1);
+          throw new \Exception("Project not found[$value]", 1);
         }
 
-        if ($action === 'Link') {
-          // User Only Requires Access to Organization
-          $organization = $project->getOrganization();
-          $controller->checkOrganizationAccess($parameters['user'], $organization);
-        } else {
-          // Check if User Has Access to Project (and by consequence to the Organization)
-          $controller->checkProjectAccess($parameters['user'], $project);
-        }
 
-        // Save the Project for the Action
-        $parameters['entity'] = $project;
-        $parameters['project'] = $project;
-        return $parameters;
+        // Save the Organization for the Action
+        return $context
+            ->setParameter('project', $project);
+      }, null,
+                           array('Link', 'Unlink', 'Get', 'Set', 'ListPerUser', 'CountPerUser'),
+                           function($controller, $context, $action) {
+        // Missing Project ID, so use the current Session Project
+        $controller->checkProject();
+
+        // Get the Current Session Project
+        return SessionManager::getProject();
       });
 
-    return $parameters;
+    return $context;
   }
 
   /**
-   * @param $action
-   * @param $results
-   * @param $format
+   * 
+   * @param type $context
+   * @return type
    */
-  protected function preRender($action, $results, $format) {
+  protected function preRender($context) {
     // Parameter Validation
-    assert('isset($action) && is_string($action)');
-    assert('isset($format) && is_string($format)');
+    assert('isset($context) && is_object($context)');
 
-    $return = $results;
-    switch ($action) {
+    // Get Results
+    $results = $context->getActionResult();
+
+    switch ($context->getAction()) {
       case 'Set':
         assert('isset($results)');
         $return = $results->toArray();
@@ -371,6 +425,8 @@ class UserProjectController
           unset($return[$id]['id']);
         }
         break;
+      default:
+        $return = $results;
     }
 
     return $return;
@@ -385,7 +441,6 @@ class UserProjectController
    */
   public function checkOrganizationAccess($user, $organization, $required = null) {
     // TODO Implement Actual Permissions Check (not just link exists)
-
     // Get Link Between User and Project
     $repository = $this->getRepository('TestCenter\ModelBundle\Entity\UserOrganization');
     $link = $repository->findLink($user, $organization);
@@ -417,4 +472,5 @@ class UserProjectController
 
     return true;
   }
+
 }

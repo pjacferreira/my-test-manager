@@ -57,6 +57,17 @@ class ActionContext {
   /**
    * 
    * @param type $key
+   * @return type
+   */
+  public function hasParameter($key) {
+    $key = StringUtilities::nullOnEmpty($key);
+    assert('isset($key)');
+    return isset($key) ? array_key_exists($key, $this->m_arParameters) : false;
+  }
+
+  /**
+   * 
+   * @param type $key
    * @param type $default
    * @return type
    */

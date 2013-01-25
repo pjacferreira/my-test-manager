@@ -49,9 +49,9 @@ project_users_set:
 # List Users in the Project
 project_users_list:
     pattern:  /list
-    defaults: { _controller: TestCenterServiceBundle:UserProject:userList }
+    defaults: { _controller: TestCenterServiceBundle:UserProject:listPerProject }
 
 # Count Users in the Project
 project_users_count:
     pattern:  /count
-    defaults: { _controller: TestCenterServiceBundle:UserProject:userCount }
+    defaults: { _controller: TestCenterServiceBundle:UserProject:countPerProject }

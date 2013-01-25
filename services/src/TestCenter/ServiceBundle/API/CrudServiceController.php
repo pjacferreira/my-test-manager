@@ -19,7 +19,7 @@
 
 namespace TestCenter\ServiceBundle\API;
 
-use Library\ArrayUtilities;
+use Library\StringUtilities;
 
 /**
  * Description of CrudServiceController
@@ -128,16 +128,7 @@ class CrudServiceController
     assert('isset($context) && is_object($context)');
 
     // Get the Identifier for the Entity
-    $id = $context->getParameter('id');
-    $name = $context->getParameter('name');
-    assert('isset($id) || isset($name)');
-
-    // Get Entity
-    if (isset($id)) {
-      $entity = $this->getRepository()->find($id);
-    } else {
-      $entity = $this->getRepository()->findOneByName($name);
-    }
+    $entity = $context->getParameter('entity');
 
     if (!isset($entity)) {
       throw new \Exception('Entity not found', 1);
@@ -151,7 +142,7 @@ class CrudServiceController
    * @return object
    * @throws \Exception
    */
-  protected function doUpdateAction($parameters) {
+  protected function doUpdateAction($context) {
     // Parameter Validation
     assert('isset($context) && is_object($context)');
 
@@ -163,7 +154,7 @@ class CrudServiceController
     $meta = $this->getMetadata();
 
     // Set Entity Values
-    $this->setEntityValues($entity, $parameters, $meta);
+    $this->setEntityValues($entity, $context->getParameters(), $meta);
 
     // Persist the Entity
     $this->getEntityManager()->flush();

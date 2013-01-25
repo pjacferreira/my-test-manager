@@ -33,6 +33,6 @@ org_projects_list:
 # Count Projects in the  Organization (if org_id = null, the current session organization id is used)
 orgs_projects_count:
     pattern:  /count/{org_id}/{filter}
-    defaults: { _controller: TestCenterServiceBundle:Projects:listPerCount, org_id: null, filter: null }
+    defaults: { _controller: TestCenterServiceBundle:Projects:countPerOrg, org_id: null, filter: null }
     requirements:
        id:  \d+

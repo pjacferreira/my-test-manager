@@ -198,6 +198,7 @@ class Project {
    */
   protected function addPropertyIfNotNull($array, $prop_name) {
     // Get the Entity Name
+    // investigate get_called_class(); in order to create bas class function
     return isset($this->$prop_name) ? $this->addProperty($array, $prop_name,
                                                          $this->$prop_name) : $array;
   }

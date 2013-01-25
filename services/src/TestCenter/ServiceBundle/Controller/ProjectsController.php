@@ -59,6 +59,25 @@ class ProjectsController
   }
 
   /**
+   * Create a Project, within Current Session Organization
+   *
+   * @param $name Project Name (Unique within the Organization it belongs to)
+   * @return Response Object or throw Exception
+   */
+  public function createInOrgAction($org_id, $name) {
+    // Create Action Context
+    $context = new ActionContext('create');
+    // Extract Clean (Security) URL Parameters (Overwriting with route parameters where necessary)
+    $context = $context
+      ->setParameters($this->serviceParameters())
+      ->setParameter('org_id', (integer) $org_id)
+      ->setIfNotNull('name', StringUtilities::nullOnEmpty($name));
+
+    // Call the Function
+    return $this->doAction($context);
+  }
+
+  /**
    * @param $id
    * @return null
    */
@@ -69,6 +88,22 @@ class ProjectsController
     $context = $context
       ->setParameters($this->serviceParameters())
       ->setParameter('id', (integer) $id);
+
+    return $this->doAction($context);
+  }
+
+  /**
+   * 
+   * @param $name
+   * @return null
+   */
+  public function readByNameAction($name) {
+    // Create Action Context
+    $context = new ActionContext('read');
+    // Extract Clean (Security) URL Parameters (Overwriting with route parameters where necessary)
+    $context = $context
+      ->setParameters($this->serviceParameters())
+      ->setIfNotNull('name', StringUtilities::nullOnEmpty($name));
 
     return $this->doAction($context);
   }
@@ -90,6 +125,23 @@ class ProjectsController
   }
 
   /**
+   * @param $name
+   * @param $fields
+   * @param $values
+   * @return null
+   */
+  public function updateByNameAction($name) {
+    // Create Action Context
+    $context = new ActionContext('update');
+    // Extract Clean (Security) URL Parameters (Overwriting with route parameters where necessary)
+    $context = $context
+      ->setParameters($this->serviceParameters())
+      ->setIfNotNull('name', StringUtilities::nullOnEmpty($name));
+
+    return $this->doAction($context);
+  }
+
+  /**
    * @param $id
    * @return null
    */
@@ -98,6 +150,18 @@ class ProjectsController
     $context = new ActionContext('delete');
     // Call Action
     return $this->doAction($context->setParameter('id', (integer) $id));
+  }
+
+  /**
+   * @param $name
+   * @return null
+   */
+  public function deleteByNameAction($name) {
+    // Create Action Context
+    $context = new ActionContext('delete');
+    // Call Action
+    return $this->doAction($context->setIfNotNull('name',
+                                                  StringUtilities::nullOnEmpty($name)));
   }
 
   /**
@@ -200,8 +264,15 @@ class ProjectsController
     // Parameter Validation
     assert('isset($context) && is_object($context)');
 
+    // Get the Project that was Previously Created
+    $project = $context->getActionResult();
+    assert('isset($project)');
+
+    // Save the Project for the Action
+    $context->setParameter('entity', $project);
+    $context->setParameter('project', $project);
+
     // Create Root Container for Project
-    $project = $context->getParameter('project');
     $repository = $this->getRepository('TestCenter\ModelBundle\Entity\Container');
     $container = $repository->createContainer("ROOT Project [{$project->getId()}]",
                                               $project);
@@ -211,13 +282,13 @@ class ProjectsController
     // TODO Remove Project Container on Delete
     // Link the New Organization to the Current User
     $repository = $this->getRepository('TestCenter\ModelBundle\Entity\UserProject');
-    $repository->addLink($$context->getParameter('user'), $project, '');
+    $repository->addLink($context->getParameter('user'), $project, '');
 
     // Flush Changes to the Container and the Project Objects
     $this->getEntityManager()->flush();
 
     // No change to the context
-    return null;
+    return $context;
   }
 
   /**
@@ -279,38 +350,6 @@ class ProjectsController
    * @return type
    * @throws \Exception
    */
-  protected function sessionChecksCreate($context) {
-    // Parameter Validation
-    assert('isset($context) && is_object($context)');
-
-    // TODO Required Verification that User Has Required Permission against this Organization and/or Project for the Actions
-    // Basic Session Checks
-    $context = $this->sessionChecks($context);
-
-    // Verify Parameters
-    $name = $context->getParameter('name');
-    if (!isset($name)) {
-      throw new \Exception('Missing Required Action Parameter [name].', 1);
-    }
-
-    // Test if the Project Name already exists
-    $project = $this->getRepository()->findOneBy(array(
-      'organization' => $context->getParameter('organization'),
-      'name' => $name
-      ));
-    if (isset($project)) {
-      throw new \Exception("Project [$name] already exists.", 2);
-    }
-
-    return $context;
-  }
-
-  /**
-   * 
-   * @param type $context
-   * @return type
-   * @throws \Exception
-   */
   protected function sessionChecks($context) {
     // Parameter Validation
     assert('isset($context) && is_object($context)');
@@ -329,66 +368,94 @@ class ProjectsController
     }
     $context->setParameter('user', $user);
 
-    // Process Organization ID
-    $context = $this->processChecks($context,
-                                    array('Create', 'ListPerOrg', 'CountPerOrg'),
-                                    function($controller, $context) {
-        // Get the Organization  ID (either through parameter or the Current Session Settings)
-        $org_id = $context->getParameter('org_id');
-        if (!isset($org_id)) {
-          $controller->checkOrganization();
-
-          // Get the Current Session Organization
-          $org_id = SessionManager::getOrganization();
-        }
-
-        $org = $controller->getRepository('TestCenter\ModelBundle\Entity\Organization')->find($org_id);
+    // Process 'org_id' Parameter (if it exists)
+    $context = $this->onParameterDo($context, 'org_id',
+                                    function($controller, $context, $action, $value) {
+        // Find the Organization
+        $org = $controller->getRepository('TestCenter\ModelBundle\Entity\Organization')->find($value);
         if (!isset($org)) {
-          throw new \Exception("Organization[$org_id] not found", 1);
+          throw new \Exception("Organization[$value] not found", 1);
         }
-
-        // Check if we have access to the Organization
-        $controller->checkOrganizationAccess($context->getParameter('user'),
-                                                                    $org);
 
         return $context->setParameter('organization', $org);
-        ;
+      }, null, array('Create', 'ListPerOrg', 'CountPerOrg'),
+                                      function($controller, $context, $action) {
+        // Missing Organization ID, so use the current Session Organization
+        $controller->checkOrganization();
+
+        // Get the Current Session Organization
+        return SessionManager::getOrganization();
       });
 
-    // Process Project ID
-    $context = $this->processChecks($context, array('Read', 'Update', 'Delete'),
-                                    function($controller, $context) {
-        // Get the Identified for the User
-        $id = $context->getParameter('id');
-        if (!isset($id)) {
-          throw new \Exception('Missing Required Action Parameter [id].', 1);
-        }
+    // Process 'name' Parameter (if it exists)
+    $context = $this->onParameterDo($context, 'name',
+                                    function($controller, $context, $action, $value) {
 
-        // Get the Project
-        $project = $controller->getRepository()->find($id);
-        if (!isset($project)) {
-          throw new \Exception('Project not found', 1);
-        }
+        // Try to Find the Project by Name
+        $project = $controller->getRepository()->findOneByName($value);
 
-        $user = $context->getParameter('user');
-        $action = $context->getAction();
-        if ($action === 'Delete') {
-          // User Only Requires Access to Organization
-          $controller->checkOrganizationAccess($user,
-                                               $project->getOrganization());
+        if ($action === 'Create') {
+          if (isset($project)) {
+            throw new \Exception("Project [$name] already exists.", 2);
+          }
         } else {
-          // Check if User Has Access to Project (and by consequence to the Organization)
-          $controller->checkProjectAccess($user, $project);
+          if (!isset($project)) {
+            throw new \Exception("Project [$value] not found", 1);
+          }
+
+          // Save the Project for the Action
+          $context->setParameter('entity', $project);
+          $context->setParameter('project', $project);
         }
-
-        // Check if we have access to the Organization
-        $controller->checkProjectAccess($user, $project);
-
-        // Save the Project for the Action
-        $context->setParameter('entity', $project);
-        $context->setParameter('project', $project);
 
         return $context;
+      }, array('Read', 'Update', 'Delete'), 'Create');
+
+    // Process 'id' Parameter (if it exists)
+    if (!$context->hasParameter('entity')) {
+      $context = $this->onParameterDo($context, 'id',
+                                      function($controller, $context, $action, $value) {
+          // Get the Project
+          $project = $controller->getRepository()->find($value);
+          if (!isset($project)) {
+            throw new \Exception("Project[{$value}] not found", 1);
+          }
+
+          // Save the Project for the Action
+          return $context->
+              setParameter('entity', $project)->
+              setParameter('project', $project);
+        }, null, array('Read', 'Update', 'Delete'));
+    }
+
+    // Do Access Checks
+    $context = $this->onActionDo($context,
+                                 array('Read', 'Create', 'Update', 'Delete'),
+                                 function($controller, $context, $action) {
+        // Required Parameters
+        $user = $context->getParameter('user');
+        assert('isset($user)');
+
+        // Other Parameters
+        $project = $context->getParameter('project');
+        $organization = $context->getParameter('organization');
+
+        switch ($action) {
+          case 'Create':
+            assert('isset($organization)');
+            $controller->checkOrganizationAccess($user, $organization);
+            break;
+          case 'Delete': // User Only Requires Access to Organization
+            assert('isset($project)');
+            $controller->checkOrganizationAccess($user,
+                                                 $project->getOrganization());
+            break;
+          default: // Check if User Has Access to Project (and by consequence to the Organization)
+            assert('isset($project)');
+            $controller->checkProjectAccess($user, $project);
+        }
+
+        return null;
       });
 
     return $context;

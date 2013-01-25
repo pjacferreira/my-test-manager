@@ -40,6 +40,10 @@ users_update:
     defaults: { _controller: TestCenterServiceBundle:Users:update }
     requirements:
         id:  \d+
+
+users_update_name:
+    pattern:  /update/{name}
+    defaults: { _controller: TestCenterServiceBundle:Users:updateByName }
     
 # Delete 
 users_delete:
@@ -47,6 +51,10 @@ users_delete:
     defaults: { _controller: TestCenterServiceBundle:Users:delete }
     requirements:
         id:  \d+
+
+users_delete_name:
+    pattern:  /delete/{name}
+    defaults: { _controller: TestCenterServiceBundle:Users:deleteByName }
 
 # List Users (The Results will depend on the wether the user is logged in or not, and the the users permissions)
 users_list:

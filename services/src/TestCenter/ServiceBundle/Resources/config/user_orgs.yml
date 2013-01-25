@@ -53,13 +53,13 @@ users_orgs_set:
 # List the Organizations the User Belongs To
 users_orgs_list:
     pattern:  /list/{user_id}
-    defaults: { _controller: TestCenterServiceBundle:UserOrganization:listPerUser }
+    defaults: { _controller: TestCenterServiceBundle:UserOrganization:listPerUser, user_id: null }
     requirements:
         user_id:  \d+
 
 # Count the Organization the User Belongs To
 users_orgs_count:
     pattern:  /count/{user_id}
-    defaults: { _controller: TestCenterServiceBundle:UserOrganization:countPerUser }
+    defaults: { _controller: TestCenterServiceBundle:UserOrganization:countPerUser, user_id: null }
     requirements:
         user_id:  \d+

@@ -1,5 +1,12 @@
 #!/bin/bash
 
+# Save Current Working Directory
+CWD=`pwd`
+
+# Change to Script Directory (note in bash it not possible to call a script with just it's name, 
+# always have to do ./script-name)
+cd $(dirname $0)
+
 # Test Center - Compliance Testing Application
 # Copyright (C) 2012 Paulo Ferreira <pf at sourcenotes.org>
 #
@@ -28,3 +35,6 @@ php app/console doctrine:schema:update --force
 
 # Load Fixtures
 php app/console doctrine:fixtures:load
+
+# Restore the Working Directory
+cd $CWD

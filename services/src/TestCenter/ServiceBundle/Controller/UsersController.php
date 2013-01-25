@@ -105,6 +105,23 @@ class UsersController
   }
 
   /**
+   * @param $name
+   * @param $fields
+   * @param $values
+   * @return null
+   */
+  public function updateByNameAction($name) {
+    // Create Action Context
+    $context = new ActionContext('update');
+    // Extract Clean (Security) URL Parameters (Overwriting with route parameters where necessary)
+    $context = $context
+      ->setParameters($this->serviceParameters())
+      ->setIfNotNull('name', StringUtilities::nullOnEmpty($name));
+
+    return $this->doAction($context);
+  }
+
+  /**
    * @param $id
    * @return null
    */
@@ -113,6 +130,18 @@ class UsersController
     $context = new ActionContext('delete');
     // Call Action
     return $this->doAction($context->setParameter('id', (integer) $id));
+  }
+
+  /**
+   * @param $name
+   * @return null
+   */
+  public function deleteByNameAction($name) {
+    // Create Action Context
+    $context = new ActionContext('delete');
+    // Call Action
+    return $this->doAction($context->setIfNotNull('name',
+                                                  StringUtilities::nullOnEmpty($name)));
   }
 
   /**
@@ -172,34 +201,6 @@ class UsersController
   }
 
   /**
-   * @param $parameters
-   * @return array
-   * @throws \Exception
-   */
-  protected function sessionChecksCreate($context) {
-    // Parameter Validation
-    assert('isset($context) && is_object($context)');
-
-    // Basic Session Checks
-    $context = $this->sessionChecks($context);
-
-    // Verify Parameters
-    $name = $context->getParameter('name');
-    if (!isset($name)) {
-      throw new \Exception('Missing Required Action Parameter [name].', 1);
-    }
-
-    // Test if the user name already exists
-    $user = $this->getRepository()->findOneByName($name);
-    if (isset($user)) {
-      throw new \Exception("User [$name] already exists.", 2);
-    }
-
-    // Even though we didn't change the context, the call to sessionChecks might have
-    return $context;
-  }
-
-  /**
    * @param $action
    * @param $parameters
    */
@@ -217,27 +218,46 @@ class UsersController
       $context->setParameter('password', md5($password));
     }
 
-    $action = $context->getAction();
-    assert('isset($action)');
-    switch ($action) {
-      case 'Update':
-      case 'Delete':
-        // Get the Identified for the User
-        $id = $context->getParameter('id');
-        if (!isset($id)) {
-          throw new \Exception('Missing Required Action Parameter [id].', 1);
+    // Process 'name' Parameter (if it exists)
+    $context = $this->onParameterDo($context, 'name',
+                                    function($controller, $context, $action, $value) {
+        // Try to Find the Organization by Name
+        $org = $controller->getRepository()->findOneByName($value);
+        if ($action === 'Create') {
+          if (isset($org)) {
+            throw new \Exception("User [$value] already exists.", 2);
+          }
+        } else {
+          if (!isset($org)) {
+            throw new \Exception("User [$value] not found", 1);
+          }
+
+          // Save the Organization for the Action
+          $context->setParameter('entity', $org);
+          $context->setParameter('organization', $org);
         }
 
-        // Test if the user name already exists
-        $user = $this->getRepository()->find($id);
-        if (!isset($user)) {
-          throw new \Exception('User not found', 1);
-        }
+        return $context;
+      }, array('Read', 'Update', 'Delete'), 'Create');
 
-        // Save the User for the Action
-        $context->setParameter('entity', $user);
-        $context->setParameter('user', $user);
-        break;
+    // Process 'id' Parameter (if it exists)
+    if (!$context->hasParameter('entity')) {
+      $context = $this->onParameterDo($context, 'id',
+                                      function($controller, $context, $action, $value) {
+
+          // Try to Find the Organization by Name
+          $org = $controller->getRepository()->find($value);
+          if (!isset($org)) {
+            throw new \Exception("Organization [$value]not found", 1);
+          }
+
+
+          // Save the Organization for the Action
+          $context->setParameter('entity', $org);
+          $context->setParameter('organization', $org);
+
+          return $context;
+        }, null, array('Read', 'Update', 'Delete'));
     }
 
     return $context;

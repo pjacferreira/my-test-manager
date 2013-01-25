@@ -43,12 +43,20 @@ project_update:
     requirements:
         id:  \d+
 
+project_update_name:
+    pattern:  /update/{name}
+    defaults: { _controller: TestCenterServiceBundle:Projects:updateByName }
+
 # Delete (A Single or All Projects : id == null)
 project_delete:
     pattern:  /delete/{id}
     defaults: { _controller: TestCenterServiceBundle:Projects:delete, id: null }
     requirements:
         id:  \d+
+
+project_delete_name:
+    pattern:  /delete/{name}
+    defaults: { _controller: TestCenterServiceBundle:Projects:deleteByName }
 
 # List Projects (Global - All Projects Independently of the Organization They Belong To)
 project_list:

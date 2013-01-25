@@ -41,12 +41,20 @@ orgs_update:
     requirements:
         id:  \d+
     
+orgs_update_name:
+    pattern:  /update/{name}
+    defaults: { _controller: TestCenterServiceBundle:Organizations:updateByName }
+    
 # Delete (A Single or All Organizations : id == null)
 orgs_delete:
     pattern:  /delete/{id}
     defaults: { _controller: TestCenterServiceBundle:Organizations:delete, id: null }
     requirements:
         id:  \d+
+
+orgs_delete_name:
+    pattern:  /delete/{name}
+    defaults: { _controller: TestCenterServiceBundle:Organizations:deleteByName }
 
 # List Organizations (The Results will depend on the user that is logged in, and the the users permissions)
 orgs_list:

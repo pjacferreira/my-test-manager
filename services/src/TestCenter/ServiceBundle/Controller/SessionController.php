@@ -184,7 +184,8 @@ class SessionController
 
     // Get the new user
     $user = $this->getDoctrine()->getRepository('TestCenterModelBundle:User')->findOneByName($name);
-    if (isset($user) && ($user->getPassword() == md5($password))) {
+    $password = md5($password);
+    if (isset($user) && ($user->getPassword() == $password)) {
 
       // Verify if we are logging in to the current active user (again)
       $current = SessionManager::getUser();
@@ -195,7 +196,7 @@ class SessionController
         }
 
         // NO; Logout Current User
-        $this->doLogoutAction();
+        $this->doLogoutAction($context);
       }
 
       // Login New User
