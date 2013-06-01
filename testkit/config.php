@@ -22,7 +22,7 @@ $TESTSDIR = 'tests';
 $STOP_ON_FAIL = true;
 $DEBUG = false;
 $XDEBUG = 'netbeans-xdebug';
-//$BREAK_ON_TEST= 'project-sets:900';  // Break On a Specific Test (allows us to create a specific state, from which we can, manually, continue testing)
+$BREAK_ON_TEST= 'projects:900';  // Break On a Specific Test (allows us to create a specific state, from which we can, manually, continue testing)
 
 /* TODO Consider the Following Scenarios
  * 1. Break on Exception (DONE)

@@ -24,8 +24,8 @@ use api\TestFactory;
 // $SKIP = true; // Skip the File for Current Test
 
 $TESTS = array(
-  // START: Session Tests
-  TestFactory::marker('organizations', 1, 'User Tests : START')->
+  // START: Organization Tests
+  TestFactory::marker('organizations', 1, 'Organization Tests : START')->
     after('session', 1),
   // CREATE ORGANIZATION
   TestFactory::marker('organizations', 100, 'PRE Organization Create')->

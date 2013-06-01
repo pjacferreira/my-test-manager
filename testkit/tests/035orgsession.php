@@ -23,8 +23,8 @@ use api\TestFactory;
 // $SKIP = true; // Skip the File for Current Test
 
 $TESTS = array(
-  // START: Organizartion<-->Session Tests
-  TestFactory::marker('org-session', 1, 'Organizartion<-->Session Tests : START')->
+  // START: Organization<-->Session Tests
+  TestFactory::marker('org-session', 1, 'Organization<-->Session Tests : START')->
     after('session', 1),
   // NO ORGANIZATION SET for SESSION
   TestFactory::marker('org-session', 100, 'PRE No Session Organization')->
@@ -68,7 +68,7 @@ $TESTS = array(
     after('org-session', 600),
   TestFactory::marker('org-session', 699, 'POST Session Organization 5')->
     after('org-session', 610)->before('organizations', 900),
-  // END: Organizartion<-->Session Tests
+  // END: Organization<-->Session Tests
   TestFactory::marker('org-session', 999, 'Organization<-->Session Tests : END')->
     after('org-session', 699),
 );
