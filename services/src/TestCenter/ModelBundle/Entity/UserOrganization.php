@@ -1,4 +1,5 @@
 <?php
+
 /* Test Center - Compliance Testing Application
  * Copyright (C) 2012 Paulo Ferreira <pf at sourcenotes.org>
  *
@@ -15,6 +16,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 namespace TestCenter\ModelBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
@@ -28,6 +30,7 @@ use Doctrine\ORM\Mapping as ORM;
  * @author Paulo Ferreira
  */
 class UserOrganization {
+
   /**
    * @var integer $user
    *
@@ -57,7 +60,11 @@ class UserOrganization {
    * @return array
    */
   public function toArray() {
-    return array('user' => $this->user->getId(), 'organization' => $this->organization->getId(), 'permissions' => $this->permissions);
+    return array(
+      'user' => $this->user->toArray(),
+      'organization' => $this->organization->toArray(),
+      'permissions' => $this->permissions
+    );
   }
 
   /**
@@ -113,4 +120,5 @@ class UserOrganization {
   public function getOrganization() {
     return $this->organization;
   }
+
 }

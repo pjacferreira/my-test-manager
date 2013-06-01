@@ -41,6 +41,19 @@ meta_fields:
     pattern:  /fields/{list}
     defaults: { _controller: TestCenterServiceBundle:Metadata:fields, list: null}
 
+# Retrieve A Single Service's Meta Data
+# {id} of the field definition to return
+meta_service:
+    pattern:  /service/{id}
+    defaults: { _controller: TestCenterServiceBundle:Metadata:service}
+
+# Retrieve a List of Services' Meta Data
+# {list} comma seperated list, of fields, for which the Meta data is required
+#   the 'list' parameter, can also be provided as a GET/POST parameter
+meta_services:
+    pattern:  /services/{list}
+    defaults: { _controller: TestCenterServiceBundle:Metadata:services, list: null}
+
 # Retrieve A Single Action's Meta Data
 # {id} of the action definition to return
 meta_action:

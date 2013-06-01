@@ -1,54 +1,48 @@
 /* ************************************************************************
- 
+
  TestCenter Client - Simplified Functional/User Acceptance Testing
- 
+
  Copyright:
  2012-2013 Paulo Ferreira <pf at sourcenotes.org>
- 
+
  License:
  AGPLv3: http://www.gnu.org/licenses/agpl.html
  See the LICENSE file in the project's top-level directory for details.
- 
+
  Authors:
  * Paulo Ferreira
- 
+
  ************************************************************************ */
 
 /* ************************************************************************
- #require(qx.lang.Type)
- #require(qx.lang.String)
+
  ************************************************************************ */
 
-/**
- * String helper functions
- *
- */
-qx.Bootstrap.define("tc.util.String", {
-  type: "static",
+qx.Interface.define("tc.meta.interfaces.IServicesMetadataModel", {
   /*
    *****************************************************************************
-   STATIC MEMBERS
+   MEMBERS
    *****************************************************************************
    */
-  statics: {
+  members: {
     /**
-     * Returns null if the value is not a string or is an empty string, otherwise it optionally returns the
-     * trimmed string
+     * Retrieves All of the Services Definitions that may be used in the Form.
      *
-     * @param str {var} a value to test.
-     * @param trim {Boolean?false} If str is a string, should it return the trimmed value?
-     * @return {String} Null or Non Empty String.
+     * @abstract
+     * @return {Object} Services' Definition Object or NULL|UNDEFINED if the Model has not been initialized.
      */
-    nullOnEmpty: function(str, trim) {
+    getServicesMeta: function () {
+    },
 
-      if (qx.lang.Type.isString(str)) {
-        var value = str.trim();
-        if (value.length > 0) {
-          return trim ? value : str;
-        }
-      }
-
-      return null;
+    /**
+     * Retrieves a Single Service's Definition.
+     *
+     * @abstract
+     * @param name {String} Name of the required Service Definition.
+     * @return {Object} Service Definition Object or NULL|UNDEFINED if no Service with the name exists,
+     *   or the Model has not been initialized.
+     */
+    getServiceMeta: function (name) {
     }
   }
 });

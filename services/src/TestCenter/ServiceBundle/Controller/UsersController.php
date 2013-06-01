@@ -159,11 +159,11 @@ class UsersController
     // Build Parameters
     $context = $context
       ->setFirstNotNullOf('__filter', StringUtilities::nullOnEmpty($filter),
-                                                                   $request->get('filter'))
+                                                                   $request->request->get('filter'))
       ->setFirstNotNullOf('__sort', StringUtilities::nullOnEmpty($sort),
-                                                                 $request->get('sort'))
+                                                                 $request->request->get('sort'))
       ->setFirstNotNullOf('__limit', StringUtilities::nullOnEmpty($limit),
-                                                                  $request->get('limit'));
+                                                                  $request->request->get('limit'));
 
     return $this->doAction($context);
   }
@@ -180,7 +180,7 @@ class UsersController
     // Build Parameters
     $context = $context->setFirstNotNullOf('__filter',
                                            StringUtilities::nullOnEmpty($filter),
-                                                                        $request->get('filter'));
+                                                                        $request->request->get('filter'));
 
     return $this->doAction($context);
   }
@@ -245,16 +245,16 @@ class UsersController
       $context = $this->onParameterDo($context, 'id',
                                       function($controller, $context, $action, $value) {
 
-          // Try to Find the Organization by Name
-          $org = $controller->getRepository()->find($value);
-          if (!isset($org)) {
-            throw new \Exception("Organization [$value]not found", 1);
+          // Try to Find the User by ID
+          $user = $controller->getRepository()->find($value);
+          if (!isset($user)) {
+            throw new \Exception("User [$value] not found", 1);
           }
 
 
-          // Save the Organization for the Action
-          $context->setParameter('entity', $org);
-          $context->setParameter('organization', $org);
+          // Save the User for the Action
+          $context->setParameter('entity', $user);
+          $context->setParameter('user', $user);
 
           return $context;
         }, null, array('Read', 'Update', 'Delete'));

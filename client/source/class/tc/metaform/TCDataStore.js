@@ -27,9 +27,8 @@ qx.Class.define("tc.metaform.TCDataStore", {
    */
   /**
    *
-   * @param formName
-   * @param formType
-   * @param sourceMetadata
+   * @param service
+   * @param keyFields
    */
   construct: function (service, keyFields) {
     this.base(arguments, null);
@@ -156,7 +155,6 @@ qx.Class.define("tc.metaform.TCDataStore", {
      INTERNAL METHODS
      *****************************************************************************
      */
-
     /**
      *
      * @param source
@@ -169,7 +167,7 @@ qx.Class.define("tc.metaform.TCDataStore", {
 
       if (this.__keyFields) {
         var key;
-        for (var i = 0; i < this.__keyFields; ++i) {
+        for (var i = 0; i < this.__keyFields.length; ++i) {
           key = this.__keyFields[i];
           if (!source.hasOwnProperty(key) || (source[key] == null)) { // Missing a Value for a Key Field
             return null;

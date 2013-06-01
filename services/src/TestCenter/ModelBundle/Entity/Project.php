@@ -156,7 +156,7 @@ class Project {
    */
   public function toArray() {
     $array = array(
-      '__entity' => $this->entityName(),
+      '__entity' => strtolower($this->entityName()),
     );
 
     $array = $this->addPropertyIfNotNull($array, 'id');
@@ -186,7 +186,7 @@ class Project {
   protected function addProperty($array, $name, $value) {
     // Get the Entity Name
     $entity = strtolower($this->entityName());
-    $array["{$entity}:{$name}"] = $value;
+    $array["{$name}"] = $value;
     return $array;
   }
 

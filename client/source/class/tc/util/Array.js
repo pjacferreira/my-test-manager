@@ -1,17 +1,17 @@
 /* ************************************************************************
-
+ 
  TestCenter Client - Simplified Functional/User Acceptance Testing
-
+ 
  Copyright:
  2012-2013 Paulo Ferreira <pf at sourcenotes.org>
-
+ 
  License:
  AGPLv3: http://www.gnu.org/licenses/agpl.html
  See the LICENSE file in the project's top-level directory for details.
-
+ 
  Authors:
  * Paulo Ferreira
-
+ 
  ************************************************************************ */
 
 /* ************************************************************************
@@ -22,6 +22,12 @@
  *
  */
 qx.Bootstrap.define("tc.util.Array", {
+  type: "static",
+  /*
+   *****************************************************************************
+   STATIC MEMBERS
+   *****************************************************************************
+   */
   statics: {
     /**
      * Returns an array, that is the intersection of 2 (previously) sorted arrays.
@@ -30,7 +36,7 @@ qx.Bootstrap.define("tc.util.Array", {
      * @param b Second Array (Sorted)
      * @return {Array} Resultant Intersection
      */
-    intersection: function (a, b) {
+    intersection: function(a, b) {
 
       var ai = 0, bi = 0;
       var result = new Array();
@@ -52,7 +58,6 @@ qx.Bootstrap.define("tc.util.Array", {
 
       return result.length ? result : null;
     },
-
     /**
      * Returns an array, that is the union of 2 (previously) sorted arrays.
      * If an element co-exists in both arrays, only a single element will exist in the result.
@@ -61,7 +66,7 @@ qx.Bootstrap.define("tc.util.Array", {
      * @param b Second Array (Sorted)
      * @return {Array} Resultant Union
      */
-    union: function (a, b) {
+    union: function(a, b) {
       var dif = tc.util.Array.difference(a, b);
       if ((dif != null) && (dif.length > 0)) {
         return a.concat(dif);
@@ -69,7 +74,6 @@ qx.Bootstrap.define("tc.util.Array", {
         return a.length ? a : null;
       }
     },
-
     /**
      * Set Theory Difference http://en.wikipedia.org/wiki/Complement_(set_theory)
      * Returns the elements in array B, that are not part of array A
@@ -78,7 +82,7 @@ qx.Bootstrap.define("tc.util.Array", {
      * @param b Second Array (Sorted)
      * @return {Array} Resultant Difference
      */
-    difference: function (a, b) {
+    difference: function(a, b) {
 
       var ai = 0, bi = 0;
       var result = new Array();
@@ -103,7 +107,6 @@ qx.Bootstrap.define("tc.util.Array", {
 
       return result.length ? result : null;
     },
-
     /**
      * Set Theory Difference http://en.wikipedia.org/wiki/Complement_(set_theory)
      * Returns the elements in array B, that are not part of array A
@@ -112,11 +115,11 @@ qx.Bootstrap.define("tc.util.Array", {
      * @param b Second Array (Sorted)
      * @return {Array} Resultant Difference
      */
-    map: function (array, callback, thisArg) {
+    map: function(array, callback, thisArg) {
       if (Array.prototype.map) {
         return array.map(callback, thisArg);
       } else {
-        // See Source: https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array/map
+        // See Source: https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array/map 
         var T, A, k;
 
         if (this == null) {
@@ -185,20 +188,18 @@ qx.Bootstrap.define("tc.util.Array", {
         return A;
       }
     },
-
-    trim: function (array) {
+    trim: function(array) {
 
       if (array && (array.length > 0)) {
         // Trim all the Array Elements
-        return tc.util.Array.map(array, function (element, index, array) {
+        return tc.util.Array.map(array, function(element, index, array) {
           return tc.util.String.nullOnEmpty(element, true);
         }, this);
       }
 
       return null;
     },
-
-    clean: function (array) {
+    clean: function(array) {
 
       if (array && (array.length > 0)) {
         var newArray = [];

@@ -32,6 +32,11 @@ user:
       - 'Password': ['user:password', 'virtual:password-confirmation']
     validations: 
       - 'virtual:user_confirmation': '= {user:password}'    
+    services:
+      create: 'user:create'
+      read: 'user:read'
+      update: 'user:update'
+      delete: 'user:delete'
   #
   # Create User Form
   #
@@ -40,13 +45,11 @@ user:
     title: Create User
     fields: 
       - 'User Information': 'user:name'
-    data-direction: out
+    data-direction: out    
     actions:
-      - submit: 
-          url:
-            route: [user, create]
-            include: all
-            options: ~             
+      - submit:
+          service: create
+          label: 'Submit'
 
   #
   # User Details Form
@@ -55,10 +58,8 @@ user:
     inherit: 'user:default'
     title: User Details
     data-direction: in
-    actions:
-      - load:
-        - url:
-            route: ['user', 'read', '{user:id}']
+    load:
+      - service: read
   #
   # User Update Form
   #
@@ -66,11 +67,9 @@ user:
     inherit: 'user:default'
     title: Modify User
     data-direction: both
+    load:
+      - service: read
     actions:
-      - load:
-        - url:
-            route: ['user', 'read', '{user:id}']
-      - submit: 
-        - url:
-            route: ['user', 'update', '{user:id}']
-            include: all                 
+      - submit:
+          service: update
+          label: 'Update'

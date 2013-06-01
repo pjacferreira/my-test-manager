@@ -30,18 +30,24 @@ qx.Interface.define("tc.metaform.interfaces.IFormModel", {
      * Fired when a new Meta Model has been initialized (this allows model load to be
      * asynchronous)
      */
-    "modelReady": "qx.event.type.Event",
-
+    "model-ready": "qx.event.type.Event",
+    /**
+     * Fired when any time Field Values are been modified. 
+     * The returned data is:
+     * 1. A string, with the name of the field modified, if a single field is
+     *    modified, or
+     * 2. An array of strings, containing the list of fields modified, if more than
+     *    one field is modified.
+     */
+    "fields-changed": "qx.event.type.Data",
     /**
      * Fired when Field Values have been loaded from the Data Store
      */
-    "dataLoaded": "qx.event.type.Event",
-
+    "record-loaded": "qx.event.type.Event",
     /**
      * Fired when Field Values have been saved back to the Data Store
      */
-    "dataSaved": "qx.event.type.Event",
-
+    "record-saved": "qx.event.type.Event",
     /**
      * Fired on any error
      */

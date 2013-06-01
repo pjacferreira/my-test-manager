@@ -16,7 +16,7 @@
 
 qx.Theme.define("tc.theme.Decoration",
 {
-  extend : qx.theme.modern.Decoration,
+  extend : qx.theme.indigo.Decoration,
 
   decorations :
   {

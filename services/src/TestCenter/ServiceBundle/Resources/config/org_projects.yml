@@ -19,7 +19,7 @@
 ##
 
 # Create (Within a Current Session Organization)
-org_projects_create_session:
+org_projects_create:
     pattern:  /create/{name}
     defaults: { _controller: TestCenterServiceBundle:Projects:create }
 

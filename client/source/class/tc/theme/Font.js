@@ -16,7 +16,7 @@
 
 qx.Theme.define("tc.theme.Font",
 {
-  extend : qx.theme.modern.Font,
+  extend : qx.theme.indigo.Font,
 
   fonts :
   {

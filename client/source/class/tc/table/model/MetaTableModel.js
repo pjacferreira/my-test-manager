@@ -170,7 +170,7 @@ qx.Class.define("tc.table.model.MetaTableModel", {
 
       // Create a Map between Column Names and Column Index
       this.__mapColumnIndex = {};
-      for (i = 0; i < columns.length; ++i) {
+      for (var i = 0; i < columns.length; ++i) {
         this.__mapColumnIndex[columns[i]] = i;
       }
 
@@ -299,7 +299,7 @@ qx.Class.define("tc.table.model.MetaTableModel", {
         // Send request
         var filter = this._buildFilter();
         var sort = this.__buildSort();
-        req.send('user', 'list', null, this.__mixinNotNull({}, { filter: filter, sort: sort, limit: lastRow - firstRow + 1}));
+        req.send(url, 'list', null, this.__mixinNotNull({}, { filter: filter, sort: sort, limit: lastRow - firstRow + 1}));
       }
     },
 

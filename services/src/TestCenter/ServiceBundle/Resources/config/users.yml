@@ -74,7 +74,7 @@ users_count:
 ##
 tc_user_orgs:
     resource: "@TestCenterServiceBundle/Resources/config/user_orgs.yml"
-    prefix:   /orgs
+    prefix:   /org
 
 
 ##

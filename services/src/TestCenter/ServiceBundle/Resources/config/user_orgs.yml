@@ -15,11 +15,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ##
-# User Organization Management  (service path /users/orgs)
+# User Organization Management  (service path /users/org)
 ##
 
 # Add User to Organization
-users_orgs_add:
+user_org_add:
     pattern:  /add/{user_id}/{org_id}/{permissions}
     defaults: { _controller: TestCenterServiceBundle:UserOrganization:link, permissions: null }
     requirements:
@@ -27,7 +27,7 @@ users_orgs_add:
         org_id:  \d+
 
 # Remove User from Organization
-users_orgs_remove:
+user_org_remove:
     pattern:  /remove/{user_id}/{org_id}
     defaults: { _controller: TestCenterServiceBundle:UserOrganization:unlink }
     requirements:
@@ -35,7 +35,7 @@ users_orgs_remove:
         org_id:  \d+
 
 # Get User's Organization Settings
-users_orgs_get:
+user_org_get:
     pattern:  /get/{user_id}/{org_id}
     defaults: { _controller: TestCenterServiceBundle:UserOrganization:get }
     requirements:
@@ -43,7 +43,7 @@ users_orgs_get:
         org_id:  \d+
 
 # Set User's Organization Settings
-users_orgs_set:
+user_org_set:
     pattern:  /set/{user_id}/{org_id}/{permissions}
     defaults: { _controller: TestCenterServiceBundle:UserOrganization:set }
     requirements:
@@ -51,14 +51,14 @@ users_orgs_set:
         org_id:  \d+
 
 # List the Organizations the User Belongs To
-users_orgs_list:
+user_org_list:
     pattern:  /list/{user_id}
     defaults: { _controller: TestCenterServiceBundle:UserOrganization:listPerUser, user_id: null }
     requirements:
         user_id:  \d+
 
 # Count the Organization the User Belongs To
-users_orgs_count:
+user_org_count:
     pattern:  /count/{user_id}
     defaults: { _controller: TestCenterServiceBundle:UserOrganization:countPerUser, user_id: null }
     requirements:

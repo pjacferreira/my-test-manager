@@ -72,7 +72,7 @@ orgs_count:
 ##
 tc_org_users:
     resource: "@TestCenterServiceBundle/Resources/config/org_users.yml"
-    prefix:   /users
+    prefix:   /user
 
 ##
 # Organization Project Management

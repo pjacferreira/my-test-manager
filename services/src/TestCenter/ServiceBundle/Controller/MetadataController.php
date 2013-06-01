@@ -32,76 +32,78 @@ use TestCenter\ServiceBundle\API\BaseServiceController;
  *
  * @author Paulo Ferreira
  */
-class MetadataController
-  extends BaseServiceController {
+class MetadataController extends BaseServiceController {
 
   protected static $FIELD_DEFAULTS = array(
-    /* 'type' - specifies the type of data contained in the field
-     * Possible Values:
-     * 'integer' - integer value
-     * 'decimal' - deciman point value
-     * 'text' - single line of text (DEFAULT)
-     * 'password' - like text, except keystrokes are masked
-     * 'html' - HTML text
-     * 'time' - time value
-     * 'date' - date value
-     * 'datetime' - combination of date and time
-     * 'boolean' - true or false values
-     */
-    'type' => 'text',
-    /* 'virtual' - Specified that the field is virtual (i.e. no equivalent field
-     * in the backend data store. Only used for scratch/temporary fields)
-     * Possible Values:
-     * 'true' - virtual
-     * 'false' - not virtual (DEFAULT)
-     */
-    'virtual' => false,
-    /* 'data-direction' - specifies in which direction data is transmitted (relative to the data store)
-     * Possible Values:
-     * 'out'  - outcoming (read-only field)
-     * 'both' - bidirectional (read-write field) (DEFAULT)
-     * 'none' - not used in data comunication
-     */
-    /* TODO How to handle a situation in which we don't want the field
-     * Editable, and don't want to synchronize (example a Virtual Field
-     * just to display a value (maybe even modifiable, through dependency on
-     * other fields), but is not editable by the user
-     * Possible Solutions (split read / write, and data synchronization, into
-     * different properties)
-     */
-    'data-direction' => 'both',
-    /* 'max-length' - Maximum Number of Characters contained in the field (DEFAULT : 0)
-     */
-    'max-length' => 0,
-    /* 'default' - Default Value to Use
-     */
-    'default' => null,
-    /* 'trim' - trim the value before validation
-     * Possible Values:
-     * 'true' - yes (trim both right and left)
-     * 'false' - no
-     * 'right' - trim only leading whitespaces
-     * 'left' - trim only trailing whitespaces
-     */
-    'trim' => true,
-    /* 'empty' - how to handle empty strings?
-     * Possible Values:
-     * 'as-empty' - treat as empty string
-     * 'as-null' - treat as null
-     */
-    'empty' => 'as-null',
-    /* 'nullable' - can contain NULL values
-     * Possible Values:
-     * 'true'  - yes
-     * 'false' - no
-     */
-    'nullable' => true,
-    /* 'label' - Default Label to be used (if no other provided)
-     */
-    'label' => null,
-    /* 'description' - Default Description to be used (if no other provided)
-     */
-    'description' => null
+      /* 'type' - specifies the type of data contained in the field
+       * Possible Values:
+       * 'integer' - integer value
+       * 'decimal' - deciman point value
+       * 'text' - single line of text (DEFAULT)
+       * 'password' - like text, except keystrokes are masked
+       * 'html' - HTML text
+       * 'time' - time value
+       * 'date' - date value
+       * 'datetime' - combination of date and time
+       * 'boolean' - true or false values
+       */
+      'type' => 'text',
+      /* 'virtual' - Specified that the field is virtual (i.e. no equivalent field
+       * in the backend data store. Only used for scratch/temporary fields)
+       * Possible Values:
+       * 'true' - virtual
+       * 'false' - not virtual (DEFAULT)
+       */
+      'virtual' => false,
+      /* 'data-direction' - specifies in which direction data is transmitted (relative to the data store)
+       * Possible Values:
+       * 'out'  - outcoming (read-only field)
+       * 'both' - bidirectional (read-write field) (DEFAULT)
+       * 'none' - not used in data comunication
+       */
+      /* TODO How to handle a situation in which we don't want the field
+       * Editable, and don't want to synchronize (example a Virtual Field
+       * just to display a value (maybe even modifiable, through dependency on
+       * other fields), but is not editable by the user
+       * Possible Solutions (split read / write, and data synchronization, into
+       * different properties)
+       */
+      'data-direction' => 'both',
+      /* 'max-length' - Maximum Number of Characters contained in the field (DEFAULT : 0)
+       */
+      'max-length' => 0,
+      /* 'default' - Default Value to Use
+       */
+      'default' => null,
+      /* 'trim' - trim the value before validation
+       * Possible Values:
+       * 'true' - yes (trim both right and left)
+       * 'false' - no
+       * 'right' - trim only leading whitespaces
+       * 'left' - trim only trailing whitespaces
+       */
+      'trim' => true,
+      /* 'empty' - how to handle empty strings?
+       * Possible Values:
+       * 'as-empty' - treat as empty string
+       * 'as-null' - treat as null
+       */
+      'empty' => 'as-null',
+      /* 'nullable' - can contain NULL values
+       * Possible Values:
+       * 'true'  - yes
+       * 'false' - no
+       */
+      'nullable' => true,
+      /* 'label' - Default Label to be used (if no other provided)
+       */
+      'label' => null,
+      /* 'description' - Default Description to be used (if no other provided)
+       */
+      'description' => null,
+      /* 'key' - Can field be used as a KEY for the record
+       */
+      'key' => false
   );
 
   /**
@@ -114,7 +116,7 @@ class MetadataController
     $context = new ActionContext('table_model');
     // Set Parameters for Context and Call Action
     return $this->doAction($context
-          ->setIfNotNull('id', StringUtilities::nullOnEmpty($id)));
+                            ->setIfNotNull('id', StringUtilities::nullOnEmpty($id)));
   }
 
   /**
@@ -127,7 +129,7 @@ class MetadataController
     $context = new ActionContext('form_model');
     // Set Parameters for Context and Call Action
     return $this->doAction($context
-          ->setIfNotNull('id', StringUtilities::nullOnEmpty($id)));
+                            ->setIfNotNull('id', StringUtilities::nullOnEmpty($id)));
   }
 
   /**
@@ -140,7 +142,7 @@ class MetadataController
     $context = new ActionContext('field');
     // Set Parameters for Context and Call Action
     return $this->doAction($context
-          ->setIfNotNull('id', StringUtilities::nullOnEmpty($id)));
+                            ->setIfNotNull('id', StringUtilities::nullOnEmpty($id)));
   }
 
   /**
@@ -160,7 +162,7 @@ class MetadataController
 
     // 2nd Try the Request Get/Post Parameters
     if (!isset($list)) {
-      $list = StringUtilities::nullOnEmpty($request->get('list'));
+      $list = StringUtilities::nullOnEmpty($request->request->get('list'));
     }
 
     if (isset($list)) { // If we have a Field List (expand it to an array)
@@ -168,7 +170,48 @@ class MetadataController
     }
 
     return $this->doAction($context
-          ->setIfNotNull('list', $list));
+                            ->setIfNotNull('list', $list));
+  }
+
+  /**
+   * 
+   * @param type $id
+   * @return \Symfony\Component\HttpFoundation\Response
+   */
+  public function serviceAction($id) {
+    // Create Action Context
+    $context = new ActionContext('service');
+    // Set Parameters for Context and Call Action
+    return $this->doAction($context
+                            ->setIfNotNull('id', StringUtilities::nullOnEmpty($id)));
+  }
+
+  /**
+   * 
+   * @param \Symfony\Component\HttpFoundation\Request $request
+   * @param type $list
+   * @return \Symfony\Component\HttpFoundation\Response
+   */
+  public function servicesAction(Request $request, $list = null) {
+    // Create Action Context
+    $context = new ActionContext('services');
+
+    // 1st Use the Parameter
+    if (isset($list)) {
+      $list = StringUtilities::nullOnEmpty($list);
+    }
+
+    // 2nd Try the Request Get/Post Parameters
+    if (!isset($list)) {
+      $list = StringUtilities::nullOnEmpty($request->request->get('list'));
+    }
+
+    if (isset($list)) { // If we have a Field List (expand it to an array)
+      $list = explode(',', $list);
+    }
+
+    return $this->doAction($context
+                            ->setIfNotNull('list', $list));
   }
 
   /**
@@ -181,7 +224,7 @@ class MetadataController
     $context = new ActionContext('action_meta');
     // Set Parameters for Context and Call Action
     return $this->doAction($context
-          ->setIfNotNull('id', StringUtilities::nullOnEmpty($id)));
+                            ->setIfNotNull('id', StringUtilities::nullOnEmpty($id)));
   }
 
   /**
@@ -194,14 +237,14 @@ class MetadataController
     // Create Action Context
     $context = new ActionContext('actions_meta');
 
-    // 1st Use the Parameter
+    // 1st Use the Parameter    
     if (isset($list)) {
       $list = StringUtilities::nullOnEmpty($list);
     }
 
     // 2nd Try the Request Get/Post Parameters
     if (!isset($list)) {
-      $list = StringUtilities::nullOnEmpty($request->get('list'));
+      $list = StringUtilities::nullOnEmpty($request->request->get('list'));
     }
 
     if (isset($list)) { // If we have a Field List (expand it to an array)
@@ -209,7 +252,7 @@ class MetadataController
     }
 
     return $this->doAction($context
-          ->setIfNotNull('list', $list));
+                            ->setIfNotNull('list', $list));
   }
 
   /**
@@ -244,17 +287,11 @@ class MetadataController
     // Parameter Validation
     assert('isset($context) && is_object($context)');
 
-    // Get the Form Model
+    // Get the Form ID
     $id = $context->getParameter('id');
-    assert('isset($id)');
-    
-    $metadata = $this->buildFormMetadata($id);
-    if (isset($metadata)) {
-      list($form, $action) = $this->explodeFormID($id);
-      return array("{$form}:{$action}" => $metadata);
-    }
 
-    return null;
+    // Build the Form Metadata
+    return isset($id) && is_string($id) ? $this->buildFormMetadata($id) : null;
   }
 
   /**
@@ -308,7 +345,6 @@ class MetadataController
      * 4. (CACHE) The previously built Metadata, so as to not to have to go through this process again, 
      *    unless a change has been made.
      */
-
     // 1st Load Only Metadata for Entities
     $fields = array();
     $entities = array();
@@ -376,19 +412,93 @@ class MetadataController
 
   /**
    * 
+   * @param type $context
+   * @return null
+   */
+  protected function doServiceAction($context) {
+    // Parameter Validation
+    assert('isset($context) && is_object($context)');
+
+    // Get the Service ID
+    $id = $context->getParameter('id');
+
+    // Build the Service Metadata
+    return isset($id) && is_string($id) ? $this->buildServiceMetadata($id) : null;
+  }
+
+  /**
+   * 
+   * @param type $parameters
+   * @return type
+   */
+  protected function doServicesAction($context) {
+    // Parameter Validation
+    assert('isset($context) && is_object($context)');
+
+    // Get the Services List
+    $list = $context->getParameter('list');
+    assert('isset($list)');
+
+    // Build an Array Containing the list of the Services
+    $services = array();
+    for ($i = 0; $i < count($list); $i++) {
+      // Get the Service ID
+      $id = $list[$i];
+
+      // Get the Metadata for the service
+      $metadata = isset($id) && is_string($id) ? $this->buildServiceMetadata($id) : null;
+
+      if (isset($metadata)) {
+        $services[$id] = $metadata;
+      }
+    }
+
+    return count($services) > 0 ? $services : null;
+  }
+
+  /**
+   * 
+   * @param type $id
+   * @return null
+   */
+  protected function buildServiceMetadata($id) {
+    assert('isset($id) && is_string($id)');
+
+    // Get the Service Metadata
+    list($entity, $action) = $this->explodeID($id);
+    if (isset($entity)) {
+      $metadata = $this->getServiceMetadata($entity, $action);
+    }
+
+    // Resolve any Inheritance Issues
+    if (isset($metadata) && array_key_exists('inherit', $metadata)) {
+      $inherit = $this->buildServiceMetadata($metadata['inherit']);
+      if (isset($inherit)) { // Mixin the Inherited Values
+        $metadata = $this->mixin($inherit, $metadata);
+        unset($metadata['inherit']);
+      } else { // Invalid Inherit (Just Ignore it)
+        $metadata = null;
+      }
+    }
+
+    return $metadata;
+  }
+
+  /**
+   * 
    * @param type $parameters
    * @return type
    */
   protected function doActionMetaAction($context) {
 
     return array(
-      'user:create' => array(
-        'label' => 'New User',
-        'description' => 'Create New User',
-        'display' => array(
-          'form' => 'user:1'
+        'user:create' => array(
+            'label' => 'New User',
+            'description' => 'Create New User',
+            'display' => array(
+                'form' => 'user:1'
+            )
         )
-      )
     );
   }
 
@@ -400,55 +510,55 @@ class MetadataController
   protected function doActionsMetaAction($context) {
 
     return array(
-      'user:create' => array(
-        'label' => 'New User',
-        'description' => 'Create New User',
-        'display' => array(
-          'form' => 'user:form.1'
+        'user:create' => array(
+            'label' => 'New User',
+            'description' => 'Create New User',
+            'display' => array(
+                'form' => 'user:form.1'
+            ),
         ),
-      ),
-      'user:read' => array(
-        'label' => 'Detail',
-        'description' => 'Detailed User Information',
-        'datasource' => array(
-          'url' => array(
-            'base' => 'user/read',
-            'positional' => array('user:id')
-          ),
+        'user:read' => array(
+            'label' => 'Detail',
+            'description' => 'Detailed User Information',
+            'datasource' => array(
+                'url' => array(
+                    'base' => 'user/read',
+                    'positional' => array('user:id')
+                ),
+            ),
+            'display' => array(
+                'form' => 'user:form.1'
+            ),
         ),
-        'display' => array(
-          'form' => 'user:form.1'
+        'user:update' => array(
+            'label' => 'Update',
+            'description' => 'Modify User Information',
+            'datasource' => array(
+                'url' => array(
+                    'base' => 'user/update',
+                    'positional' => array('user:id')
+                ),
+            ),
+            'display' => array(
+                'form' => 'user:form.1'
+            ),
         ),
-      ),
-      'user:update' => array(
-        'label' => 'Update',
-        'description' => 'Modify User Information',
-        'datasource' => array(
-          'url' => array(
-            'base' => 'user/update',
-            'positional' => array('user:id')
-          ),
-        ),
-        'display' => array(
-          'form' => 'user:form.1'
-        ),
-      ),
-      'user:delete' => array(
-        'label' => 'Delete',
-        'description' => 'Delete User',
-        'datasource' => array(
-          'url' => array(
-            'base' => 'user/delete',
-            'positional' => array('user:id'),
-          ),
-        ),
-        'display' => array(
-          'message' => array(
-            'success' => 'Deleted {1} Users',
-            'failure' => 'Failed to delete User(s)'
-          )
-        ),
-      )
+        'user:delete' => array(
+            'label' => 'Delete',
+            'description' => 'Delete User',
+            'datasource' => array(
+                'url' => array(
+                    'base' => 'user/delete',
+                    'positional' => array('user:id'),
+                ),
+            ),
+            'display' => array(
+                'message' => array(
+                    'success' => 'Deleted {1} Users',
+                    'failure' => 'Failed to delete User(s)'
+                )
+            ),
+        )
     );
   }
 
@@ -493,8 +603,7 @@ class MetadataController
       $metadata = $this->getTableMetadata($table, $variation);
 
       $table = isset($table) ? $table : 'table';
-      $metadata = ArrayUtilities::deepExtract($metadata,
-                                              array($table, $variation));
+      $metadata = ArrayUtilities::deepExtract($metadata, array($table, $variation));
     }
 
     // Resolve any Inheritance Issues
@@ -520,12 +629,9 @@ class MetadataController
     assert('isset($id) && is_string($id)');
 
     // Get the Form Metadata
-    list($form, $action) = $this->explodeFormID($id);
+    list($form, $action) = $this->explodeID($id);
     if (isset($action)) {
       $metadata = $this->getFormMetadata($form, $action);
-
-      $form = isset($form) ? $form : 'form';
-      $metadata = ArrayUtilities::deepExtract($metadata, array($form, $action));
     }
 
     // Resolve any Inheritance Issues
@@ -554,6 +660,29 @@ class MetadataController
     if (isset($metadata) && array_key_exists('inherit', $metadata)) {
       // If the Inherited Field also has a Dependency, than Resolve That
       $dependency = $this->resolveFieldInheritance($metadata['inherit']);
+      if (isset($dependency)) { // Found Dependency
+        $metadata = $this->mixin($dependency, $metadata);
+        unset($metadata['inherit']);
+      } else { // Missing Dependency
+        $metadata = null;
+      }
+    }
+
+    return $metadata;
+  }
+
+  /**
+   * 
+   * @param type $service
+   * @return null
+   */
+  protected function resolveServiceInheritance($service) {
+
+    // Get the Metadata for the Field in the Inheritance Chain
+    list($service, $metadata) = $this->getServiceMetadata($service);
+    if (isset($metadata) && array_key_exists('inherit', $metadata)) {
+      // If the Inherited Field also has a Dependency, than Resolve That
+      $dependency = $this->resolveServiceInheritance($metadata['inherit']);
       if (isset($dependency)) { // Found Dependency
         $metadata = $this->mixin($dependency, $metadata);
         unset($metadata['inherit']);
@@ -596,20 +725,9 @@ class MetadataController
    * @return type
    */
   protected function getTableMetadata($table, $variation) {
-    // Try to Load Cached Data
-    $basename = $this->tableBaseFilename($table);
-    $metadata = $this->loadFromCache($basename, $this->yamlPath($basename));
-    if (!isset($metadata)) { // No Cached Data (Rebuild)
-      // Build the Metadata from the YAML Files
-      $metadata = $this->parseYAML($basename);
-
-      if (isset($metadata)) {
-        // Cache the Information
-        $this->cacheMetadata($basename, $metadata);
-      }
-    }
-
-    return $metadata;
+    $metadata = $this->entityMetadata('form', $form);
+    return isset($metadata) && array_key_exists($variation, $metadata) ?
+            $metadata[$variation] : null;
   }
 
   /**
@@ -619,20 +737,82 @@ class MetadataController
    * @return type
    */
   protected function getFormMetadata($form, $action) {
-    // Try to Load Cached Data
-    $basename = $this->formBaseFilename($form);
-    $metadata = $this->loadFromCache($basename, $this->yamlPath($basename));
+    $metadata = $this->entityMetadata('form', $form);
+    return isset($metadata) && array_key_exists($action, $metadata) ?
+            $metadata[$action] : null;
+  }
+
+  /**
+   * 
+   * @param type $service
+   * @param type $action
+   * @return type
+   */
+  protected function getServiceMetadata($service, $action) {
+    $metadata = $this->entityMetadata('service', $service);
+    return isset($metadata) && array_key_exists($action, $metadata) ?
+            $metadata[$action] : null;
+  }
+
+  /**
+   * 
+   * @param type $file
+   * @return type
+   */
+  protected function loadMetadata($file) {
+    $metadata = $this->loadFromCache($file, $this->yamlPath($file));
     if (!isset($metadata)) { // No Cached Data (Rebuild)
-      // Build the Metadata from the YAML Files
-      $metadata = $this->parseYAML($basename);
+      // 2nd Try a Non-Cached File
+      $metadata = $this->parseYAML($file);
 
       if (isset($metadata)) {
         // Cache the Information
-        $this->cacheMetadata($basename, $metadata);
+        $this->cacheMetadata($file, $metadata);
       }
     }
 
     return $metadata;
+  }
+
+  /**
+   * 
+   * @param type $type
+   * @param type $entityName
+   * @return type
+   */
+  protected function entityMetadata($type, $entityName) {
+    /*
+     * Try 1: Load From Specific File
+     */
+    $file = "meta.{$type}s.{$entityName}";
+    $metadata = $this->loadMetadata($file);
+    if (isset($metadata) && array_key_exists($entityName, $metadata)) {
+      return $metadata[$entityName];
+    }
+
+    /*
+     * Try 2: Load From a General Entity File
+     */
+    $file = "meta.{$type}s";
+    $metadata = $this->loadMetadata($file);
+    if (isset($metadata) &&
+            array_key_exists("{$type}s", $metadata) &&
+            array_key_exists($entityName, $metadata["{$type}s"])) {
+      return $metadata["{$type}s"][$entityName];
+    }
+
+    /*
+     * Try 3: Load General Metadata File
+     */
+    $file = "meta.defaults";
+    $metadata = $this->loadMetadata($file);
+    if (isset($metadata) &&
+            array_key_exists("{$type}s", $metadata) &&
+            array_key_exists($entityName, $metadata["{$type}s"])) {
+      return $metadata["{$type}s"][$entityName];
+    }
+
+    return null;
   }
 
   /**
@@ -643,12 +823,11 @@ class MetadataController
   protected function getEntityMetadata($metaEntity) {
     // Try to Load Cached Data
     $basename = $this->entityBaseFilename($metaEntity);
-    $metadata = $this->loadFromCache($basename,
-                                     array(
-      $this->yamlPath('routing.meta'),
-      $this->yamlPath($basename),
-      $this->entityPath($this->mapEntityToORM($metaEntity))
-      ));
+    $metadata = $this->loadFromCache($basename, array(
+        $this->yamlPath('routing.meta'),
+        $this->yamlPath($basename),
+        $this->entityPath($this->mapEntityToORM($metaEntity))
+    ));
     if (!isset($metadata)) { // No Cached Data (Rebuild)
       // Get the Associated ORM Entity
       $ormEntity = $this->mapEntityToORM($metaEntity);
@@ -811,8 +990,7 @@ class MetadataController
         $newer = $this->newerThan($path, StringUtilities::nullOnEmpty($sources));
       } else if (is_array($sources)) {
         for ($i = 0; $newer && $i < count($sources); $i++) {
-          $newer = $this->newerThan($path,
-                                    StringUtilities::nullOnEmpty($sources[$i]));
+          $newer = $this->newerThan($path, StringUtilities::nullOnEmpty($sources[$i]));
         }
       } else {
         $newer = true;
@@ -854,8 +1032,7 @@ class MetadataController
     $php_metadata = var_export($metadata, true);
 
     // Write the Cache File
-    if (file_put_contents($path, "<?php\n \$__METADATA={$php_metadata}\n?>",
-                          LOCK_EX) === FALSE) {
+    if (file_put_contents($path, "<?php\n \$__METADATA={$php_metadata}\n?>", LOCK_EX) === FALSE) {
       // TODO Log Error (Failed to Create File)
       // If the File Exists (Try to Delete as it might be faulty)
       if (file_exists($path) && (unlink($path) === FALSE)) {
@@ -877,7 +1054,7 @@ class MetadataController
     if ($sourceTime !== FALSE) {
       $compareToTime = isset($compareTo) ? filemtime($compareTo) : FALSE;
       if (($compareToTime === FALSE) || // No File to Compare To (therefore it's newer)
-        ($sourceTime > $compareToTime)) { // $source is NEWER than $compareTo
+              ($sourceTime > $compareToTime)) { // $source is NEWER than $compareTo
         return true;
       }
     }
@@ -908,8 +1085,7 @@ class MetadataController
   protected function yamlPath($basename) {
     $kernel = $this->get('kernel');
     try {
-      return $kernel->locateResource('@TestCenterServiceBundle/Resources/config/' . "{$basename}.yml",
-                                     true);
+      return $kernel->locateResource('@TestCenterServiceBundle/Resources/config/' . "{$basename}.yml", true);
     } catch (\InvalidArgumentException $e) {
       return null;
     }
@@ -976,32 +1152,25 @@ class MetadataController
 
   /**
    * 
-   * @param type $form
-   * @return type
-   */
-  protected function tableBaseFilename($table) {
-    assert('!isset($table) || is_string($table)');
-    return $basename = isset($table) ? "meta.tables.{$table}" : "meta.tables";
-  }
-
-  /**
-   * 
-   * @param type $form
-   * @return type
-   */
-  protected function formBaseFilename($form) {
-    assert('!isset($form) || is_string($form)');
-    return $basename = isset($form) ? "meta.forms.{$form}" : "meta.forms";
-  }
-
-  /**
-   * 
    * @param type $entity
    * @return type
    */
   protected function entityBaseFilename($entity) {
     $entity = StringUtilities::nullOnEmpty($entity);
     return $basename = isset($entity) ? "meta.{$entity}" : null;
+  }
+
+  protected function explodeID($id) {
+    // Explode the ID (expected format entity[:[variation]])
+    if (stripos($id, ':') === FALSE) {
+      $entity = StringUtilities::nullOnEmpty($id);
+    } else {
+      list($entity, $variation) = explode(':', $id, 2);
+      $entity = StringUtilities::nullOnEmpty($entity);
+      $variation = StringUtilities::nullOnEmpty($variation);
+    }
+
+    return array($entity, isset($variation) ? $variation : 'default');
   }
 
   protected function explodeTableID($id) {

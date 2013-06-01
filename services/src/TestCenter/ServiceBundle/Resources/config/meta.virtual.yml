@@ -25,6 +25,34 @@ virtual:
     data-direction: none
     label: Confirmation
     description: User Password Confirmation
+  filter:
+    type: text
+    virtual: true
+    data-direction: none
+    max-length: 0
+    default: null
+    trim: true
+    empty: 'as-null'
+    nullable: true
+  sort:
+    type: text
+    virtual: true
+    data-direction: none
+    max-length: 0
+    default: null
+    trim: true
+    empty: 'as-null'
+    nullable: true
+  limit:
+    type: integer
+    virtual: true
+    data-direction: none
+    max-length: 0
+    default: null
+    trim: true
+    empty: 'as-null'
+    nullable: true
+   
         
 # TODO How to handle Password and Confirmation
 # Possible Solutions:

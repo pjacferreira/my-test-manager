@@ -1,17 +1,17 @@
 /* ************************************************************************
-
+ 
  TestCenter Client - Simplified Functional/User Acceptance Testing
-
+ 
  Copyright:
  2012-2013 Paulo Ferreira <pf at sourcenotes.org>
-
+ 
  License:
  AGPLv3: http://www.gnu.org/licenses/agpl.html
  See the LICENSE file in the project's top-level directory for details.
-
+ 
  Authors:
  * Paulo Ferreira
-
+ 
  ************************************************************************ */
 
 /**
@@ -19,8 +19,11 @@
  */
 qx.Class.define("tc.metaform.DefaultMetadataModel", {
   extend: qx.core.Object,
-  implement: tc.metaform.interfaces.IFormMetadataModel,
-
+  implement: [
+    tc.meta.interfaces.IFieldsMetadataModel,
+    tc.meta.interfaces.IServicesMetadataModel,
+    tc.metaform.interfaces.IFormMetadataModel
+  ],
   /*
    *****************************************************************************
    EVENTS
@@ -31,28 +34,25 @@ qx.Class.define("tc.metaform.DefaultMetadataModel", {
      * Fired when the model is initialized and ready to be used (this allows model load to be
      * asynchronous):
      */
-    "modelReady": "qx.event.type.Event",
-
+    "model-ready": "qx.event.type.Event",
     /**
      * Fired if the model failed to initialize correctly.
      */
-    "modelInvalid": "qx.event.type.Event"
+    "error": "qx.event.type.Event"
   },
-
   /*
    *****************************************************************************
    PROPERTIES
    *****************************************************************************
    */
   properties: {
-    /** The Form's ID. */
+    /** The Form's Definition (if not provided, the form will be loaded from the Meta Service) */
     source: {
       check: "Object",
-      nullable: false,
-      apply: "_resetSource",
+      init: null,
+      nullable: true,
       event: "reloadModel"
     },
-
     /** The Form's ID. */
     formName: {
       check: "String",
@@ -61,7 +61,6 @@ qx.Class.define("tc.metaform.DefaultMetadataModel", {
       apply: "_resetForm",
       event: "reloadModel"
     },
-
     /** The Form type. */
     formType: {
       check: "String",
@@ -71,7 +70,6 @@ qx.Class.define("tc.metaform.DefaultMetadataModel", {
       event: "reloadModel"
     }
   },
-
   /*
    *****************************************************************************
    CONSTRUCTOR / DESTRUCTOR
@@ -84,21 +82,22 @@ qx.Class.define("tc.metaform.DefaultMetadataModel", {
    * @param formType
    * @param sourceMetadata
    */
-  construct: function (formName, formType, sourceMetadata) {
+  construct: function(formName, formType, sourceMetadata) {
     this.base(arguments);
 
     this.setFormName(tc.util.String.nullOnEmpty(formName, true));
     this.setFormType(tc.util.String.nullOnEmpty(formType, true));
-    this.setSource(sourceMetadata);
-  },
 
+    if (qx.lang.Type.isObject(sourceMetadata)) {
+      this.setSource(sourceMetadata);
+    }
+  },
   /**
    *
    */
-  destruct: function () {
+  destruct: function() {
     this.base(arguments);
   },
-
   /*
    *****************************************************************************
    MEMBERS
@@ -106,23 +105,16 @@ qx.Class.define("tc.metaform.DefaultMetadataModel", {
    */
   members: {
     __ready: false,
-
     /*
      *****************************************************************************
      PROPERTY APPLY METHODS
      *****************************************************************************
      */
     // property modifier
-    _resetSource: function (value, old) {
-      // Re-Initialize Required
-      this.__ready = false;
-    },
-
-    // property modifier
-    _resetForm: function (value, old) {
+    _resetForm: function(value, old) {
 
       if (this.__ready &&
-        qx.Class.implemen1tsInterface(this.getSource(), tc.metaform.interfaces.IFormMetadataSource)) {
+              qx.Class.implemenetsInterface(this.getSource(), tc.metaform.interfaces.IFormMetadataSource)) {
         // Re-Initialize Required
         this.__ready = false;
       }
@@ -130,75 +122,47 @@ qx.Class.define("tc.metaform.DefaultMetadataModel", {
       // TODO Verify that formName is not an Empty String
       // TODO If the formType is NULL or an Empty String than use 'default' as the value
     },
-
-    /*
-     *****************************************************************************
-     INTERFACE METHODS
-     *****************************************************************************
+    /**
+     * 
      */
-    // see interface for documentation
-    init: function () {
+    init: function() {
 
       // TODO Maybe add a flag to force re-initialization
       if (!this.__ready) { // Skip if already Initialized
-        var sourceMetadata = this.getSource();
-        if (sourceMetadata) { // Have a Metadata Source
-          return this.__stage1(sourceMetadata);
-        }
+        return this.__stage1(this.getSource());
       } else { // Already Successfully Loaded
-        this.fireEvent("modelReady");
+        this.fireEvent('model-ready');
       }
 
       return this.__ready;
     },
-
+    /*
+     *****************************************************************************
+     INTERFACE METHODS [tc.metaform.interfaces.IFormMetadataModel]
+     *****************************************************************************
+     */
     // see interface for documentation
-    getFormMeta: function () {
+    getFormMeta: function() {
       if (this.__ready) {
         return this.getSource().form;
       }
 
       return null;
     },
-
     // see interface for documentation
-    getFieldsMeta: function () {
-      if (this.__ready) {
-        return this.getSource().fields;
-      }
-
-      return null;
-    },
-
-    // see interface for documentation
-    getFieldMeta: function (name) {
-
-      name = tc.util.String.nullOnEmpty(name, true);
-      if (this.__ready && (name != null)) {
-        var fields = this.getSource().fields;
-        return fields.hasOwnProperty(name) ? fields[name] : null;
-      }
-
-      return null;
-    },
-
-    // see interface for documentation
-    getFormTitle: function () {
+    getFormTitle: function() {
       return this.__ready ? tc.util.Object.valueFromPath(this.getSource(), ['form', 'title'], {'default': 'Form'}) : null;
     },
-
     // see interface for documentation
-    getFormFields: function () {
+    getFormFields: function() {
       return this.__ready ? this.getSource().form.__allFields : null;
     },
-
     // see interface for documentation
-    getGroupCount: function () {
+    getGroupCount: function() {
       return this.__ready ? this.getSource().form.fields.length : 0;
     },
-
     // see interface for documentation
-    getGroupLabel: function (index) {
+    getGroupLabel: function(index) {
 
       if (this.__ready) {
         var groups = this.getSource().form.fields;
@@ -208,9 +172,8 @@ qx.Class.define("tc.metaform.DefaultMetadataModel", {
 
       return null;
     },
-
     // see interface for documentation
-    getGroupFields: function (index) {
+    getGroupFields: function(index) {
       if (this.__ready) {
         var groups = this.getSource().form.fields;
         var group = (index >= 0) && (index < groups.length) ? groups[index] : null;
@@ -225,50 +188,100 @@ qx.Class.define("tc.metaform.DefaultMetadataModel", {
 
       return null;
     },
+    /*
+     *****************************************************************************
+     INTERFACE METHODS [tc.meta.interfaces.IFieldsMetadataModel]
+     *****************************************************************************
+     */
+    // see interface for documentation
+    getFieldsMeta: function() {
+      if (this.__ready) {
+        return this.getSource().fields;
+      }
 
+      return null;
+    },
+    // see interface for documentation
+    getFieldMeta: function(name) {
+      name = tc.util.String.nullOnEmpty(name, true);
+      if (this.__ready && (name != null)) {
+        var fields = this.getSource().fields;
+        return fields.hasOwnProperty(name) ? fields[name] : null;
+      }
 
+      return null;
+    },
+    /*
+     *****************************************************************************
+     INTERFACE METHODS [tc.meta.interfaces.IServicesMetadataModel]
+     *****************************************************************************
+     */
+    // see interface for documentation
+    getServicesMeta: function() {
+      if (this.__ready) {
+        var source = this.getSource();
+        var services = source.form.services;
+        var list = {};
+        var count = 0;
+        for (var service in services) {
+          if (services.hasOwnProperty(service) &&
+                  source.services.hasOwnProperty(services[service])) {
+            list[service] = source.services[services[service]]
+            ++count;
+          }
+        }
+
+        return count > 0 ? list : null;
+      }
+
+      return null;
+    },
+    // see interface for documentation
+    getServiceMeta: function(name) {
+      name = tc.util.String.nullOnEmpty(name, true);
+      if (this.__ready && (name != null)) {
+        var source = this.getSource();
+        var services = source.form.services;
+        if (services.hasOwnProperty(name) &&
+                source.services.hasOwnProperty(services[name])) {
+          return source.services[services[name]];
+        }
+      }
+
+      return null;
+    },
     /*
      *****************************************************************************
      INTERNAL METHODS
      *****************************************************************************
      */
 
-    __stage1: function (sourceMetadata) {
-      // Load Form Definition if Required
-
-      if (qx.Class.implementsInterface(sourceMetadata, tc.metaform.interfaces.IFormMetadataSource)) {
-
-        var name = this.getFormName();
-        var type = this.getFormType();
-        if (name != null) {
-          var entry = name + ':' + (type === null ? 'default' : type);
-
-          // Implements MetadataSource Interface (use that to load)
-          return sourceMetadata.getFormMeta(entry, function (error_code, error_message, type, data) {
-            if (error_code || (data == null) || !data.hasOwnProperty(entry)) {
-              this.fireEvent("modelInvalid");
-              return false;
-            }
-
-            // cache the information in the sourceMetadata
-            sourceMetadata.form = data[entry];
-
-            return this.__stage2(sourceMetadata);
-          }, this);
-        }
-
-        // FALSE: Missing Required Parameters formName, formType
-      } else if (qx.lang.Type.isObject(sourceMetadata.form) &&
-        qx.lang.Type.isObject(sourceMetadata.fields)) { // Static Form Definition. Continue to Stage 2
+    __stage1: function(sourceMetadata) {
+      // Check if the Form is Already Loaded
+      if ((sourceMetadata != null) &&
+              qx.lang.Type.isObject(sourceMetadata.form) &&
+              qx.lang.Type.isObject(sourceMetadata.fields)) { // Static Form Definition. Continue to Stage 2
         // AFTER STAGE 1 : An Event is Fired to Signal an Error
         return this.__stage2(sourceMetadata);
       }
 
-      // FALSE: Not a Valid Static Form Definition, or Missing Required Parameters for Dynamic Load
-      return false;
-    },
+      // No: Load the Form from the Meta Service
+      var name = this.getFormName();
+      var type = this.getFormType();
+      tc.services.Meta.form(name, type,
+              function(metadata) {
+                // cache the information in the sourceMetadata
+                if (qx.lang.Type.isObject(metadata)) {
+                  return this.__stage2({'form': metadata});
+                }
+                this.fireEvent('error');
+              },
+              function(error) {
+                this.fireEvent('error');
 
-    __stage2: function (sourceMetadata) {
+              }, this);
+    },
+    __stage2: function(sourceMetadata) {
       // Normalize Form Definition
       var form = sourceMetadata.form;
 
@@ -332,60 +345,94 @@ qx.Class.define("tc.metaform.DefaultMetadataModel", {
             form.fields = normalized;
           }
         }
+      }
 
-        if (form.fields != null) {
-          return this.__stage3(sourceMetadata);
+      if (form.hasOwnProperty('services')) { // Normalize Fields Property
+
+        if (qx.lang.Type.isObject(form.services)) {
+          form.__allServices = [];
+          for (var service in form.services) {
+            if (form.services.hasOwnProperty(service)) {
+              if (qx.lang.Type.isString(form.services[service])) {
+                form.__allServices.push(form.services[service]);
+              }
+            }
+          }
+        } else {
+          form.__allServices = null;
+          form.services = null;
         }
+      }
+
+      if (form.fields != null) {
+        return this.__stage3(sourceMetadata);
       }
 
       // Missing or Invalid Fields Property
-      this.fireEvent("modelInvalid");
+      this.fireEvent('error');
       return true;
     },
-
-    __stage3: function (sourceMetadata) {
-      // Load Fields if Required
-      if (qx.Class.implementsInterface(sourceMetadata, tc.metaform.interfaces.IFormMetadataSource)) {
-        if (!sourceMetadata.getFieldsMeta(sourceMetadata.form.__allFields, function (error_code, error_message, type, data) {
-          if (error_code) {
-            this.fireEvent("modelInvalid");
-            return false;
-          }
-
-          // cache the information in the sourceMetadata
-          sourceMetadata.fields = data;
-
-          return this.__stage4(sourceMetadata);
-        }, this)) {
-          this.fireEvent("modelInvalid");
-          return false;
-        }
-      } else {
+    __stage3: function(sourceMetadata) {
+      if (sourceMetadata.hasOwnProperty('fields') &&
+              qx.lang.Type.isObject(sourceMetadata['fields'])) {
+        // Fields Definition already set, continue
         return this.__stage4(sourceMetadata);
       }
 
-      return true;
-    },
+      // Load Fields Definition
+      tc.services.Meta.fields(sourceMetadata.form.__allFields,
+              function(fields) {
+                if (qx.lang.Type.isObject(fields)) {
+                  sourceMetadata['fields'] = fields;
+                  return this.__stage4(sourceMetadata);
+                }
+                this.fireEvent('error');
+              },
+              function(error) {
+                this.fireEvent('error');
+              }, this);
 
-    __stage4: function (sourceMetadata) {
+    },
+    __stage4: function(sourceMetadata) {
+      if (sourceMetadata.hasOwnProperty('services') &&
+              qx.lang.Type.isObject(sourceMetadata['services'])) {
+        // Services Definition already set, continue
+        return this.__stage5(sourceMetadata);
+      }
+
+      // Load Fields Definition
+      tc.services.Meta.services(sourceMetadata.form.__allServices,
+              function(services) {
+                if (qx.lang.Type.isObject(services)) {
+                  sourceMetadata['services'] = services;
+                  return this.__stage5(sourceMetadata);
+                }
+                this.fireEvent('error');
+              },
+              function(error) {
+                this.fireEvent('error');
+              }, this);
+    },
+    __stage5: function(sourceMetadata) {
       // Validate that we have the Required Field Definitions and fire events
       if (this.__haveRequiredFields(sourceMetadata.form.__allFields, sourceMetadata.fields)) {
         this.__ready = true;
-        this.fireEvent("modelReady");
+
+        // Save the Metadat so that we don't have to reload it
+        this.setSource(sourceMetadata);
+        this.fireEvent('model-ready');
       } else {
-        this.fireEvent("modelInvalid");
+        this.fireEvent('error');
       }
       return true;
     },
-
-    __CSVToArray: function (value) {
+    __CSVToArray: function(value) {
       if (qx.lang.Type.isString(value)) {
         return value.split(',');
       }
 
       return value;
     },
-
     /**
      *
      * @param form_fields
@@ -393,7 +440,7 @@ qx.Class.define("tc.metaform.DefaultMetadataModel", {
      * @return {Boolean}
      * @private
      */
-    __haveRequiredFields: function (form_fields, fields) {
+    __haveRequiredFields: function(form_fields, fields) {
 
       for (var i = 0; i < form_fields.length; ++i) {
         if (!fields.hasOwnProperty(form_fields[i])) {

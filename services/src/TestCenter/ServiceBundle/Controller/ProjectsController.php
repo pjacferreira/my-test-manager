@@ -179,11 +179,11 @@ class ProjectsController
     // Build Parameters
     $context = $context
       ->setFirstNotNullOf('__filter', StringUtilities::nullOnEmpty($filter),
-                                                                   $request->get('filter'))
+                                                                   $request->request->get('filter'))
       ->setFirstNotNullOf('__sort', StringUtilities::nullOnEmpty($sort),
-                                                                 $request->get('sort'))
+                                                                 $request->request->get('sort'))
       ->setFirstNotNullOf('__limit', StringUtilities::nullOnEmpty($limit),
-                                                                  $request->get('limit'));
+                                                                  $request->request->get('limit'));
 
     return $this->doAction($context);
   }
@@ -200,7 +200,7 @@ class ProjectsController
     // Build Parameters
     $context = $context->setFirstNotNullOf('__filter',
                                            StringUtilities::nullOnEmpty($filter),
-                                                                        $request->get('filter'));
+                                                                        $request->request->get('filter'));
 
     return $this->doAction($context);
   }

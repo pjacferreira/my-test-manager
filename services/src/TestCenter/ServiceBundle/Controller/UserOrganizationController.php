@@ -359,7 +359,7 @@ class UserOrganizationController
 
         return $context->setParameter('user', $user);
       }, null,
-                                      array('Link', 'Unlink', 'Get', 'Set', 'ListPerUser', 'CountPerUser', 'ListPerOrg', 'CountPerOrg'),
+                                      array('Link', 'Unlink', 'Get', 'Set', 'ListPerUser', 'CountPerUser'),
                                       function($controller, $context, $action) {
         // Missing User ID, so use the current Session User
         return SessionManager::getUser();
@@ -379,7 +379,7 @@ class UserOrganizationController
         return $context
             ->setParameter('organization', $org);
       }, null,
-                           array('Link', 'Unlink', 'Get', 'Set', 'ListPerUser', 'CountPerUser'),
+                           array('Link', 'Unlink', 'Get', 'Set', 'ListPerOrg', 'CountPerOrg'),
                            function($controller, $context, $action) {
         // Missing Organization ID, so use the current Session Organization
         $controller->checkOrganization();
@@ -434,19 +434,19 @@ class UserOrganizationController
       case 'ListPerOrg':
         $return = array();
         foreach ($results as $uo) {
-          $user = $uo->getUser();
-          $id = $user->getId();
-          $return[$id] = $user->toArray();
-          unset($return[$id]['id']);
+          $return[] = array(
+            'user' => $uo->getUser()->toArray(),
+            'permissions' => $uo->getPermissions()
+          );
         }
         break;
       case 'ListPerUser':
         $return = array();
         foreach ($results as $uo) {
-          $org = $uo->getOrganization();
-          $id = $org->getId();
-          $return[$id] = $org->toArray();
-          unset($return[$id]['id']);
+          $return[] = array(
+            'organization' => $uo->getOrganization()->toArray(),
+            'permissions' => $uo->getPermissions()
+          );
         }
         break;
       default:
