@@ -14,9 +14,6 @@
  
  ************************************************************************ */
 
-/* ************************************************************************
- ************************************************************************ */
-
 /* Features :
  * 
  * - Singleton : Single Instance
@@ -35,12 +32,38 @@ qx.Class.define("tc.services.json.TCServiceRequest", {
   extend: qx.core.Object,
   /*
    *****************************************************************************
+   CONSTRUCTOR / DESTRUCTOR
+   *****************************************************************************
+   */
+  /**
+   * 
+   */
+  construct: function() {
+    this.base(arguments);
+
+    // Initialize Requests Array
+    this.__requests = [];
+  },
+  /**
+   *
+   */
+  destruct: function() {
+    this.base(arguments);
+
+    // Clear all Member Fields
+    this.__requests = null;
+    this.__processing = null;
+    this.__currentRequest = null;
+    this.__xhr = null;
+  },
+  /*
+   *****************************************************************************
    MEMBERS
    *****************************************************************************
    */
   members: {
     __counter: 0,
-    __requests: [],
+    __requests: null,
     __processing: null,
     __currentRequest: null,
     __currentID: null,
@@ -207,6 +230,9 @@ qx.Class.define("tc.services.json.TCServiceRequest", {
       this.__requestPassed(this.__currentID, response);
     },
     /* PRIVATE METHODS */
+    /**
+     * @lint ignoreUndefined(__TC_SERVICES_ROOT)
+     */
     __processSingleRequest: function(request) {
       // Block Any Further Requests
       this.__currentRequest = request;

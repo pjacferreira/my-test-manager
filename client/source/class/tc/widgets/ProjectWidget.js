@@ -63,6 +63,9 @@ qx.Class.define("tc.widgets.ProjectWidget", {
         }
       }
     }, // FUNCTION: _onListChangeSelection
+    /**
+     * @lint ignoreUndefined(__TC_SERVICES_ROOT)
+     */
     refresh: function() {
       // Mark the List as Not Ready
       this.__initialized = false;

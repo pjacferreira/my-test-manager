@@ -1,0 +1,51 @@
+# Test Center - Compliance Testing Application
+# Copyright (C) 2012 Paulo Ferreira <pf at sourcenotes.org>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+##
+# Project Entity (Properties Metadata)
+##
+
+project:
+  default: 
+    inherit: default
+    data-direction: both
+  id: 
+    inherit: project:default
+    key: true
+    data-direction: in
+    label: ID
+    description: Unique Project Identifier
+    value: 
+      auto: true
+  name:
+    inherit: project:default
+    key: true
+    label: Name
+    description: Unique Project Name
+  description:
+    inherit: project:default
+    label: Description
+    description: Project Information
+    value: 
+      type: html
+  organization:
+    inherit: project:default
+    type: integer
+    label: Organization
+    description: Organization Project Belongs To
+    value: 
+      type: html
+    

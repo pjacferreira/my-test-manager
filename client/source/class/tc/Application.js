@@ -40,6 +40,7 @@ qx.Class.define("tc.Application", {
     __actionRegistry: null,
     __widgetOrganizations: null,
     __widgetProjects: null,
+    __tabHolder: null,
     /**
      * This method contains the initial application code and gets called
      * during startup of the application
@@ -235,54 +236,58 @@ qx.Class.define("tc.Application", {
         var tabUser = new qx.ui.tabview.Page('User', 'tc/user_gray.png');
         tabUser.setLayout(new qx.ui.layout.VBox());
 
-        // Setup Metadata Model
-        var metadataModel = new tc.metaform.DefaultMetadataModel('user', 'update');
-        // Setup Model Data Source
-        var sourceData = new tc.meta.form.RecordDataStore();
         // Create the Model
-        var model = new tc.metaform.DefaultModel(metadataModel, sourceData, {'user:id': 1});
-        // Create User Form
-        var form = new tc.metaform.Form();
+        tc.services.Session.whoami(function(user) {
+          // Loading
+          tabUser.add(new qx.ui.basic.Label("Loading User Profile..."));
+          
+          // Create and Build Form
+          var form = new tc.meta.forms.Form('user:update', new tc.meta.datastores.RecordStore(), user);
+          // Event : Data Loaded from Backend
+          form.addListener("formSubmitted", function(e) {
+            this.info("Data Saved");
+          }, this);
+          // Event : Data Synchronized to Backend
+          form.addListener("formCancelled", function(e) {
+            this.info("Form Cancelled");
+          }, this);
+          // Event : Error Loading Form or in Data Synchronization
+          form.addListener("nok", function(e) {
+            tabUser.add(new qx.ui.basic.Label("Error Loading User Profile"));
+            this.error("Storage Access Error");
+          }, this);
+          // Initialize Form
+          form.initialize(user, {
+            'ok': function(e) {
+              // Load the User Record (if Possible)
+              var model = form.getModel();
+              if(model.canLoad()) {
+                model.load();
+              }
+              // Remove Existing Elements
+              tabUser.removeAll();
+              // Set New layout
+              tabUser.setLayout(new qx.ui.layout.Basic());
 
-        form.addListener("formReady", function(e) {
-          // Remove Existing Elements
-          tabUser.removeAll();
-          // Set New layout
-          tabUser.setLayout(new qx.ui.layout.Basic());
+              /*          
+               var scrollContainer = new qx.ui.container.Scroll();
+               scrollContainer.add(new qx.ui.form.renderer.Single(form));
+               tabUser.add(scrollContainer);
+               */
+              tabUser.add(new qx.ui.form.renderer.Single(form));
+            },
+            'nok': function(e) {
+              tabUser.add(new qx.ui.basic.Label("Error Loading User Profile"));
+              this.error("Form Error");
+            },
+            'context': this
+          });
 
-/*          
-          var scrollContainer = new qx.ui.container.Scroll();
-          scrollContainer.add(new qx.ui.form.renderer.Single(form));
-          tabUser.add(scrollContainer);
-*/          
-          tabUser.add(new qx.ui.form.renderer.Single(form));
-
-          // Load User Data
-//          model.load();
-        }, this);
-        // Event : Data Loaded from Backend
-        form.addListener("formSubmitted", function(e) {
-          this.info("Data Saved");
-        }, this);
-        // Event : Data Synchronized to Backend
-        form.addListener("formCancelled", function(e) {
-          this.info("Form Cancelled");
-        }, this);
-        // Event : Error Loading Form or in Data Synchronization
-        form.addListener("error", function(e) {
-          tabUser.add(new qx.ui.basic.Label("Error Loading User Profile"));
-          this.error("Form Error");
-        }, this);
-
-        // Loading
-        tabUser.add(new qx.ui.basic.Label("Loading User Profile..."));
-
-        // Set the Form and Initialize
-        form.setFormModel(model);
-
-        // Add Tab and Save Reference
-        this.__tabHolder.add(tabUser);
-        this.__tabHolder._tabUser = tabUser;
+          // Add Tab and Save Reference
+          this.__tabHolder.add(tabUser);
+          this.__tabHolder._tabUser = tabUser;
+        },
+                null, this);
       }
     },
     __addTabOrganizations: function() {

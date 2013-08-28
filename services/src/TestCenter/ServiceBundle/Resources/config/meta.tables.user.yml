@@ -19,7 +19,7 @@
 ##
 user:
   default:
-    inherit: ':default'
+    inherit: default
     title: User List
     #
     # Datastore Information

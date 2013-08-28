@@ -50,6 +50,17 @@
 
   "jobs" :
   {
+    // Add Debug Options, especially for XHR
+    "source-script" : {
+      "environment" :
+            {
+              "=qx.debug" : true,
+              "=qx.debug.io" : true,
+              "=qx.debug.databinding" : true,
+              "=qx.debug.dispose" : true,
+              "=qx.debug.ui.queue" : true
+            },      
+    }
     // Uncomment the following entry to add a contrib or library to your
     // project; make sure to adapt the path to the Manifest.json; if you are
     // using a contrib: library, it will be downloaded into the path specified

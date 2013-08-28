@@ -21,44 +21,69 @@
 forms:
   default:
     default:
-      # inherit: [(form name):](form:action) to inherit value from
-      # Title for Form
-      title: 'Form'
-      # Data Store syncronizy directions (relative to Data Store)
-      # Possible Values:
-      # out - outgoing (read-only form)
-      # in - incoming (write-only form)
-      # both - bidirectional (read-write form)
-      # none - not used in data comunication
-      data-direction: none
-      # Specifies field grouping (with or without labels)
-      # Possible Values:
-      # (with labels)
-      # fields: 
-      #   - 'Group Name 1': [ comma seperated field list ] or 'string of comma seperated fields'
-      #   ...
-      #   - [ comma seperated field list ] or 'string of comma seperated fields' (Field Group without a Label)
-      #   ...
-      #   - 'Group Name 1': [ comma seperated field list ]  or 'string of comma seperated fields'
-      # (without labels)
-      # fields: [ comma seperated field list ] or 'string of comma seperated fields'
-      # or
-      # fields: (Creates an Indexed Based Grouping of Fields)
-      #   - [ comma seperated field list ]  or 'string of comma seperated fields'
-      # 
-      # NOTE 
-      # 1. In Javascript Hash Map are Defined through Objects
-      # 2. Object Properties (atleast in Firefox) are sorted
-      # 
-      # So there is no way to garauntee a consist sequence of groups, through
-      # hash maps.
+      # Specifies the Parent Form, in the inheritance hierarchy, for this form
+      #
+      # (OPTIONAL)
+      #
+      # Elements:
+      # - TEXT: form_id
+      inherit: ~
+      # Title for the Form
+      #
+      # (REQUIRED)
+      #
+      # Elements:
+      # - TEXT
+      title: 'Title'
+      # Specifies the Fields that will be used to build the Form (in the order
+      # and, optionally, grouping to be used)
+      #
+      # (REQUIRED)
+      #
+      # Elements: (One Of)
+      # - TEXT: field_id              - A Single Field Form
+      # - ARRAY(TEXT: field_id, ....) - A Form with no Grouping)
+      # - MAP(group-label -> One Of
+      #   - TEXT: field_id              - A Single Field in the Group
+      #   - ARRAY(TEXT: field_id, ....) - Multiple Fields in the Group
+      #   )
       fields: ~
-      # Form Level Transformations (applied AFTER any specific field level 
-      # transformations, and BEFORE any specific field level validations)
-      transformations: ~
-      # Form Level Validations (applied AFTER any specific field level validation, 
-      # and BEFORE any actions are executed on the form)
+      # Associates a Recognized Meta Form, Service Alias, with a specific
+      # Service Meta Entry 
+      #
+      # (REQUIRED if: The form is not a static form, i.e. requires any sort
+      #  of serialization)
+      #
+      # Elements:
+      #   MAP: ( service_alias -> (SERVICE META) service_id)
+      #   Recognized Aliases: One of (create, read, update, delete)
+      services: ~
+      # Form Specific Validations 
+      #
+      # (OPTIONAL: MAP)
+      #
+      # Elements:
+      #   fields : Per Field validations, which are applied/run when the fields
+      #            value is modified
+      #            (OPTIONAL: MAP of field_id -> TEXT: validation EL)
+      #   form   : Global Form Validations, which are tested only when the form
+      #            is validate before submission
+      #            (OPTIONAL: 
+      #             POSSIBLE VALUES (one Of): 
+      #             - TEXT: validation EL
+      #             - ARRAY: (TEXT: validation EL, ...)
+      #            )
       validations: ~
-      # Sequence of actions to apply on the form On Submit
-      actions: ~
+      # Form Specific Transformations 
+      #
+      # (OPTIONAL: MAP)
+      #
+      # Elements:
+      #   fields : Per Field transformations, which are applied/run when any of the
+      #            dependencies are applied
+      #            (OPTIONAL: MAP: (field_id -> TEXT: transformation EL, ...)
+      #   form   : Global Form Transformations, which are applied before the form
+      #            is validate
+      #            (OPTIONAL: MAP: (field_id -> TEXT: transformation EL, ...)
+      transformations: ~
     

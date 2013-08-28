@@ -25,13 +25,11 @@ user:
   default:
     inherit: default
     title: User Information
+    data-direction: both    
     fields: 
       - 'User Information': ['user:id', 'user:name']
       - 'Name': 'user:first_name, user:last_name'
       - 'Descriptions': ['user:s_description', 'user:l_description']
-      - 'Password': ['user:password', 'virtual:password-confirmation']
-    validations: 
-      - 'virtual:user_confirmation': '= {user:password}'    
     services:
       create: 'user:create'
       read: 'user:read'
@@ -44,32 +42,23 @@ user:
     inherit: 'user:default'
     title: Create User
     fields: 
-      - 'User Information': 'user:name'
-    data-direction: out    
-    actions:
-      - submit:
-          service: create
-          label: 'Submit'
-
+      - 'User Information': ['user:id', 'user:name']
+      - 'Name': 'user:first_name, user:last_name'
+      - 'Descriptions': ['user:s_description', 'user:l_description']
+      - 'Password': ['user:password', 'virtual:password-confirmation']
+    validations: 
+      fields:
+        'virtual:password-confirmation': '= {user:password}'    
   #
   # User Details Form
   #
   read:
     inherit: 'user:default'
     title: User Details
-    data-direction: in
-    load:
-      - service: read
+    data-direction: out
   #
   # User Update Form
   #
   update:
-    inherit: 'user:default'
+    inherit: 'user:create'
     title: Modify User
-    data-direction: both
-    load:
-      - service: read
-    actions:
-      - submit:
-          service: update
-          label: 'Update'

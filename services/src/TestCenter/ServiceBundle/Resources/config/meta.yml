@@ -18,16 +18,6 @@
 # Meta Data (service path /meta)
 ##
 
-# Retrieve Table Meta Data
-meta_table:
-    pattern:  /table/{id}
-    defaults: { _controller: TestCenterServiceBundle:Metadata:table }
-
-# Retrieve Form Meta Data
-meta_form:
-    pattern:  /form/{id}
-    defaults: { _controller: TestCenterServiceBundle:Metadata:form}
-
 # Retrieve A Single Field's Meta Data
 # {id} of the field definition to return
 meta_field:
@@ -54,15 +44,13 @@ meta_services:
     pattern:  /services/{list}
     defaults: { _controller: TestCenterServiceBundle:Metadata:services, list: null}
 
-# Retrieve A Single Action's Meta Data
-# {id} of the action definition to return
-meta_action:
-    pattern:  /action/{id}
-    defaults: { _controller: TestCenterServiceBundle:Metadata:action}
+# Retrieve Form Meta Data
+meta_form:
+    pattern:  /form/{id}
+    defaults: { _controller: TestCenterServiceBundle:Metadata:form}
 
-# Retrieve a List of Actions Meta Data
-# {list} comma seperated list, of actions, for which the Meta data is required
-#   the 'list' parameter, can also be provided as a GET/POST parameter
-meta_actions:
-    pattern:  /actions/{list}
-    defaults: { _controller: TestCenterServiceBundle:Metadata:actions, list: null}
+# Retrieve Table Meta Data
+meta_table:
+    pattern:  /table/{id}
+    defaults: { _controller: TestCenterServiceBundle:Metadata:table }
+

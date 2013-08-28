@@ -1,0 +1,62 @@
+# Test Center - Compliance Testing Application
+# Copyright (C) 2012 Paulo Ferreira <pf at sourcenotes.org>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+##
+# User Entity (Properties Metadata)
+##
+
+user:
+  default: 
+    inherit: default
+    data-direction: both
+  id: 
+    inherit: user:default
+    key: true
+    data-direction: in
+    label: User ID
+    description: Unique User Identifier
+    value: 
+      auto: true
+  name:
+    inherit: user:default
+    key: true
+    label: User Name
+    description: Unique User Identifier
+  first_name:
+    inherit: default
+    label: First Name
+    description: User\'s First Name
+  last_name:
+    inherit: user:default
+    label: Last Name
+    description: User\'s Last Name
+  s_description:
+    inherit: user:default
+    label: Short Description
+    description: Short User Description
+  l_description:
+    inherit: default
+    label: Long Description
+    description: Long User Description
+    value: 
+      type: html
+  password:
+    inherit: user:default
+    label: Password
+    description: User Password
+    value: 
+      type: password
+    
