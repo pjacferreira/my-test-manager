@@ -781,9 +781,9 @@ qx.Class.define("tc.meta.models.FormModel", {
      *****************************************************************************
      */
     /**
-     * Try to erase the Form Record
+     * Initialize the Form Package
      *
-     * @param callback {Object ? null} Callback Object, NULL if we would rather use callback then events.
+     * @param callback {Object ? null} Callback Object, NULL if we would rather use events.
      *    Note: 
      *      - Usable callback properties:
      *        - 'ok' (REQUIRED) called when call successfully completed
@@ -805,13 +805,12 @@ qx.Class.define("tc.meta.models.FormModel", {
           },
           'context': this
         });
-        ;
       }
     },
     /**
-     * Try to erase the Form Record
+     * Initialize the Form Data Store
      *
-     * @param callback {Object ? null} Callback Object, NULL if we would rather use callback then events.
+     * @param callback {Object ? null} Callback Object, NULL if we would rather use events.
      *    Note: 
      *      - Usable callback properties:
      *        - 'ok' (REQUIRED) called when call successfully completed
@@ -824,6 +823,7 @@ qx.Class.define("tc.meta.models.FormModel", {
         this._callbackModelReady(callback, true);
       } else {
         // Initialize the Store
+        // NOTE: Initializing the Store will, by consequence, initialize the Fields Package
         this.getStore().setMetaPackage(this._formPackage);
         this.getStore().initialize(this._modelIV, {
           'ok': function() {

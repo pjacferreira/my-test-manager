@@ -15,102 +15,86 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ##
-# User Service Definitions
+# Organinzation Service Definitions
 ##
-user:
+organization:
   default:
     inherit: default
-    service: user
+    service: org
     parameters:
-      allow: 'user:*'
+      allow: 'organization:*'
     
   #
-  # Create User Record
-  # URL : user/create/{user:name}[?field=value-tuplet[&...]]
+  # Create Organization Record
+  # URL :
+  # - org/create/{organization:name}[?field=value-tuplet[&...]]
   #
   create:
-    inherit: 'user:default'
+    inherit: 'organization:default'
     action: create
-    key: 'user:name'
+    key: 'organization:name'
     parameters:
-      exclude: ['user:id', 'user:name']
+      exclude: ['organization:id', 'organization:name']
   #
-  # Read User Record
+  # Read Organization Record
   # URL : 
-  # - user/read/{user:id}   or
-  # - user/read/{user:name}
+  # - org/read/{organization:id}   or
+  # - org/read/{organization:name}
   #
   read:    
-    inherit: 'user:default'
+    inherit: 'organization:default'
     action: read
     keys:
-      - 'user:id'
-      - 'user:name'
+      - 'organization:id'
+      - 'organization:name'
     parameters:
       allow: none
   #
-  # Update User Record
+  # Update Organization Record
   # URL : 
-  # - user/update/{user:id}?field=value-tuplet[&...]   or
-  # - user/update/{user:name}?field=value-tuplet[&...]
+  # - org/read/{organization:id}?field=value-tuplet[&...]   or
+  # - org/read/{organization:name}?field=value-tuplet[&...]
   #
   update:
-    inherit: 'user:default'
+    inherit: 'organization:default'
     action: update
     keys:
-      - 'user:id'
-      - 'user:name'
+      - 'organization:id'
+      - 'organization:name'
     parameters:
       require: true
-      allow: 'user:password'
-      exclude: 'user:id'
+      exclude: 'organization:id'
   #
-  # Update User Password
+  # Delete Organization Record
   # URL : 
-  # - user/update/{user:id}?password=value   or
-  # - user/update/{user:name}?password=value
-  #
-  update-password:
-    inherit: 'user:default'
-    action: update
-    keys:
-      - 'user:id'
-      - 'user:name'
-    parameters:
-      require: true
-      allow: 'user:password'
-      exclude: 'user:*'
-  #
-  # Delete User Record
-  # URL : 
-  # - user/delete/{user:id}   or
-  # - user/delete/{user:name}
+  # - org/delete/{organization:id}   or
+  # - org/delete/{organization:name}
   #
   delete:
-    inherit: 'user:default'
+    inherit: 'organization:default'
     action: delete
     keys:
-      - 'user:id'
-      - 'user:name'
+      - 'organization:id'
+      - 'organization:name'
     parameters:
       allow: none
   #
-  # List User Records
+  # List Organization Records
   # URL : 
-  # - user/list[?field=value-tuplet[&...]]
+  # - org/list[?field=value-tuplet[&...]]
   #
   list: 
-    inherit: 'user:default'
+    inherit: 'organization:default'
     action: list
     parameters: 
       allow: ['virtual:filter','virtual:sort','virtual:limit']
   #
-  # Count User Records
+  # Count Organization Records
   # URL : 
-  # - user/count[?field=value-tuplet[&...]]
+  # - org/count[?field=value-tuplet[&...]]
   #
   count:
-    inherit: 'user:default'
+    inherit: 'organization:default'
     action: count
     parameters:
       allow: ['virtual:filter','virtual:sort','virtual:limit']

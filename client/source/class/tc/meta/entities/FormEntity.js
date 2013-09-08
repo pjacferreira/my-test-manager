@@ -26,19 +26,19 @@ qx.Class.define("tc.meta.entities.FormEntity", {
    *****************************************************************************
    */
   /**
-   * Base Constructor for an Entity
+   * Constructor for a Form Entity
    * 
-   * @param id {String} Field Name
-   * @param metadata {Object} Field Metadata
+   * @param id {String} Form ID
+   * @param metadata {Object} Form Metadata
    */
   construct: function(id, metadata) {
     this.base(arguments, 'form', id);
 
     if (qx.core.Environment.get("qx.debug")) {
       qx.core.Assert.assertObject(metadata, "[metadata] Should be an Object!");
-      qx.core.Assert.assertTrue(metadata.hasOwnProperty('title') &&
-              metadata.hasOwnProperty('fields') &&
-              qx.lang.Type.isArray(metadata['fields']), "[metadata] Does not contain Metadata Definition for a Form!");
+      qx.core.Assert.assertTrue(metadata.hasOwnProperty('title'), "[metadata] Is Missing Required Property [title]!");
+      qx.core.Assert.assertTrue(metadata.hasOwnProperty('fields') &&
+              qx.lang.Type.isArray(metadata['fields']), "[metadata] is Missing or has an Invalid [fields] Definition!");
     }
 
     this.__oMetaData = qx.lang.Object.clone(metadata, true);
@@ -52,6 +52,7 @@ qx.Class.define("tc.meta.entities.FormEntity", {
     this.base(arguments);
 
     // Clear all Member Fields
+    this.__oMetaDataFields = null;
     this.__oMetaDataServices = null;
     this.__oMetaData = null;
   },
@@ -86,7 +87,7 @@ qx.Class.define("tc.meta.entities.FormEntity", {
     /**
      * Returns the Form's Title
      *
-     * @return {String} Form Title
+     * @return {String} Form's Title
      */
     getTitle: function() {
       return this.__oMetaData['title'];
@@ -146,11 +147,11 @@ qx.Class.define("tc.meta.entities.FormEntity", {
       return this.__oMetaDataServices !== null ? this.__oMetaDataServices.hasOwnProperty(alias) : false;
     },
     /**
-     * Returns the Service Metadata Based on the Service Alias (alias is one of 'create', 
+     * Returns the Service ID on the Service Alias (alias is one of 'create', 
      * 'read', 'update', 'delete')
      *
      * @param alias {String} Form Service Alias
-     * @return {String} Return Metadata or NULL on Failuer
+     * @return {String} Return Service ID or NULL on Failure
      */
     getService: function(alias) {
       return (this.__oMetaDataServices !== null) && this.__oMetaDataServices.hasOwnProperty(alias) ? this.__oMetaDataServices[alias] : null;

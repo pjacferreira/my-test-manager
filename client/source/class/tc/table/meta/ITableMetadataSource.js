@@ -19,7 +19,7 @@
  ************************************************************************ */
 
 qx.Interface.define("tc.table.meta.ITableMetadataSource", {
-  extend: tc.meta.IUIMetadataSource,
+  extend: [tc.meta.IUIMetadataSource],
 
   members: {
 

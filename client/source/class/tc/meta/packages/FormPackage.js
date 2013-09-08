@@ -15,7 +15,7 @@
  ************************************************************************ */
 
 /**
- * Fields Meta Package Class
+ * Form Meta Package Class
  */
 qx.Class.define("tc.meta.packages.FormPackage", {
   extend: tc.meta.packages.BasePackage,
@@ -123,7 +123,7 @@ qx.Class.define("tc.meta.packages.FormPackage", {
     }, // FUNCTION: initialize
     /*
      *****************************************************************************
-     INTERFACE METHODS : IFieldsMetaPackage
+     INTERFACE METHODS : IFormMetaPackage
      *****************************************************************************
      */
     /**

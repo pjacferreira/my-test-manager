@@ -127,6 +127,7 @@ qx.Class.define("tc.Application", {
         this.__paneHeader.add(this.__widgetOrganizations);
       }
       this.__addTabUser();
+      this.__addTabUserManage();
       this.__toaster.add('Logged In [' + user['user:name'] + "]");
     },
     __doLogout: function() {
@@ -201,25 +202,21 @@ qx.Class.define("tc.Application", {
       this.__sessionManager.setOrganization(null);
     },
     __removeAllTabs: function() {
-      if (this.__tabHolder != null) {
-        // Remove All Pages
-        var arPages = this.__tabHolder.getChildren();
-        while (arPages.length > 0) {
-          this.__tabHolder.remove(arPages[0]);
-        }
-
-        // Clear Tab References
-        this.__tabHolder._tabUser = null;
-        this.__tabHolder._tabOrganization = null;
-        this.__tabHolder._tabProject = null;
-        this.__tabHolder._tabTests = null;
-        this.__tabHolder._tabTesting = null;
+      if (this.__tabHolder !== null) {
+        this.__tabHolder.removePages();
       }
     },
     __createTabHolder: function() {
-      this.__tabHolder = new qx.ui.tabview.TabView();
+      // Create Tab Group Manager
+      this.__tabHolder = new tc.widgets.TabManager(new qx.ui.tabview.TabView());
 
-      this.__paneContent.add(this.__tabHolder, {
+      // Create Groups
+      this.__tabHolder.addGroup('management', this.__tabHolder.first());
+      this.__tabHolder.addGroup('tests', this.__tabHolder.last());
+      this.__tabHolder.addGroup('runs', this.__tabHolder.last());
+      this.__tabHolder.addGroup('profile', this.__tabHolder.last());
+
+      this.__paneContent.add(this.__tabHolder.getView(), {
         top: 70,
         left: 5,
         right: 5,
@@ -228,19 +225,20 @@ qx.Class.define("tc.Application", {
     },
     __addTabUser: function() {
       // Create Tab Holder if it Doesn't Exist
-      if (this.__tabHolder == null) {
+      if (this.__tabHolder === null) {
         this.__createTabHolder();
       }
 
-      if (this.__tabHolder._tabUser == null) {
-        var tabUser = new qx.ui.tabview.Page('User', 'tc/user_gray.png');
-        tabUser.setLayout(new qx.ui.layout.VBox());
-
+      if (!this.__tabHolder.hasPage('profile', 'user')) {
         // Create the Model
         tc.services.Session.whoami(function(user) {
-          // Loading
-          tabUser.add(new qx.ui.basic.Label("Loading User Profile..."));
-          
+          // Create Tab Page
+          var tab = new qx.ui.tabview.Page('Profile', 'resource/tc/user_gray.png');
+          tab.setLayout(new qx.ui.layout.VBox());
+
+          // Set Load Hint
+          tab.add(new qx.ui.basic.Label("Loading User Profile..."));
+
           // Create and Build Form
           var form = new tc.meta.forms.Form('user:update', new tc.meta.datastores.RecordStore(), user);
           // Event : Data Loaded from Backend
@@ -253,7 +251,7 @@ qx.Class.define("tc.Application", {
           }, this);
           // Event : Error Loading Form or in Data Synchronization
           form.addListener("nok", function(e) {
-            tabUser.add(new qx.ui.basic.Label("Error Loading User Profile"));
+            tab.add(new qx.ui.basic.Label("Error Loading User Profile"));
             this.error("Storage Access Error");
           }, this);
           // Initialize Form
@@ -261,93 +259,207 @@ qx.Class.define("tc.Application", {
             'ok': function(e) {
               // Load the User Record (if Possible)
               var model = form.getModel();
-              if(model.canLoad()) {
+              if (model.canLoad()) {
                 model.load();
               }
               // Remove Existing Elements
-              tabUser.removeAll();
+              tab.removeAll();
               // Set New layout
-              tabUser.setLayout(new qx.ui.layout.Basic());
+              tab.setLayout(new qx.ui.layout.Basic());
 
               /*          
                var scrollContainer = new qx.ui.container.Scroll();
                scrollContainer.add(new qx.ui.form.renderer.Single(form));
                tabUser.add(scrollContainer);
                */
-              tabUser.add(new qx.ui.form.renderer.Single(form));
+              tab.add(new qx.ui.form.renderer.Single(form));
             },
             'nok': function(e) {
-              tabUser.add(new qx.ui.basic.Label("Error Loading User Profile"));
+              tab.add(new qx.ui.basic.Label("Error Loading User Profile"));
               this.error("Form Error");
             },
             'context': this
           });
 
           // Add Tab and Save Reference
-          this.__tabHolder.add(tabUser);
-          this.__tabHolder._tabUser = tabUser;
-        },
-                null, this);
+          this.__tabHolder.addPage('profile', 'user', tab);
+        }, null, this);
       }
     },
+    __addTabUserManage: function() {
+      // Create Tab Holder if it Doesn't Exist
+      if (this.__tabHolder == null) {
+        this.__createTabHolder();
+      }
+
+      if (!this.__tabHolder.hasPage('management', 'user')) {
+        // Create Tab Page
+        var tab = new qx.ui.tabview.Page('User Manager');
+        tab.setLayout(new qx.ui.layout.VBox());
+
+        // Set Load Hint
+        tab.add(new qx.ui.basic.Label("Loading..."));
+
+        // Create Meta Table
+        var model = new tc.table.model.MetaTableModel('user:manage');
+        model.initialize({
+          'ok': function() {
+            // TODO Do the same thing that was done to with sort-on, to filter-on
+            var table = new tc.table.filtered.Table(model);
+
+            // Disable Footer
+            table.setStatusBarVisible(false);
+
+            // ** Composite Toolbar + Table **
+            var composite = new qx.ui.container.Composite();
+            composite.setLayout(new qx.ui.layout.VBox(2));
+
+            // Set Table Size
+            var t_width = 100 * model.getColumnCount() + 20;
+            table.set({
+              width: t_width > 600 ? 600 : t_width,
+              height: 400,
+              decorator: null
+            });
+
+            composite.add(table);
+
+            tab.add(composite);
+          },
+          'nok': function(e) {
+            this.__toaster.add('Failed to Load Table Model.');
+          },
+          'context': this
+        });
+
+        this.__tabHolder.addPage('management', 'user', tab, true);
+      }
+    }, // FUNCTION: __addTabUserManage
     __addTabOrganizations: function() {
       // Create Tab Holder if it Doesn't Exist
-      if (this.__tabHolder == null) {
+      if (this.__tabHolder === null) {
         this.__createTabHolder();
       }
 
-      if (this.__tabHolder._tabOrganization == null) {
-        var tabOrganization = new qx.ui.tabview.Page('Organizations');
-        tabOrganization.setLayout(new qx.ui.layout.VBox());
-        tabOrganization.add(new qx.ui.basic.Label("Organization Management / Profile / User Permissions"));
-        this.__tabHolder.add(tabOrganization);
+      if (!this.__tabHolder.hasPage('management', 'organization')) {
+        // Create Tab Page
+        var tab = new qx.ui.tabview.Page('Organizations');
+        tab.setLayout(new qx.ui.layout.VBox());
 
-        this.__tabHolder._tabOrganization = tabOrganization;
+        // Set Load Hint
+        tab.add(new qx.ui.basic.Label("Loading..."));
+
+        // Create Meta Table
+        var model = new tc.table.model.MetaTableModel('organization');
+        model.initialize({
+          'ok': function() {
+            // TODO Do the same thing that was done to with sort-on, to filter-on
+            var table = new tc.table.filtered.Table(model);
+
+            // Disable Footer
+            table.setStatusBarVisible(false);
+
+            // ** Create Toolbar **
+//            var toolbar = new qx.ui.toolbar.ToolBar();
+//            var buttons = ['create', 'read', 'update', 'delete'];
+//            var button = null;
+//            for (var i = 0; i < buttons.length; ++i) {
+//              button = this.__newButton(this.__newCommand(entity, buttons[i]));
+//              if (button !== null) {
+//                toolbar.add(button);
+//              }
+//            }
+//            toolbar.setShow("icon");
+
+            // ** Composite Toolbar + Table **
+            var composite = new qx.ui.container.Composite();
+            composite.setLayout(new qx.ui.layout.VBox(2));
+
+            // Set Table Size
+            var t_width = 100 * model.getColumnCount() + 20;
+            table.set({
+              width: t_width > 600 ? 600 : t_width,
+              height: 400,
+              decorator: null
+            });
+
+//            composite.add(toolbar);
+            composite.add(table);
+            tab.add(composite);
+
+            // ** Button to Toggle Table Filter **
+            // Create a Button to Open User Form Window
+            /*          
+             var btnFilter = new qx.ui.form.Button("Toggle Filter");
+             btnFilter.addListener("execute", function() {
+             this.toggleFilterVisible();
+             }, model);
+             
+             this.getRoot().add(btnFilter, {
+             left: 0,
+             top: 140
+             });
+             */
+
+          },
+          'nok': function(e) {
+            this.__toaster.add('Failed to Load Table Model.');
+          },
+          'context': this
+        });
+
+        this.__tabHolder.addPage('management', 'organization', tab);
       }
-    },
+    }, // FUNCTION: __addTabOrganizations
     __addTabProjects: function() {
       // Create Tab Holder if it Doesn't Exist
-      if (this.__tabHolder == null) {
+      if (this.__tabHolder === null) {
         this.__createTabHolder();
       }
 
-      if (this.__tabHolder._tabProject == null) {
-        var tabProject = new qx.ui.tabview.Page('Projects');
-        tabProject.setLayout(new qx.ui.layout.VBox());
-        tabProject.add(new qx.ui.basic.Label("Project Management / Users / Permissions / Organizations"));
-        this.__tabHolder.add(tabProject);
+      if (!this.__tabHolder.hasPage('management', 'projects')) {
+        // Create Tab Page
+        var tab = new qx.ui.tabview.Page('Projects');
+        tab.setLayout(new qx.ui.layout.VBox());
 
-        this.__tabHolder._tabProject = tabProject;
+        // Set Load Hint
+        tab.add(new qx.ui.basic.Label("Project Management / Users / Permissions / Organizations"));
+
+        this.__tabHolder.addPage('management', 'projects', tab);
       }
     },
     __addTabTests: function() {
       // Create Tab Holder if it Doesn't Exist
-      if (this.__tabHolder == null) {
+      if (this.__tabHolder === null) {
         this.__createTabHolder();
       }
 
-      if (this.__tabHolder._tabTests == null) {
-        var tabTests = new qx.ui.tabview.Page('Tests');
-        tabTests.setLayout(new qx.ui.layout.VBox());
-        tabTests.add(new qx.ui.basic.Label("Test Management / Sets Management"));
-        this.__tabHolder.add(tabTests);
+      if (!this.__tabHolder.hasPage('tests', 'page')) {
+        // Create Tab Page
+        var tab = new qx.ui.tabview.Page('Tests');
+        tab.setLayout(new qx.ui.layout.VBox());
 
-        this.__tabHolder._tabTests = tabTests;
+        // Set Load Hint
+        tab.add(new qx.ui.basic.Label("Test Management / Sets Management"));
+
+        this.__tabHolder.addPage('tests', 'page', tab);
       }
     },
     __addTabTesting: function() {
       // Create Tab Holder if it Doesn't Exist
-      if (this.__tabHolder == null) {
+      if (this.__tabHolder === null) {
         this.__createTabHolder();
       }
 
-      if (this.__tabHolder._tabTesting == null) {
-        var tabTesting = new qx.ui.tabview.Page('Testing');
-        tabTesting.setLayout(new qx.ui.layout.VBox());
-        tabTesting.add(new qx.ui.basic.Label("Test Running"));
-        this.__tabHolder.add(tabTesting);
+      if (!this.__tabHolder.hasPage('runs', 'page')) {
+        // Create Tab Page
+        var tab = new qx.ui.tabview.Page('Runs');
+        tab.setLayout(new qx.ui.layout.VBox());
 
-        this.__tabHolder._tabTesting = tabTesting;
+        // Set Load Hint
+        tab.add(new qx.ui.basic.Label("Test Runs"));
+
+        this.__tabHolder.addPage('runs', 'page', tab);
       }
     }
     /*            

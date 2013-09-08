@@ -1,5 +1,5 @@
 # Test Center - Compliance Testing Application
-# Copyright (C) 2012 Paulo Ferreira <pf at sourcenotes.org>
+# Copyright (C) 2012 - 2013 Paulo Ferreira <pf at sourcenotes.org>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -18,39 +18,29 @@
 # Organization Table (Metadata Model)
 ##
 organization:
+  #
+  # Default Organization Table (Model)
+  #
   default:
-    inherit: ':default'
+    inherit: default
     title: Organization List
-    #
-    # Datastore Information
-    #
-    datastore:
-      # Source : Service Url (Base)
-      source:
-        url: 'org'
-      # Source : Fields List
-      fields:
-        - 'organization:id'
-        - 'organization:name'
-    #
-    # Table Display Properties
-    #    
-    # Columns to Display
+    services:
+      list: 'organization:list'
+      count: 'organization:count'
+    fields:
+      - 'organization:id'
+      - 'organization:name'
+      - 'virtual:filter'
+      - 'virtual:sort'
+      - 'virtual:limit'
     columns:
-        - 'organization:id'
-        - 'organization:name'
-    # Initially Hidden Columns
+      - 'organization:id'
+      - 'organization:name'
     hidden:
-        - 'organization:id'
-    # Is Sortable
-    sortable: true
-    # Columns that can be sorted
+      - 'organization:id'
     sort-on:
       - 'organization:id'
       - 'organization:name'
-    # Is Filterable?
-    filterable: true
-    # Columns that can be filtered
     filter-on:
       - 'organization:id'
       - 'organization:name'

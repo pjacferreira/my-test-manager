@@ -315,13 +315,8 @@ class MetadataController extends BaseServiceController {
     $id = $context->getParameter('id');
     assert('isset($id)');
 
-    $metadata = $this->buildTableMetadata($id);
-    if (isset($metadata)) {
-      list($table, $variation) = $this->explodeTableID($id);
-      return array("{$table}:{$variation}" => $metadata);
-    }
-
-    return null;
+    // Build the Form Metadata
+    return isset($id) && is_string($id) ? $this->buildMetadata('table', $id) : null;
   }
 
   /**
@@ -386,39 +381,6 @@ class MetadataController extends BaseServiceController {
 
   /**
    * 
-   * @param type $id
-   * @return null
-   */
-  protected function buildTableMetadata($id) {
-    assert('isset($id) && is_string($id)');
-
-    // Get the Table Metadata
-    list($table, $variation) = $this->explodeTableID($id);
-    if (isset($variation)) {
-      $metadata = $this->getTableMetadata($table, $variation);
-
-      $table = isset($table) ? $table : 'table';
-      $metadata = ArrayUtilities::deepExtract($metadata, array($table, $variation));
-    }
-
-    // Resolve any Inheritance Issues
-    if (isset($metadata) &&
-            array_key_exists('inherit', $metadata) &&
-            isset($metadata['inherit'])) {
-      $inherit = $this->buildTableMetadata($metadata['inherit']);
-      if (isset($inherit)) { // Mixin the Inherited Values
-        $metadata = $this->mixin($inherit, $metadata);
-        unset($metadata['inherit']);
-      } else { // Invalid Inherit (Just Ignore it)
-        $metadata = null;
-      }
-    }
-
-    return $metadata;
-  }
-
-  /**
-   * 
    * @param type $type
    * @param type $entity
    * @param type $variation
@@ -430,18 +392,6 @@ class MetadataController extends BaseServiceController {
     assert('isset($variation) && is_string($variation)');
 
     $metadata = $this->entityMetadata($type, $entity);
-    return isset($metadata) && array_key_exists($variation, $metadata) ?
-            $metadata[$variation] : null;
-  }
-
-  /**
-   * 
-   * @param type $table
-   * @param type $variation
-   * @return type
-   */
-  protected function getTableMetadata($table, $variation) {
-    $metadata = $this->entityMetadata('form', $form);
     return isset($metadata) && array_key_exists($variation, $metadata) ?
             $metadata[$variation] : null;
   }

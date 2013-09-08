@@ -85,7 +85,7 @@ qx.Interface.define("tc.meta.entities.IMetaForm", {
      *
      * @abstract
      * @param alias {String} Form Service Alias
-     * @return {String ? null} Return Metadata or NULL on Failure
+     * @return {String} Return Service ID or NULL on Failure
      */
     getService: function(alias) {
     },

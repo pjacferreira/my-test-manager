@@ -220,12 +220,12 @@ qx.Class.define("tc.meta.datastores.RecordStore", {
      */
     _execute: function(alias, callback) {
       // Get Services Package
-      var package = this._getServicesPackage();
-      if (package.isReady()) {
+      var services = this._getServicesPackage();
+      if (services.isReady()) {
         this._executeService(alias,callback);
       } else {
         var save_this = this;
-        package.initialize({
+        services.initialize({
           'ok': function() {
             this._executeService(alias, callback);
           },

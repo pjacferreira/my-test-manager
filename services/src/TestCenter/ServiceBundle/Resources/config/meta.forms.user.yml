@@ -1,5 +1,5 @@
 # Test Center - Compliance Testing Application
-# Copyright (C) 2012 Paulo Ferreira <pf at sourcenotes.org>
+# Copyright (C) 2012 - 2013 Paulo Ferreira <pf at sourcenotes.org>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -30,11 +30,6 @@ user:
       - 'User Information': ['user:id', 'user:name']
       - 'Name': 'user:first_name, user:last_name'
       - 'Descriptions': ['user:s_description', 'user:l_description']
-    services:
-      create: 'user:create'
-      read: 'user:read'
-      update: 'user:update'
-      delete: 'user:delete'
   #
   # Create User Form
   #
@@ -46,6 +41,10 @@ user:
       - 'Name': 'user:first_name, user:last_name'
       - 'Descriptions': ['user:s_description', 'user:l_description']
       - 'Password': ['user:password', 'virtual:password-confirmation']
+    services:
+      create: 'user:create'
+      read: 'user:read'
+      update: 'user:update'
     validations: 
       fields:
         'virtual:password-confirmation': '= {user:password}'    
@@ -55,10 +54,33 @@ user:
   read:
     inherit: 'user:default'
     title: User Details
-    data-direction: out
+    services:
+      read: 'user:read'
+    fields: 
+      - 'User Information': ['user:id', 'user:name']
+      - 'Name': 'user:first_name, user:last_name'
+      - 'Descriptions': ['user:s_description', 'user:l_description']
   #
   # User Update Form
   #
   update:
-    inherit: 'user:create'
+    inherit: 'user:read'
     title: Modify User
+    services:
+      read: 'user:read'
+      update: 'user:update'
+  #
+  # User Password Change
+  #
+  password:
+    inherit: 'user:default'
+    title: Change Password
+    fields: 
+      - 'User Information': ['user:id', 'user:name']
+      - 'Password': ['user:password', 'virtual:password-confirmation']
+    services:
+      read: 'user:read'
+      update: 'user:update-password'
+    validations: 
+      fields:
+        'virtual:password-confirmation': '= {user:password}'    

@@ -1,5 +1,5 @@
 # Test Center - Compliance Testing Application
-# Copyright (C) 2012 Paulo Ferreira <pf at sourcenotes.org>
+# Copyright (C) 2012 - 2013 Paulo Ferreira <pf at sourcenotes.org>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -18,50 +18,68 @@
 # User Table (Metadata Model)
 ##
 user:
+  #
+  # Default User Table (Model)
+  #
   default:
     inherit: default
     title: User List
-    #
-    # Datastore Information
-    #
-    datastore:
-      # Source : Service Url (Base)
-      source:
-        url: 'user'
-      # Source : Fields List
-      fields:
-        - 'user:id'
-        - 'user:name'
-        - 'user:first_name'
-        - 'user:last_name'
-        - 'user:s_description'
-    #
-    # Table Display Properties
-    #    
-    # Columns to Display
-    columns:
-        - 'user:id'
-        - 'user:name'
-        - 'user:first_name'
-        - 'user:last_name'
-        - 'user:s_description'
-    # Initially Hidden Columns
-    hidden:
-        - 'user:id'
-    # Is Sortable
-    sortable: true
-    # Columns that can be sorted
-    sort-on:
+    services:
+      list: 'user:list'
+      count: 'user:count'
+    fields:
       - 'user:id'
       - 'user:name'
       - 'user:first_name'
       - 'user:last_name'
       - 'user:s_description'
-    # Is Filterable?
-    filterable: true
-    # Columns that can be filtered
+      - 'virtual:filter'
+      - 'virtual:sort'
+      - 'virtual:limit'
+    columns:
+      - 'user:id'
+      - 'user:name'
+      - 'user:first_name'
+      - 'user:last_name'
+      - 'user:s_description'
+    hidden:
+        - 'user:id'
+    sort-on:
+      - 'user:id'
+      - 'user:name'
+      - 'user:first_name'
+      - 'user:last_name'
     filter-on:
       - 'user:id'
       - 'user:name'
       - 'user:first_name'
       - 'user:last_name'        
+  #
+  # User Management Table (Model)
+  #
+  manage:
+    inherit: 'user:default'
+    title: User Management
+    actions:
+      create:
+        title: 'New User'
+        icon: 'tc/user_add.png'
+        form: 'user:create'
+      edit:
+        title: 'Modify User'
+        icon: 'tc/user_edit.png'
+        form: 'user:update'
+        key: 'user:id'
+      display:
+        title: 'User Information'
+        icon: 'tc/user.png'
+        form: 'user:read'
+        key: 'user:id'
+      delete:
+        title: 'Delete User'
+        icon: 'tc/user_delete.png'
+        service: 'user:delete'
+      change-password:
+        title: 'Change User Password'
+        icon: 'tc/lock_edit.png'
+        form: 'user:password'    

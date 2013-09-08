@@ -58,6 +58,32 @@ qx.Class.define("tc.services.Meta", {
 
       throw 'Missing or Invalid Required Parameters [list]';
     },
+    table: function(id, ok, nok, context) {
+      id = tc.util.String.nullOnEmpty(id, true);
+      if (id !== null) {
+        // Cleanup 'type' parameter
+        var idx = id.indexOf(':');
+        if(idx < 0) {
+          id+=':default';
+        } if(idx === id.length-1) {
+          id+='default';
+        }
+
+        // Build Request
+        var service = tc.services.json.TCServiceRequest.getInstance();
+        var request = service.buildRequest(service.buildURL('meta', 'table', id), null,
+                function(response) {
+                  this._processPassThrough(response, ok, context);
+                },
+                function(error) {
+                  this._processPassThrough(error, nok, context);
+                },
+                this);
+        return service.queueRequests(request);
+      }
+
+      throw 'Missing or Invalid Required Parameters [id]';
+    },
     form: function(id, ok, nok, context) {
       id = tc.util.String.nullOnEmpty(id, true);
       if (id !== null) {

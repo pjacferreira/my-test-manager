@@ -191,8 +191,8 @@ class Organization {
     $entity = strtolower($this->entityName());
 
     if (isset($this->$prop_name)) { // If Propery Set - Add it
-//      $array["{$entity}:{$prop_name}"] = $this->$prop_name;
-      $array[$prop_name] = $this->$prop_name;
+      $array["{$entity}:{$prop_name}"] = $this->$prop_name;
+//      $array[$prop_name] = $this->$prop_name;
     }
     return $array;
   }

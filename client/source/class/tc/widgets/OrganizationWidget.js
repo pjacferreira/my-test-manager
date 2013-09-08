@@ -94,8 +94,8 @@ qx.Class.define("tc.widgets.OrganizationWidget", {
             var entries = response['return'];
             for (var i = 0; i < entries.length; i++) {
               var entry = new tc.data.model.UOOrganizationEntry();
-              entry.setId(entries[i].organization.id);
-              entry.setOrganization(entries[i].organization.name);
+              entry.setId(entries[i].organization['organization:id']);
+              entry.setOrganization(entries[i].organization['organization:name']);
               entry.setPermissions(entries[i].permissions);
               data.push(entry);
             }
