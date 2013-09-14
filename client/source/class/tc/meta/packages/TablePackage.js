@@ -50,6 +50,7 @@ qx.Class.define("tc.meta.packages.TablePackage", {
     this.__oMetaData = null;
     this.__oFieldsPackage = null;
     this.__oServicesPackage = null;
+    this.__oActionsPackage = null;
   },
   /*
    *****************************************************************************
@@ -62,6 +63,7 @@ qx.Class.define("tc.meta.packages.TablePackage", {
     __oMetaData: null,
     __oFieldsPackage: null,
     __oServicesPackage: null,
+    __oActionsPackage: null,
     /*
      *****************************************************************************
      INTERFACE METHODS : IMetaPackage
@@ -81,46 +83,32 @@ qx.Class.define("tc.meta.packages.TablePackage", {
      * @return {Boolean} 'true' if started initialization, 'false' if initialization failed to start
      */
     initialize: function(callback) {
-      // Clear Current Meta Data
-      this.__oMetaData = null;
+      // Prepare CallBack
+      callback = this._prepareCallback(callback);
 
-      if (this.__sTable !== null) {
-        // Load Fields Definition
-        tc.services.Meta.table(this.__sTable,
-                function(form) {
-                  this.__oMetaData = this.__postProcess(form);
-                  if ((this.__oMetaData !== null) && (this.__oFieldsPackage !== null)) {
-                    this._bReady = true;
-
-                    if (callback !== null) {
-                      if (callback.hasOwnProperty('ok') && qx.lang.Type.isFunction(callback['ok'])) {
-                        callback['ok'].call(callback['context'], this.__sTable);
-                      }
-                    } else {
-                      this.fireDataEvent('ready', this.__sTable);
+      if (!this.isReady()) {
+        if (this.__sTable !== null) {
+          // Load Table Definition
+          tc.services.Meta.table(this.__sTable,
+                  function(form) {
+                    this.__oMetaData = this.__postProcess(form);
+                    if ((this.__oMetaData !== null) && (this.__oFieldsPackage !== null)) {
+                      this._bReady = true;
                     }
+                    this._callbackPackageReady(callback, this._bReady, "Invalid Table Definition");
+                  },
+                  function(error) {
+                    this._callbackPackageReady(callback, false, error);
+                  }, this);
 
-                    // Done
-                    return true;
-                  }
-
-                  this.fireDataEvent('error', null);
-                  return false;
-                },
-                function(error) {
-                  if (callback !== null) {
-                    if (callback.hasOwnProperty('nok') && qx.lang.Type.isFunction(callback['nok'])) {
-                      callback['nok'].call(callback['context'], error);
-                    }
-                  } else {
-                    this.fireDataEvent('error', error);
-                  }
-                }, this);
-
+        } else {
+          this._callbackPackageReady(callback, false, "Missing Table ID to build Package.");
+        }
+      } else {
+        this._callbackPackageReady(callback, true);
       }
 
-      // No Table to Load
-      return false;
+      return this.isReady();
     }, // FUNCTION: initialize
     /*
      *****************************************************************************
@@ -148,6 +136,17 @@ qx.Class.define("tc.meta.packages.TablePackage", {
       this._throwIsPackageReady();
 
       return this.__oServicesPackage;
+    },
+    /**
+     * Get Actions Package (IActionsMetaPackage Instance)
+     *
+     * @return {tc.meta.packages.IActionsMetaPackage} Return instance of IActionsMetaPackage, NULL on failure
+     * @throw If Package not Ready
+     */
+    getActions: function() {
+      this._throwIsPackageReady();
+
+      return this.__oActionsPackage;
     },
     /**
      * Get Table Container (IMetaTable Instance)
@@ -189,6 +188,11 @@ qx.Class.define("tc.meta.packages.TablePackage", {
           }
 
           this.__oServicesPackage = new tc.meta.packages.ServicesPackage(arServices);
+        }
+
+        // Create Actions Package
+        if (table.hasOwnProperty('actions') && qx.lang.Type.isObject(table['actions'])) {
+          this.__oActionsPackage = new tc.meta.packages.ActionsPackage(table['actions']);
         }
       } else { // Invalid Form Definition
         table = null;

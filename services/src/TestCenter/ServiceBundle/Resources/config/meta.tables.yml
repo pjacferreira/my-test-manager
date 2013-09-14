@@ -89,6 +89,14 @@ tables:
       # - TEXT: field_id              - A Single Field Table
       # - ARRAY(TEXT: field_id, ....) - Normal Multi-field Table
       filter-on: ~
+      # Table Specific Action Definitions
+      #
+      # (OPTIONAL: MAP)
+      #
+      # Elements:
+      #   actions : Action Definition
+      #            (OPTIONAL: MAP: (action_id -> ...)
+      actions: ~
       # Table Specific Transformations 
       #
       # (OPTIONAL: MAP)

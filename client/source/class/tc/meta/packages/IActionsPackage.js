@@ -18,7 +18,7 @@
  
  ************************************************************************ */
 
-qx.Interface.define("tc.meta.packages.IFormPackage", {
+qx.Interface.define("tc.meta.packages.IActionsPackage", {
   extend: [tc.meta.packages.IMetaPackage],
   /*
    *****************************************************************************
@@ -27,31 +27,33 @@ qx.Interface.define("tc.meta.packages.IFormPackage", {
    */
   members: {
     /**
-     * Get Fields Package (IFieldsMetaPackage Instance)
+     * Does the Action Exist in the Package?
      *
      * @abstract
-     * @return {tc.meta.packages.IFieldsMetaPackage} Return instance of IFieldsMetaPackage
+     * @param id {String} Action ID
+     * @return {Boolean} 'true' YES, 'false' Otherwise
      * @throw If Package not Ready
      */
-    getFields: function() {
+    hasAction: function(id) {
     },
     /**
-     * Get Services Package (IServicesMetaPackage Instance)
+     * Get Action Container
      *
      * @abstract
-     * @return {tc.meta.packages.IServicesMetaPackage} Return instance of IServicesMetaPackage, NULL on failure
-     * @throw If Package not Ready
+     * @param id {String} Action ID
+     * @return {tc.meta.data.IMetaAction} Return Metadata for field
+     * @throw If Package not Ready or Action Doesn't Exist
      */
-    getServices: function() {
+    getAction: function(id) {
     },
     /**
-     * Get Form Container (IMetaForm Instance)
+     * Get a List of Action IDs in the Container
      *
      * @abstract
-     * @return {tc.meta.data.IMetaForm} Return instance of IMetaForm
+     * @return {String[]} Array of Action IDs or Empty Array (if no actions in the package)
      * @throw If Package not Ready
      */
-    getForm: function() {
+    getActions: function() {
     }
   } // SECTION: MEMBERS
 });

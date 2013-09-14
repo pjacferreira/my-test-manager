@@ -30,18 +30,18 @@ qx.Interface.define("tc.meta.packages.IFieldsPackage", {
      * Does the Field Exist in the Package?
      *
      * @abstract
-     * @param id {Object} Field ID (format 'entity id:field name')
+     * @param id {String} Field ID (format 'entity id:field name')
      * @return {Boolean} 'true' YES, 'false' Otherwise
      * @throw If Package not Ready
      */
     hasField: function(id) {
     },
     /**
-     * Get Field Container (IMetaField Instance)
+     * Get Field Container
      *
      * @abstract
      * @param id {String} Field ID (format 'entity id:field name')
-     * @return {tc.meta.data.IMetaEntity} Return Metadata for field
+     * @return {tc.meta.data.IMetaField} Return Metadata for field
      * @throw If Package not Ready or Field Doesn't Exist
      */
     getField: function(id) {
@@ -50,10 +50,10 @@ qx.Interface.define("tc.meta.packages.IFieldsPackage", {
      * Get a List of Fields in the Container
      *
      * @abstract
-     * @return {Array} Array of Field ID's or Empty Array (if no fields in the package)
+     * @return {String[]} Array of Field ID's or Empty Array (if no fields in the package)
      * @throw If Package not Ready
      */
     getFields: function() {
     }
-  }
+  } // SECTION: MEMBERS
 });

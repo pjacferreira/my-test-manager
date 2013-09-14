@@ -25,11 +25,14 @@ user:
   default:
     inherit: default
     title: User Information
-    data-direction: both    
     fields: 
-      - 'User Information': ['user:id', 'user:name']
-      - 'Name': 'user:first_name, user:last_name'
-      - 'Descriptions': ['user:s_description', 'user:l_description']
+      'User Information': ['user:id', 'user:name']
+      'Name': 'user:first_name, user:last_name'
+      'Descriptions': ['user:s_description', 'user:l_description']
+    services:
+      create: 'user:create'
+      read: 'user:read'
+      update: 'user:update'
   #
   # Create User Form
   #
@@ -37,14 +40,7 @@ user:
     inherit: 'user:default'
     title: Create User
     fields: 
-      - 'User Information': ['user:id', 'user:name']
-      - 'Name': 'user:first_name, user:last_name'
-      - 'Descriptions': ['user:s_description', 'user:l_description']
-      - 'Password': ['user:password', 'virtual:password-confirmation']
-    services:
-      create: 'user:create'
-      read: 'user:read'
-      update: 'user:update'
+      'Password': ['user:password', 'virtual:password-confirmation']
     validations: 
       fields:
         'virtual:password-confirmation': '= {user:password}'    
@@ -55,20 +51,16 @@ user:
     inherit: 'user:default'
     title: User Details
     services:
-      read: 'user:read'
-    fields: 
-      - 'User Information': ['user:id', 'user:name']
-      - 'Name': 'user:first_name, user:last_name'
-      - 'Descriptions': ['user:s_description', 'user:l_description']
+      create: ~
+      update: ~
   #
   # User Update Form
   #
   update:
-    inherit: 'user:read'
+    inherit: 'user:default'
     title: Modify User
     services:
-      read: 'user:read'
-      update: 'user:update'
+      create: ~
   #
   # User Password Change
   #
@@ -76,10 +68,12 @@ user:
     inherit: 'user:default'
     title: Change Password
     fields: 
-      - 'User Information': ['user:id', 'user:name']
-      - 'Password': ['user:password', 'virtual:password-confirmation']
+      'User Information': ['user:id', 'user:name']
+      'Name': ~
+      'Descriptions': ~
+      'Password': ['user:password', 'virtual:password-confirmation']
     services:
-      read: 'user:read'
+      create: ~
       update: 'user:update-password'
     validations: 
       fields:

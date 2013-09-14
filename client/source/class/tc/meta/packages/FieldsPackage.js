@@ -28,7 +28,7 @@ qx.Class.define("tc.meta.packages.FieldsPackage", {
   /**
    * Constructor for an Fields MetaPackage
    * 
-   * @param fields {Array} List of Fields to Load
+   * @param fields {String[]} List of Fields to Load
    */
   construct: function(fields) {
     this.base(arguments);
@@ -48,7 +48,7 @@ qx.Class.define("tc.meta.packages.FieldsPackage", {
       qx.core.Assert.assertTrue((this.__arFields !== null) && (this.__arFields.length > 0), "[fields] Should be non Empty Array!");
     }
 
-    // Initialize Field Entitoes Cache
+    // Initialize Field Entities Cache
     this.__mapCache = {};
   },
   /**
@@ -92,51 +92,45 @@ qx.Class.define("tc.meta.packages.FieldsPackage", {
      * @return {Boolean} 'true' if started initialization, 'false' if initialization failed to start
      */
     initialize: function(callback) {
-      if (this.__arFields !== null) {
-        // Load Fields Definition
-        tc.services.Meta.fields(this.__arFields,
-                function(fields) {
-                  if (qx.lang.Type.isObject(fields)) {
-                    this.__oMetaData = fields;
-                    // TODO : How to handle a situation in which the number of returned services is 0
-                    this._bReady = true;
+      // Prepare CallBack
+      callback = this._prepareCallback(callback);
 
-                    // Create a List of Returned Fields
-                    this.__arFieldsInPackage = [];
-                    for (var i in fields) {
-                      if (fields.hasOwnProperty(i)) {
-                        this.__arFieldsInPackage.push(i);
+      if (!this.isReady()) {
+        if (this.__arFields !== null) {
+          // Load Fields Definition
+          tc.services.Meta.fields(this.__arFields,
+                  function(fields) {
+                    if (qx.lang.Type.isObject(fields)) {
+                      this.__oMetaData = fields;
+
+                      // Create a List of Returned Fields
+                      this.__arFieldsInPackage = [];
+                      for (var i in fields) {
+                        if (fields.hasOwnProperty(i)) {
+                          this.__arFieldsInPackage.push(i);
+                        }
+                      }
+
+                      if (this.__arFieldsInPackage.length > 0) {
+                        this.__arFieldsInPackage.sort();
+                        this._bReady = true;
                       }
                     }
+                    
+                    this._callbackPackageReady(callback, this.__arFieldsInPackage.length, "No Valid Fields in the Package.");
+                  },
+                  function(error) {
+                    this._callbackPackageReady(callback, false, error);
+                  }, this);
 
-                    if (this.__arFieldsInPackage.length > 0) {
-                      this.__arFieldsInPackage.sort();
-                    }
-
-                    if (callback !== null) {
-                      if (callback.hasOwnProperty('ok') && qx.lang.Type.isFunction(callback['ok'])) {
-                        callback['ok'].call(callback['context'], this.__arFieldsInPackage);
-                      }
-                    } else {
-                      this.fireDataEvent('ready', this.__arFieldsInPackage);
-                    }
-                  }
-                  this.fireDataEvent('error', null);
-                },
-                function(error) {
-                  if (callback !== null) {
-                    if (callback.hasOwnProperty('nok') && qx.lang.Type.isFunction(callback['nok'])) {
-                      callback['nok'].call(callback['context'], error);
-                    }
-                  } else {
-                    this.fireDataEvent('error', error);
-                  }
-                }, this);
-
+        } else {
+          this._callbackPackageReady(callback, false, "No Valid Fields in the Package.");
+        }
+      } else {
+        this._callbackPackageReady(callback, true);
       }
 
-      // No Fields to Load
-      return false;
+      return this.isReady();
     },
     /*
      *****************************************************************************
@@ -146,7 +140,7 @@ qx.Class.define("tc.meta.packages.FieldsPackage", {
     /**
      * Does the Field Exist in the Package?
      *
-     * @param id {Object} Field ID (format 'entity id:field name')
+     * @param id {String} Field ID (format 'entity id:field name')
      * @return {Boolean} 'true' YES, 'false' Otherwise
      * @throw If Package not Ready
      */
@@ -156,24 +150,26 @@ qx.Class.define("tc.meta.packages.FieldsPackage", {
       return (this.__oMetaData !== null) && this.__oMetaData.hasOwnProperty(id);
     },
     /**
-     * Get Field Container (IMetaField Instance)
+     * Get Field Container
      *
      * @param id {String} Field ID (format 'entity id:field name')
-     * @return {tc.meta.data.IMetaEntity} Return Metadata for field
+     * @return {tc.meta.data.IMetaField} Return Metadata for field
      * @throw If Package not Ready or Field Doesn't Exist
      */
     getField: function(id) {
       this._throwFieldNotExists(id, this.hasField(id));
 
       // NOTE: Field Entities are Read Only (So we can Cache Them)
-      return this.__mapCache.hasOwnProperty(id) ?
-              this.__mapCache[id] : // Use Cache Entry
-              new tc.meta.entities.FieldEntity(id, this.__oMetaData[id]);
+      if (!this.__mapCache.hasOwnProperty(id)) { // No Entry in Cache - So Create and Add it
+        this.__mapCache[id] = new tc.meta.entities.FieldEntity(id, this.__oMetaData[id]);
+      }
+
+      return this.__mapCache[id]; // Use Cache Entry
     },
     /**
      * Get a List of Fields in the Container
      *
-     * @return {Array} Array of Field ID's or Empty Array (if no fields in the package)
+     * @return {String[]} Array of Field ID's or Empty Array (if no fields in the package)
      * @throw If Package not Ready
      */
     getFields: function() {

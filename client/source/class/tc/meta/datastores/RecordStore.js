@@ -173,7 +173,7 @@ qx.Class.define("tc.meta.datastores.RecordStore", {
      * @throw if the Data Store is Not Ready or The action is not possible on the data store
      */
     load: function(ok, nok, context) {
-      this._throwActionNotSupported('load', this.canSave());
+      this._throwActionNotSupported('load', this.canLoad());
 
       return this._execute('read',
               this._prepareServiceCallback('loaded', ok, nok, context));
@@ -222,7 +222,7 @@ qx.Class.define("tc.meta.datastores.RecordStore", {
       // Get Services Package
       var services = this._getServicesPackage();
       if (services.isReady()) {
-        this._executeService(alias,callback);
+        this._executeService(alias, callback);
       } else {
         var save_this = this;
         services.initialize({
@@ -244,9 +244,51 @@ qx.Class.define("tc.meta.datastores.RecordStore", {
         qx.core.Assert.assertInterface(service, tc.meta.entities.IMetaService, "[service] Is not of the expected type!");
       }
 
-      // TODO: When Saving, ONLY Send Modified Fields, rather than everything
-      return service.execute(this.getFields(), callback);
-    }, // FUNCTION: _execute      
+      switch (alias) {
+        case 'create':
+        case 'update':
+          return this._executeCU(alias, service, callback);
+        case 'read':
+          return this._executeR(service, callback);
+        case 'delete':
+          return this._executeD(service, callback);
+      }
+    }, // FUNCTION: _execute  
+    _executeCU: function(alias, service, callback) {
+      return service.execute(this.getFields(), {
+          'ok': function(fields) {
+            this.setFields(fields);
+            this._callbackModelReady(callback, true);
+          },
+          'nok': function(e) {
+            this._callbackModelReady(callback, false, 'Service [' + alias + '] Execution Failed.');
+          },
+          'context': this
+        });
+    }, // FUNCTION: _executeCU  
+    _executeR: function(service, callback) {
+      return service.execute(this.getFields(), {
+          'ok': function(fields) {
+            this.setFields(fields);
+            this._callbackModelReady(callback, true);
+          },
+          'nok': function(e) {
+            this._callbackModelReady(callback, false, 'Service [read] Execution Failed.');
+          },
+          'context': this
+        });
+    }, // FUNCTION: _executeR  
+    _executeD: function(service, callback) {
+      return service.execute(this.getFields(), {
+          'ok': function() {
+            this._callbackModelReady(callback, true);
+          },
+          'nok': function(e) {
+            this._callbackModelReady(callback, false, 'Service [delete] Execution Failed.');
+          },
+          'context': this
+        });
+    }, // FUNCTION: _executeD  
     /**
      * Return's an IFieldsMetaPackage for the Store
      * 
@@ -331,7 +373,7 @@ qx.Class.define("tc.meta.datastores.RecordStore", {
       var event_this = this;
       var callback = {// DEFAULT: No Callbacks - Fire Events
         'ok': function(result) {
-          if(okevent === 'loaded') { 
+          if (okevent === 'loaded') {
             // Loading the Record so it can't be New!!!
             event_this._bNewRecord = false;
           }

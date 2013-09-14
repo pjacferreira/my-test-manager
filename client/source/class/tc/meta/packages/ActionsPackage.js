@@ -15,40 +15,60 @@
  ************************************************************************ */
 
 /**
- * Services Meta Package Class
+ * Actions Meta Package Class
  */
-qx.Class.define("tc.meta.packages.ServicesPackage", {
+qx.Class.define("tc.meta.packages.ActionsPackage", {
   extend: tc.meta.packages.BasePackage,
-  implement: tc.meta.packages.IServicesPackage,
+  implement: tc.meta.packages.IActionsPackage,
   /*
    *****************************************************************************
    CONSTRUCTOR / DESTRUCTOR
    *****************************************************************************
    */
   /**
-   * Constructor for an Service MetaPackage
+   * Constructor for an Actions MetaPackage
    * 
-   * @param services {Array} List of Service to Load
+   * @param metadataActions {Object} Actions Metadata
    */
-  construct: function(services) {
+  construct: function(metadataActions) {
     this.base(arguments);
 
     if (qx.core.Environment.get("qx.debug")) {
-      qx.core.Assert.assertArray(services, "[services] should be an Array!");
-      qx.core.Assert.assertTrue(services.length > 0, "[services] Should be non Empty Array!");
+      qx.core.Assert.assertObject(metadataActions, "[metadataActions] should be a Metadata Object!");
     }
 
-    this.__arServices =
-            tc.util.Array.clean(
-            tc.util.Array.map(services, function(entry) {
-      return tc.util.String.nullOnEmpty(entry);
-    }, this));
+    // Initialize Local Properties
+    this.__oMetaData = {};
+    this.__mapCache = {};
+    this.__arActionsInPackage = [];
+
+    // Process Metadata
+    var action = null;
+    for (var id in metadataActions) {
+      if (metadataActions.hasOwnProperty(id)) {
+        action = metadataActions[id];
+        if (qx.lang.Type.isObject(action) && action.hasOwnProperty('label')) {
+          id = id.toLowerCase();
+          this.__arActionsInPackage.push(id);
+          this.__oMetaData[id] = qx.lang.Object.clone(action, true);
+        }
+      }
+    }
+
+    if (this.__arActionsInPackage.length) { // Sort the Actions by ID
+      this.__arActionsInPackage.sort();
+    }
   },
   /**
    *
    */
   destruct: function() {
     this.base(arguments);
+
+    // Cleanup
+    this.__oMetaData = null;
+    this.__mapCache = null;
+    this.__arActionsInPackage = null;
   },
   /*
    *****************************************************************************
@@ -56,8 +76,9 @@ qx.Class.define("tc.meta.packages.ServicesPackage", {
    *****************************************************************************
    */
   members: {
-    __arServices: null,
     __oMetaData: null,
+    __arActionsInPackage: null,
+    __mapCache: null,
     /*
      *****************************************************************************
      INTERFACE METHODS : IMetaPackage
@@ -81,78 +102,56 @@ qx.Class.define("tc.meta.packages.ServicesPackage", {
       callback = this._prepareCallback(callback);
 
       if (!this.isReady()) {
-        if (this.__arServices !== null) {
-          // Load Services Definition
-          tc.services.Meta.services(this.__arServices,
-                  function(services) {
-                    var listServices = [];
-                    if (qx.lang.Type.isObject(services)) {
-                      this.__oMetaData = services;
-
-                      // Create a List of Returned Services
-                      var listServices = [];
-                      for (var i in services) {
-                        if (services.hasOwnProperty(i)) {
-                          listServices.push(i);
-                        }
-                      }
-                    }
-
-                    this._bReady = listServices.length > 0;
-                    this._callbackPackageReady(callback, listServices.length, "No Valid Services in the Package.");
-                  },
-                  function(error) {
-                    this._callbackPackageReady(callback, false, error);
-                  }, this);
-
-        } else {
-          this._callbackPackageReady(callback, false, "No Valid Services in the Package.");
-        }
-      } else {
-        this._callbackPackageReady(callback, true);
+        this._bReady = this.__arActionsInPackage.length > 0;
       }
 
+      this._callbackPackageReady(callback, this.isReady(), "No Valid Actions in the Package.");
       return this.isReady();
     },
     /*
      *****************************************************************************
-     INTERFACE METHODS : IServicesMetaPackage
+     INTERFACE METHODS : IFieldsPackage
      *****************************************************************************
      */
     /**
-     * Does the Service Exist in the Package?
+     * Does the Action Exist in the Package?
      *
-     * @param id {Object} Service ID (format 'entity id:service name')
+     * @param id {String} Action ID
      * @return {Boolean} 'true' YES, 'false' Otherwise
      * @throw If Package not Ready
      */
-    hasService: function(id) {
+    hasAction: function(id) {
       this._throwIsPackageReady();
 
       return (this.__oMetaData !== null) && this.__oMetaData.hasOwnProperty(id);
     },
     /**
-     * Get Service Container (IMetaService Instance)
+     * Get Action Container
      *
-     * @param id {String} Service ID (format 'entity id:service name')
-     * @return {Object|NULL} Return instance of IMetaService, NULL if service doesn't exist
-     * @throw If Package not Ready or Service Doesn't Exist
+     * @param id {String} Action ID
+     * @return {tc.meta.data.IMetaAction} Return Metadata for field
+     * @throw If Package not Ready or Action Doesn't Exist
      */
-    getService: function(id) {
-      this._throwServiceNotExists(id, this.hasService(id));
+    getAction: function(id) {
+      this._throwActionNotExists(id, this.hasAction(id));
 
-      return new tc.meta.entities.ServiceEntity(id, this.__oMetaData[id]);
+      // NOTE: Action Entities are Read Only (So we can Cache Them)
+      if (!this.__mapCache.hasOwnProperty(id)) { // No Entry in Cache - So Create and Add it
+        this.__mapCache[id] = new tc.meta.entities.ActionEntity(id, this.__oMetaData[id]);
+      }
+
+      return this.__mapCache[id]; // Use Cache Entry
     },
     /**
-     * Get a List of Services in the Container
+     * Get a List of Action IDs in the Container
      *
-     * @return {Array} Array of Service ID's or Empty Array (if no services in the package)
+     * @return {String[]} Array of Action IDs or Empty Array (if no actions in the package)
      * @throw If Package not Ready
      */
-    getServices: function() {
+    getActions: function() {
       this._throwIsPackageReady();
 
-      return this.__arServices;
+      return this.__arActionsInPackage;
     },
     /*
      *****************************************************************************
@@ -164,10 +163,10 @@ qx.Class.define("tc.meta.packages.ServicesPackage", {
         throw "Package has not been initialized";
       }
     },
-    _throwServiceNotExists: function(service, exists) {
+    _throwActionNotExists: function(action, exists) {
       if (!exists) {
-        throw "The Service [" + service + "] does not belong to the package";
+        throw "The Action [" + action + "] does not belong to the package";
       }
     }
-  }
+  } // SECTION: MEMBERS
 });

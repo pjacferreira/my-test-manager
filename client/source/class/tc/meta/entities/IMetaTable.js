@@ -72,7 +72,7 @@ qx.Interface.define("tc.meta.entities.IMetaTable", {
      * Returns the list of ALL fields used.
      *
      * @abstract
-     * @return {String[]} Array of Field IDs in the Group
+     * @return {String[]} Array of Field IDs
      */
     getFields: function() {
     },
@@ -80,7 +80,7 @@ qx.Interface.define("tc.meta.entities.IMetaTable", {
      * Returns the list of ALL fields To Display.
      *
      * @abstract
-     * @return {String[]} Array of Field IDs in the Group
+     * @return {String[]} Array of Field IDs
      */
     getColumns: function() {
     },

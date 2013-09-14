@@ -62,24 +62,30 @@ user:
     title: User Management
     actions:
       create:
-        title: 'New User'
-        icon: 'tc/user_add.png'
+        label: 'New User'
+        shortcut: 'CTRL+N'
+        icon: 'resource/tc/user_add.png'
         form: 'user:create'
       edit:
-        title: 'Modify User'
-        icon: 'tc/user_edit.png'
+        label: 'Modify User'
+        shortcut: 'CTRL+E'
+        icon: 'resource/tc/user_edit.png'
         form: 'user:update'
-        key: 'user:id'
+        parameters: 'user:id'
       display:
-        title: 'User Information'
-        icon: 'tc/user.png'
+        label: 'User Information'
+        shortcut: 'CTRL+I'
+        icon: 'resource/tc/user.png'
         form: 'user:read'
-        key: 'user:id'
+        parameters: 'user:id'
       delete:
-        title: 'Delete User'
-        icon: 'tc/user_delete.png'
+        label: 'Delete User'
+        shortcut: 'CTRL+D'
+        icon: 'resource/tc/user_delete.png'
         service: 'user:delete'
       change-password:
-        title: 'Change User Password'
-        icon: 'tc/lock_edit.png'
+        label: 'Change Password'
+        description: 'Change User Password'
+        shortcut: 'CTRL+P'
+        icon: 'resource/tc/lock_edit.png'
         form: 'user:password'    

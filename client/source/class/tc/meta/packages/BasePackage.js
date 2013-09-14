@@ -79,6 +79,62 @@ qx.Class.define("tc.meta.packages.BasePackage", {
      */
     isReady: function() {
       return this._bReady;
-    }
+    },
+    /*
+     ***************************************************************************
+     PROTECTED METHODS
+     ***************************************************************************
+     */
+    _prepareCallback: function(callback) {
+      // Setup Default Callback Object
+      var event_this = this;
+      var newCallback = {// DEFAULT: No Callbacks - Fire Events
+        'ok': function(result) {
+          event_this.fireEvent('ok');
+        },
+        'nok': function(error) {
+          event_this.fireDataEvent('nok', error);
+        },
+        'context': event_this
+      };
+
+      // Update Callback Object with User Parameters
+      if (qx.lang.Type.isObject(callback)) {
+        if (callback.hasOwnProperty('ok') && qx.lang.Type.isFunction(callback['ok'])) {
+          newCallback['ok'] = callback['ok'];
+        }
+
+        if (callback.hasOwnProperty('nok') && qx.lang.Type.isFunction(callback['nok'])) {
+          newCallback['nok'] = callback['nok'];
+        }
+
+        if (callback.hasOwnProperty('context') && qx.lang.Type.isObject(callback['context'])) {
+          newCallback['context'] = callback['context'];
+        }
+      }
+
+      return newCallback;
+    }, // FUNCTION: _buildCallback
+    _callbackPackageReady: function(callback, ok, message) {
+      if (qx.core.Environment.get("qx.debug")) {
+        qx.core.Assert.assertObject(callback, "[callback] is not of the expected type!");
+      }
+
+      if (ok) {
+        if (qx.core.Environment.get("qx.debug")) {
+          qx.core.Assert.assertFunction(callback['ok'], "[callback] is missing [ok] function!");
+          qx.core.Assert.assertObject(callback['context'], "[callback] is missing call [context]!");
+        }
+
+        callback['ok'].call(callback['context']);
+      } else {
+        if (qx.core.Environment.get("qx.debug")) {
+          qx.core.Assert.assertFunction(callback['nok'], "[callback] is missing [nok] function!");
+          qx.core.Assert.assertObject(callback['context'], "[callback] is missing call [context]!");
+        }
+
+        callback['nok'].call(callback['context'], message);
+      }
+    } // FUNCTION: _callbackPackageReady                        
   } // SECTION: MEMBERS
 });

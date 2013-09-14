@@ -41,7 +41,7 @@ qx.Interface.define("tc.meta.models.IFormModel", {
      * 2. An array of strings, containing the list of fields modified, if more than
      *    one field is modified.
      */
-    "fields-changed": "qx.event.type.Data",
+    "model-fields-changed": "qx.event.type.Data",
     /**
      * Fired when the Form's Data has Been Loaded from Any Backend Source
      */

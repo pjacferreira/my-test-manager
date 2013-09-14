@@ -40,7 +40,7 @@ qx.Class.define("tc.meta.datastores.FieldStore", {
      */
     "nok": "qx.event.type.Data",
     /**
-     * Fired when a single field's value is modified.
+     * Fired when field(s) value(s) are modified.
      * The data returned is an object with the following format:
      * {
      *   'field-name' : value
@@ -48,7 +48,7 @@ qx.Class.define("tc.meta.datastores.FieldStore", {
      *   'field-name' : value  |
      * }
      */
-    "fields-value": "qx.event.type.Data"
+    "store-fields-changed": "qx.event.type.Data"
   }, // SECTION: EVENTS
   /*
    *****************************************************************************
@@ -308,7 +308,7 @@ qx.Class.define("tc.meta.datastores.FieldStore", {
             this.setCurrent(this._modified > 0 ? current : null);
 
             // Resetting Value Back to it's Original Setting
-            this.fireDataEvent('change-fields-value', {name: value});
+            this.fireDataEvent('store-fields-changed', {name: value});
           }
 
           return oldValue;
@@ -323,7 +323,7 @@ qx.Class.define("tc.meta.datastores.FieldStore", {
           this.setCurrent(current);
 
           // Modified Current Value
-          this.fireDataEvent('change-fields-value', {name: value});
+          this.fireDataEvent('store-fields-changed', {name: value});
         }
       } else {
         current[name] = value
@@ -331,7 +331,7 @@ qx.Class.define("tc.meta.datastores.FieldStore", {
         this.setCurrent(current);
 
         // Setting New Current Value
-        this.fireDataEvent('change-fields-value', {name: value});
+        this.fireDataEvent('store-fields-changed', {name: value});
       }
 
       return oldValue;
@@ -346,11 +346,11 @@ qx.Class.define("tc.meta.datastores.FieldStore", {
     setFields: function(map) {
       this._throwIsStoreReady();
 
-      var fields_modified = {};
-      var fields_old_value = {};
-      var changes = 0;
+      if (qx.lang.Type.isObject(map)) { // Valid Incoming Parameter
+        var fields_modified = {};
+        var fields_old_value = {};
+        var changes = 0;
 
-      if (this.isReady()) {
         // Changing Current Values
         var value = null;
         var current = this.getCurrent();
@@ -366,10 +366,11 @@ qx.Class.define("tc.meta.datastores.FieldStore", {
 
             // Check if we are restoring the value back to it's original settings
             if (original.hasOwnProperty(field)) {
-              if (original[field] == field) {
+              if (original[field] == value) {
                 if (current.hasOwnProperty(field)) {
                   fields_old_value[field] = current[field];
                   delete current[field];
+                  fields_modified[field] = original[field];
                   this._modified--;
                   changes++;
                 }
@@ -383,24 +384,26 @@ qx.Class.define("tc.meta.datastores.FieldStore", {
               if (current[field] != value) {
                 fields_old_value[field] = current[field];
                 current[field] = value;
+                fields_modified[field] = value;
                 changes++;
               }
             } else {
               current[field] = value
+              fields_modified[field] = value;
               this._modified++;
               changes++;
             }
           }
         }
-      }
 
-      if (changes > 0) {
-        // Save the Changes Back          
-        this.setCurrent(this._modified > 0 ? current : null);
+        if (changes > 0) {
+          // Save the Changes Back          
+          this.setCurrent(this._modified > 0 ? current : null);
 
-        // Fire the Event to Show that a Field's Value has Changed
-        this.fireDataEvent('change-fields-value', fields_modified);
-        return fields_old_value;
+          // Fire the Event to Show that a Field's Value has Changed
+          this.fireDataEvent('store-fields-changed', fields_modified);
+          return fields_old_value;
+        }
       }
 
       // No Changes
@@ -447,7 +450,7 @@ qx.Class.define("tc.meta.datastores.FieldStore", {
 
       // Setting New Current Value
       if (modified !== null) {
-        this.fireDataEvent('change-fields-value', modified);
+        this.fireDataEvent('store-fields-changed', modified);
       }
 
       return modified;

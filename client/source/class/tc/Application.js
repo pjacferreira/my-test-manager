@@ -301,7 +301,8 @@ qx.Class.define("tc.Application", {
         tab.add(new qx.ui.basic.Label("Loading..."));
 
         // Create Meta Table
-        var model = new tc.table.model.MetaTableModel('user:manage');
+        var metaPackage = new tc.meta.packages.TablePackage('user:manage');
+        var model = new tc.table.model.MetaTableModel(metaPackage);
         model.initialize({
           'ok': function() {
             // TODO Do the same thing that was done to with sort-on, to filter-on
@@ -322,11 +323,22 @@ qx.Class.define("tc.Application", {
               decorator: null
             });
 
+            // Create Toolbar for Table - If Possible
+            var toolbar = tc.table.widget.TableToolbarBuilder.build(metaPackage, table);
+            if (toolbar !== null) {
+              toolbar.setShow("icon");
+              composite.add(toolbar);
+            }
+
             composite.add(table);
 
+            // Clear Tab before Adding Table
+            tab.removeAll();
             tab.add(composite);
           },
           'nok': function(e) {
+            tab.removeAll();
+            tab.add(new qx.ui.basic.Label("Error Loading Table..."));
             this.__toaster.add('Failed to Load Table Model.');
           },
           'context': this
@@ -350,7 +362,8 @@ qx.Class.define("tc.Application", {
         tab.add(new qx.ui.basic.Label("Loading..."));
 
         // Create Meta Table
-        var model = new tc.table.model.MetaTableModel('organization');
+        var metaPackage = new tc.meta.packages.TablePackage('organization');
+        var model = new tc.table.model.MetaTableModel(metaPackage);
         model.initialize({
           'ok': function() {
             // TODO Do the same thing that was done to with sort-on, to filter-on
@@ -358,18 +371,6 @@ qx.Class.define("tc.Application", {
 
             // Disable Footer
             table.setStatusBarVisible(false);
-
-            // ** Create Toolbar **
-//            var toolbar = new qx.ui.toolbar.ToolBar();
-//            var buttons = ['create', 'read', 'update', 'delete'];
-//            var button = null;
-//            for (var i = 0; i < buttons.length; ++i) {
-//              button = this.__newButton(this.__newCommand(entity, buttons[i]));
-//              if (button !== null) {
-//                toolbar.add(button);
-//              }
-//            }
-//            toolbar.setShow("icon");
 
             // ** Composite Toolbar + Table **
             var composite = new qx.ui.container.Composite();
@@ -383,26 +384,22 @@ qx.Class.define("tc.Application", {
               decorator: null
             });
 
-//            composite.add(toolbar);
+            // Create Toolbar for Table - If Possible
+            var toolbar = tc.table.widget.TableToolbarBuilder.build(metaPackage, table);
+            if (toolbar !== null) {
+              toolbar.setShow("icon");
+              composite.add(toolbar);
+            }
+
             composite.add(table);
+
+            // Clear Tab before Adding Table
+            tab.removeAll();
             tab.add(composite);
-
-            // ** Button to Toggle Table Filter **
-            // Create a Button to Open User Form Window
-            /*          
-             var btnFilter = new qx.ui.form.Button("Toggle Filter");
-             btnFilter.addListener("execute", function() {
-             this.toggleFilterVisible();
-             }, model);
-             
-             this.getRoot().add(btnFilter, {
-             left: 0,
-             top: 140
-             });
-             */
-
           },
           'nok': function(e) {
+            tab.removeAll();
+            tab.add(new qx.ui.basic.Label("Error Loading Table..."));
             this.__toaster.add('Failed to Load Table Model.');
           },
           'context': this

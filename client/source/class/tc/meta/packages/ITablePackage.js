@@ -45,6 +45,15 @@ qx.Interface.define("tc.meta.packages.ITablePackage", {
     getServices: function() {
     },
     /**
+     * Get Actions Package (IActionsMetaPackage Instance)
+     *
+     * @abstract
+     * @return {tc.meta.packages.IActionsMetaPackage} Return instance of IActionsMetaPackage, NULL on failure
+     * @throw If Package not Ready
+     */
+    getActions: function() {
+    },
+    /**
      * Get Table Container (IMetaTable Instance)
      *
      * @abstract

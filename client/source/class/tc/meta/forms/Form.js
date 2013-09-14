@@ -174,7 +174,7 @@ qx.Class.define("tc.meta.forms.Form", {
       if (oldModel != null) {
         oldModel.removeListener('ok', this._eventOK, this);
         oldModel.removeListener('nok', this._eventNOK, this);
-        oldModel.removeListener('fields-changed', this._eventFieldsChanged, this);
+        oldModel.removeListener('model-fields-changed', this._eventFieldsChanged, this);
         oldModel.removeListener('loaded', this._eventRecordLoaded, this);
         oldModel.removeListener('saved', this._eventRecordSaved, this);
         oldModel.removeListener('erased', this._eventRecordErased, this);
@@ -182,7 +182,7 @@ qx.Class.define("tc.meta.forms.Form", {
 
       newModel.addListener('ok', this._eventOK, this);
       newModel.addListener('nok', this._eventNOK, this);
-      newModel.addListener('fields-changed', this._eventFieldsChanged, this);
+      newModel.addListener('model-fields-changed', this._eventFieldsChanged, this);
       newModel.addListener('loaded', this._eventRecordLoaded, this);
       newModel.addListener('saved', this._eventRecordSaved, this);
       newModel.addListener('erased', this._eventRecordErased, this);

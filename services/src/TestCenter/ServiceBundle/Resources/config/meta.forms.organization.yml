@@ -1,5 +1,5 @@
 # Test Center - Compliance Testing Application
-# Copyright (C) 2012 Paulo Ferreira <pf at sourcenotes.org>
+# Copyright (C) 2012 - 2013 Paulo Ferreira <pf at sourcenotes.org>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -20,53 +20,40 @@
 
 organization:
   #
-  # Default Project FORM (Model)
+  # Default Organization FORM (Model)
   #
   default:
     inherit: default
-    title: Organization
+    title: Organization Information
+    data-direction: both    
     fields: 
-      - 'Information': ['organization:id', 'organization:name']
-      - 'Description': ['organization:description']
+      'Information': ['organization:id', 'organization:name']
+      'Description': ['organization:description']
+    services:
+      create: 'organization:create'
+      read: 'organization:read'
+      update: 'organization:update'
   #
   # Create Organization Form
   #
   create:
     inherit: 'organization:default'
-    title: Create
-    fields: 
-      - 'Information': 'organization:name'
-    data-direction: out
-    actions:
-      - submit: 
-          url:
-            route: [org, create]
-            include: all
-            options: ~             
+    title: Create Organization
 
   #
-  # User Details Form
+  # Organization Details Form
   #
   read:
     inherit: 'organization:default'
-    title: Details
-    data-direction: in
-    actions:
-      - load:
-        - url:
-            route: [org, read, '{organization:id}']
+    title: Organization Details
+    services:
+      create: ~
+      update: ~
   #
-  # User Update Form
+  # Organization Update Form
   #
   update:
     inherit: 'organization:default'
-    title: Modify
-    data-direction: both
-    actions:
-      - load:
-        - url:
-            route: [org, read, '{organization:id}']
-      - submit: 
-        - url:
-            route: [org, update, '{organization:id}']
-            include: all                 
+    title: Modify Organization
+    services:
+      create: ~

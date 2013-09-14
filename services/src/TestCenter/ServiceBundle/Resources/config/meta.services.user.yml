@@ -47,7 +47,8 @@ user:
       - 'user:id'
       - 'user:name'
     parameters:
-      allow: none
+      require: false
+      allow: ~
   #
   # Update User Record
   # URL : 
@@ -62,8 +63,8 @@ user:
       - 'user:name'
     parameters:
       require: true
-      allow: 'user:password'
-      exclude: 'user:id'
+      allow: ~
+      exclude: ['user:id', 'user:password']
   #
   # Update User Password
   # URL : 

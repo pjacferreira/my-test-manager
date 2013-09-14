@@ -42,7 +42,7 @@ qx.Class.define("tc.meta.models.FormModel", {
      * 2. An array of strings, containing the list of fields modified, if more than
      *    one field is modified.
      */
-    "fields-changed": "qx.event.type.Data",
+    "model-fields-changed": "qx.event.type.Data",
     /**
      * Fired when the Form's Data has Been Loaded from Any Backend Source
      */
@@ -148,7 +148,7 @@ qx.Class.define("tc.meta.models.FormModel", {
       if (oldStore != null) {
         oldStore.removeListener('ok', this._eventOK, this);
         oldStore.removeListener('nok', this._eventNOK, this);
-        oldStore.removeListener('fields-changed', this._eventFieldsChanged, this);
+        oldStore.removeListener('store-fields-changed', this._eventFieldsChanged, this);
         if (qx.Class.implementsInterface(oldStore, tc.meta.datastores.IRecordStore)) {
           // Extra Form Storage Events
           oldStore.removeListener('loaded', this._eventRecordLoaded, this);
@@ -160,7 +160,7 @@ qx.Class.define("tc.meta.models.FormModel", {
       // Standard Field Storage Events
       newStore.addListener('ok', this._eventOK, this);
       newStore.addListener('nok', this._eventNOK, this);
-      newStore.addListener('fields-changed', this._eventFieldsChanged, this);
+      newStore.addListener('store-fields-changed', this._eventFieldsChanged, this);
       if (qx.Class.implementsInterface(newStore, tc.meta.datastores.IRecordStore)) {
         // Extra Form Storage Events
         newStore.addListener('loaded', this._eventRecordLoaded, this);
@@ -182,6 +182,7 @@ qx.Class.define("tc.meta.models.FormModel", {
     _eventNOK: function(e) {
     },
     _eventFieldsChanged: function(e) {
+      this.fireDataEvent('model-fields-changed', e.getData());
     },
     _eventRecordLoaded: function(e) {
     },
@@ -624,7 +625,7 @@ qx.Class.define("tc.meta.models.FormModel", {
       return this._formEntity.hasFormTransform();
     },
     /**
-     * Applies a Global Form Transformation, if any exists. A "fields-changed" 
+     * Applies a Global Form Transformation, if any exists. A "model-fields-changed" 
      * event will be fired with the values of all modified fields.
      *
      * @throw if the Model has not been initialized

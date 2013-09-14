@@ -68,7 +68,6 @@ qx.Class.define("tc.meta.entities.BaseEntity", {
     /**
      * Return Entity Type ('field','service','form','table')
      *
-     * @abstract
      * @return {String} Entity Type
      */
     getType: function() {
@@ -77,7 +76,6 @@ qx.Class.define("tc.meta.entities.BaseEntity", {
     /**
      * Return Entity ID
      *
-     * @abstract
      * @return {String} Entity ID
      */
     getEntityId: function() {

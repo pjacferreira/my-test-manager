@@ -80,46 +80,33 @@ qx.Class.define("tc.meta.packages.FormPackage", {
      * @return {Boolean} 'true' if started initialization, 'false' if initialization failed to start
      */
     initialize: function(callback) {
-      // Clear Current Meta Data
-      this.__oMetaData = null;
+      // Prepare CallBack
+      callback = this._prepareCallback(callback);
 
-      if (this.__sForm !== null) {
-        // Load Fields Definition
-        tc.services.Meta.form(this.__sForm,
-                function(form) {
-                  this.__oMetaData = this.__postProcess(form);
-                  if ((this.__oMetaData !== null) && (this.__oFieldsPackage !== null)) {
-                    this._bReady = true;
-
-                    if (callback !== null) {
-                      if (callback.hasOwnProperty('ok') && qx.lang.Type.isFunction(callback['ok'])) {
-                        callback['ok'].call(callback['context'], this.__sForm);
-                      }
-                    } else {
-                      this.fireDataEvent('ready', this.__sForm);
+      if (!this.isReady()) {
+        if (this.__sForm !== null) {
+          // Load Form Definition
+          tc.services.Meta.form(this.__sForm,
+                  function(form) {
+                    this.__oMetaData = this.__postProcess(form);
+                    if ((this.__oMetaData !== null) && (this.__oFieldsPackage !== null)) {
+                      this._bReady = true;
                     }
 
-                    // Done
-                    return true;
-                  }
+                    this._callbackPackageReady(callback, this._bReady, "Invalid Form Definition");
+                  },
+                  function(error) {
+                    this._callbackPackageReady(callback, false, error);
+                  }, this);
 
-                  this.fireDataEvent('error', null);
-                  return false;
-                },
-                function(error) {
-                  if (callback !== null) {
-                    if (callback.hasOwnProperty('nok') && qx.lang.Type.isFunction(callback['nok'])) {
-                      callback['nok'].call(callback['context'], error);
-                    }
-                  } else {
-                    this.fireDataEvent('error', error);
-                  }
-                }, this);
-
+        } else {
+          this._callbackPackageReady(callback, false, "Missing Form ID to build Package.");
+        }
+      } else {
+        this._callbackPackageReady(callback, true);
       }
 
-      // No Form to Load
-      return false;
+      return this.isReady();
     }, // FUNCTION: initialize
     /*
      *****************************************************************************
@@ -176,42 +163,44 @@ qx.Class.define("tc.meta.packages.FormPackage", {
         var arFields = null;
         if (form.hasOwnProperty('fields')) { // Normalize Fields Property
           if (qx.lang.Type.isString(form.fields)) {
-            // CASE 1: fields = field_id or field_id, ..., field_id
+            // CASE 1: fields = field_id or {CSV STRING} field_id, ..., field_id
             form.fields = tc.util.Array.clean(tc.util.Array.trim(this.__CSVToArray(form.fields)));
-            if (form.fields) {
-              // Save All Fields Sorted
-              arFields = form.fields.slice(0).sort();
-              // Convert to GROUP with No Label
-              form.fields = [form.fields];
-            }
-          } else if (qx.lang.Type.isArray(form.fields)) {
-            // CASE 2: fields = [ ('label' -> string | array) ||  string, ... ]
+          }
+
+          if (qx.lang.Type.isArray(form.fields)) { // Ungrouped Fields
+            // CASE 2: fields = [field_id, ..., field_id]
+            // Save All Fields Sorted
+            arFields = form.fields.slice(0).sort();
+            // Convert to GROUP with No Label
+            form.fields = [form.fields];
+          } else if (qx.lang.Type.isObject(form.fields)) { // Grouped Fields
+            // CASE 3: fields = [ ('label' -> string | array) ||  string, ... ]
             arFields = [];
 
             var entry, fields, label;
             var normalized = [];
-            for (var i = 0; i < form.fields.length; ++i) {
-              entry = form.fields[i];
-              if (qx.lang.Type.isString(entry)) {
-                fields = tc.util.Array.clean(tc.util.Array.trim(this.__CSVToArray(entry)));
-                if (fields !== null) {
-                  // Add Un-Labeled Group
+            for (var group in form.fields) {
+              if (form.fields.hasOwnProperty(group)) {
+                entry = form.fields[group];
+                if (qx.lang.Type.isString(entry)) {
+                  fields = tc.util.Array.clean(tc.util.Array.trim(this.__CSVToArray(entry)));
+                } else if(qx.lang.Type.isArray(entry)) {
+                  fields = tc.util.Array.clean(tc.util.Array.trim(entry));
+                } else { // Skip Invalid Types
+                  continue;
+                }
+
+
+                if (/^\d+$/.test(group)) { // If Group Name is an Integer, then we have, an Un-named group
                   normalized.push(fields);
-                  // Merge into All Fields
-                  arFields = fields.slice(0).sort();
-                }
-              } else if (qx.lang.Type.isObject(entry)) {
-                label = tc.util.Object.getFirstProperty(entry);
-                fields = tc.util.Array.clean(tc.util.Array.trim(this.__CSVToArray(entry[label])));
-                if (fields !== null) {
-                  // Create a New Entry
+                } else { // Named Group
                   entry = {};
-                  entry[label] = fields;
-                  // Add Labeled Group
+                  entry[group] = fields;
                   normalized.push(entry);
-                  // Merge into All Fields
-                  arFields = tc.util.Array.union(arFields, fields.slice(0).sort());
                 }
+                
+                // Merge into All Fields
+                arFields = tc.util.Array.union(arFields, fields.slice(0).sort());
               }
             }
 

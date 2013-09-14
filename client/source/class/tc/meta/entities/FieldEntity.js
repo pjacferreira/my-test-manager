@@ -72,7 +72,6 @@ qx.Class.define("tc.meta.entities.FieldEntity", {
     /**
      * Is this a Virtual Field (A Field that does not exist in any Physical Store)?
      *
-     * @abstract
      * @return {Boolean ? false} 'true' YES, 'false' Otherwise
      */
     isVirtual: function() {
@@ -83,7 +82,6 @@ qx.Class.define("tc.meta.entities.FieldEntity", {
      * a record)?
      * Note: Key Fields cannot be NULL
      * 
-     * @abstract
      * @return {Boolean ? false} 'true' YES, 'false' Otherwise
      */
     isKey: function() {
@@ -92,7 +90,6 @@ qx.Class.define("tc.meta.entities.FieldEntity", {
     /**
      * Return's a Field Label
      *
-     * @abstract
      * @return {String} Field Label
      */
     getLabel: function() {
@@ -101,7 +98,6 @@ qx.Class.define("tc.meta.entities.FieldEntity", {
     /**
      * Returns a description of the Field, if any is defined.
      *
-     * @abstract
      * @return {String ? null} Field Description String or NULL (if not defined)
      */
     getDescription: function() {
@@ -110,7 +106,6 @@ qx.Class.define("tc.meta.entities.FieldEntity", {
     /**
      * Is field value auto created (Assigned by the System not the User)?
      *
-     * @abstract
      * @return {Boolean ? false} 'true' YES, 'false' Otherwise
      */
     isAutoValue: function() {
@@ -119,7 +114,6 @@ qx.Class.define("tc.meta.entities.FieldEntity", {
     /**
      * Should the field be trimmed, before validation?
      *
-     * @abstract
      * @return {Boolean ? true} 'true' YES, 'false' Otherwise
      */
     isTrimmed: function() {
@@ -131,7 +125,6 @@ qx.Class.define("tc.meta.entities.FieldEntity", {
      * i.e. if ' ' (single or multiple spaces) is not trimmed, then it will
      * not be considered empty. Only '' (no spaces) is considered empty.
      *
-     * @abstract
      * @return {Boolean ? true} 'true' Yes, 'false' No - Keep Empty String
      */
     isEmptyNull: function() {
@@ -144,7 +137,6 @@ qx.Class.define("tc.meta.entities.FieldEntity", {
      * i.e. An empty could produce a NULL Result, and therefore violate or not
      * this test
      *
-     * @abstract
      * @return {Boolean ? true} 'true' YES, 'false' Otherwise
      */
     isNullable: function() {
@@ -159,7 +151,6 @@ qx.Class.define("tc.meta.entities.FieldEntity", {
      * 'text'    | 'html'
      * 
      *
-     * @abstract
      * @return {String ? 'text'} Field Type
      */
     getValueType: function() {
@@ -168,7 +159,6 @@ qx.Class.define("tc.meta.entities.FieldEntity", {
     /**
      * Return Entity Type ('field','service','form','table')
      *
-     * @abstract
      * @return {Integer ? 0} 0 - If no maximum length defined, > 0 Otherwise
      */
     getLength: function() {
@@ -178,7 +168,6 @@ qx.Class.define("tc.meta.entities.FieldEntity", {
      * Return the Precision (number of digits allowed in the decimal part) of
      * decimal type field
      *
-     * @abstract
      * @return {Integer ? 0} 0 - If not a DECIMAL Type Field or No Decimal Places Allowed,
      *                    > 0 Otherwise
      */
@@ -188,7 +177,6 @@ qx.Class.define("tc.meta.entities.FieldEntity", {
     /**
      * Does the the Field Have a Default Value Defined?
      *
-     * @abstract
      * @return {Boolean ? false} 'true' YES, 'false' Otherwise
      */
     hasDefault: function() {
@@ -197,7 +185,6 @@ qx.Class.define("tc.meta.entities.FieldEntity", {
     /**
      * Return default value for the field.
      *
-     * @abstract
      * @return {var ? null} Field's default value
      */
     getDefault: function() {
@@ -206,7 +193,6 @@ qx.Class.define("tc.meta.entities.FieldEntity", {
     /**
      * Is a Validator Defined for the Field?
      *
-     * @abstract
      * @return {Boolean ? false} 'true' YES, 'false' Otherwise
      */
     hasValidator: function() {
@@ -220,7 +206,6 @@ qx.Class.define("tc.meta.entities.FieldEntity", {
      *   return {boolean} : 'true' - valid, 'false' - invalid
      * }
      *
-     * @abstract
      * @return {Function ? null} Validator Function
      */
     getValidator: function() {

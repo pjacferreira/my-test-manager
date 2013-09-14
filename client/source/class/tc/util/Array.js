@@ -188,6 +188,13 @@ qx.Bootstrap.define("tc.util.Array", {
         return A;
       }
     },
+    /**
+     * Apply Trim to All Elements of a String Array (Non-String Elements or Empty 
+     * String Elements will be set to NULL)
+     *
+     * @param array {String[]} String Array
+     * @return {String[]} Return Trimmed String Array
+     */
     trim: function(array) {
 
       if (array && (array.length > 0)) {
@@ -199,6 +206,12 @@ qx.Bootstrap.define("tc.util.Array", {
 
       return null;
     },
+    /**
+     * Remove all NULL elements from an Array
+     *
+     * @param value {Var[]} Array to Clean
+     * @return {Var[]} Clean Array
+     */
     clean: function(array) {
 
       if (array && (array.length > 0)) {
@@ -210,6 +223,23 @@ qx.Bootstrap.define("tc.util.Array", {
         }
 
         return newArray.length ? newArray : null;
+      }
+
+      return null;
+    },
+    /**
+     * Split a CSV String into an Array
+     *
+     * @param value {String} String Value to Test
+     * @param seperator {String ? null} Seperator Value (default ',')
+     * @return {String[]} Return's a String or NULL if an Invalid Value
+     */
+    CSVtoArray: function(value, seperator) {
+      if (qx.lang.Type.isString(value)) {
+        seperator = tc.util.String.nullOnEmpty(seperator, true);
+        return value.split(seperator !== null ? seperator : ',');
+      } else if (qx.lang.Type.isArray(value)) {
+        return value;
       }
 
       return null;

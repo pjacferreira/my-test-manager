@@ -28,7 +28,7 @@ qx.Interface.define("tc.meta.packages.IMetaPackage", {
     /**
      * Fired when Package is Initialized
      */
-    "ok": "qx.event.type.Data",
+    "ok": "qx.event.type.Event",
 
     /**
      * Fired if the package failed to initialize correctly.

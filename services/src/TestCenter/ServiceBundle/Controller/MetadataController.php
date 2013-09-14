@@ -756,10 +756,22 @@ class MetadataController extends BaseServiceController {
     if (isset($into)) {
       if (isset($from)) {
         foreach ($from as $key => $value) {
-          if (key_exists($key, $into) && is_array($into[$key]) && is_array($value)) { // Recursive Merge
-            $into[$key] = $this->mixin($into[$key], $from[$key]);
-          } else { // Just Append / Overwrite
-            $into[$key] = $value;
+          /* New Deep Merge Process
+           * Reason:
+           * 1. Allow us to remove keys from destination (the idea being that
+           * if $from, contains a $keys, whose value is null then we remove
+           * the same $key from $into (if it exists)
+           */
+          if (!isset($value)) { // Remove Element from $into if it exists
+            if(key_exists($key, $into)) {
+              unset($into[$key]);
+            }
+          } else { // Normal Merge Process
+            if (key_exists($key, $into) && is_array($into[$key]) && is_array($value)) { // Recursive Merge
+              $into[$key] = $this->mixin($into[$key], $from[$key]);
+            } else { // Just Append / Overwrite
+              $into[$key] = $value;
+            }
           }
         }
       }
@@ -807,6 +819,7 @@ class MetadataController extends BaseServiceController {
 
     return array($table, isset($variation) ? $variation : 'default');
   }
+
 }
 
 ?>

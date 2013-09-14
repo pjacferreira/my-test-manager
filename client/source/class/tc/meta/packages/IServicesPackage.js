@@ -55,5 +55,5 @@ qx.Interface.define("tc.meta.packages.IServicesPackage", {
      */
     getServices: function() {
     }
-  }
+  } // SECTION: MEMBERS
 });

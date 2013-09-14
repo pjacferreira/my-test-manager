@@ -61,11 +61,6 @@ qx.Class.define("tc.meta.entities.ServiceEntity", {
     var action = this.__oMetaData.hasOwnProperty('action') ? this.__oMetaData['action'] : null;
 
     service = tc.util.String.nullOnEmpty(service);
-    /* WHAT THE!!!
-     if (service !== null) {
-     service = service;
-     }
-     */
 
     if (qx.lang.Type.isString(action)) {
       action = tc.util.String.nullOnEmpty(action);
@@ -238,15 +233,15 @@ qx.Class.define("tc.meta.entities.ServiceEntity", {
       var rparams = {};
       var rparam_count = 0;
       for (var field in mapFieldValues) {
-        if (this.__allowField(parameters, field) && !this.__excludeField(parameters, field)) {
+        if (this.__allowField(parameters, field) || !this.__excludeField(parameters, field)) {
           rparams[field] = mapFieldValues[field];
           ++rparam_count;
         }
       }
 
       if (parameters.hasOwnProperty('require') && parameters['require']) {
-        if (rparam_count == 0) {
-          throw "Service [service] requires parametes, and no parameter fields available or allowd";
+        if (rparam_count === 0) {
+          throw "Service [service] requires parametes, and no parameter fields available or allowed";
         }
       }
 
@@ -347,45 +342,52 @@ qx.Class.define("tc.meta.entities.ServiceEntity", {
       return values.length > 0 ? values : null;
     }, // FUNCTION: __buildSingleKey             
     __allowField: function(parameters, field) {
-      var require = parameters['require'];
+      // Test if Field is Allowed
       var allow = parameters['allow'];
-      var exclude = parameters['exclude'];
       if (allow !== null) {
-        if (qx.lang.Type.isString(parameters['allow'])) {
-          return this.__fieldInList(field, [allow]);
-        } else { // Array of Fields
-          return this.__fieldInList(field, allow);
-        }
+        return this.__fieldInList(field, allow);
+      } else {
+        /* Last Effort 
+         * 1. if Require === true 
+         * 2. exclude === null
+         * then all fields are allowed
+         */
+        return parameters['require'] && (parameters['exclude'] === null);
       }
-
-      // Assume allow: 'all'
-      return require || (exclude !== null);
     }, // FUNCTION: __allowField 
     __excludeField: function(parameters, field) {
-      var require = parameters['require'];
-      var allow = parameters['allow'];
+      // Test if Field is Excluded
       var exclude = parameters['exclude'];
       if (exclude !== null) {
-        if (qx.lang.Type.isString(parameters['exclude'])) {
-          return this.__fieldInList(field, [exclude]);
-        } else { // Array of Fields
-          return this.__fieldInList(field, exclude);
-        }
+        return this.__fieldInList(field, exclude);
+      } else {
+        /* Last Effort 
+         * 1. if Require === true 
+         * 2. allow === null
+         * then all fields not explicitly excluded will be allowed
+         */
+        return !parameters['require'] || (parameters['allow'] !== null);
       }
-
-      // Assume exclude: null
-      return !require && (allow === null);
     }, // FUNCTION: __excludeField     
     __fieldInList: function(field, list) {
-      var parts = this.__splitField(field);
-      var entity = parts[0];
-      for (var i = 0; i < list.length; ++i) {
-        parts = this.__splitField(list[i]);
-        if ((parts[0] !== '*') && (entity != parts[0])) {
-          continue;
-        }
-        if ((parts[1] === '*') || (field == parts[1])) {
-          return true;
+      if (qx.lang.Type.isString(list)) {// Handle Single String as Allow
+        list = [list];
+      }
+
+      if (qx.lang.Type.isArray(list)) {
+        var field_parts = this.__splitField(field);
+        var entity = field_parts[0];
+        for (var i = 0; i < list.length; ++i) {
+          var list_parts = this.__splitField(list[i]);
+          if ((list_parts[0] !== '*') && (entity !== list_parts[0])) {
+            // No Possible Match on Entity
+            continue;
+          }
+
+          if ((list_parts[1] === '*') || (field_parts[1] === list_parts[1])) {
+            // Entry Matches of Accepts All Fields
+            return true;
+          }
         }
       }
 

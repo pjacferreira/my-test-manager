@@ -1,5 +1,5 @@
 # Test Center - Compliance Testing Application
-# Copyright (C) 2012 Paulo Ferreira <pf at sourcenotes.org>
+# Copyright (C) 2012 - 2013 Paulo Ferreira <pf at sourcenotes.org>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -26,47 +26,33 @@ project:
     inherit: default
     title: Project
     fields: 
-      - 'Information': ['project:id', 'project:name']
-      - 'Description': ['project:description']
+      'Information': ['project:id', 'project:name']
+      'Description': ['project:description']
+    services:
+      create: 'project:create'
+      read: 'project:read'
+      update: 'project:update'
   #
-  # Create Organization Form
+  # Create Project Form
   #
   create:
     inherit: 'project:default'
-    title: Create
-    fields: 
-      - 'Information': 'project:name'
-    data-direction: out
-    actions:
-      - submit: 
-          url:
-            route: [project, create]
-            include: all
-            options: ~             
+    title: Create Project
 
   #
-  # User Details Form
+  # Project Details Form
   #
   read:
     inherit: 'project:default'
-    title: Details
-    data-direction: in
-    actions:
-      - load:
-        - url:
-            route: [project, read, '{project:id}']
+    title: Project Details
+    services:
+      create: ~
+      update: ~
   #
-  # User Update Form
+  # Project Update Form
   #
   update:
     inherit: 'project:default'
-    title: Modify
-    data-direction: both
-    actions:
-      - load:
-        - url:
-            route: [project, read, '{project:id}']
-      - submit: 
-        - url:
-            route: [project, update, '{project:id}']
-            include: all                 
+    title: Project Modify
+    services:
+      create: ~

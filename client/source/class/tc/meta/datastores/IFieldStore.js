@@ -43,7 +43,7 @@ qx.Interface.define("tc.meta.datastores.IFieldStore", {
      *   'field-name' : value  |
      * }
      */
-    "fields-value": "qx.event.type.Data"
+    "store-fields-changed": "qx.event.type.Data"
   }, // SECTION: EVENTS
   /*
    *****************************************************************************
