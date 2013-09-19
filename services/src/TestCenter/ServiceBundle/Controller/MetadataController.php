@@ -500,6 +500,7 @@ class MetadataController extends BaseServiceController {
    * @return null
    */
   protected function extractORMMetadata($ormEntity) {
+    // TODO : Refactor this function to make it cleaner
     // Get Entity Manager
     $em = $this->getDoctrine()->getEntityManager();
     assert('isset($em)');
@@ -508,9 +509,13 @@ class MetadataController extends BaseServiceController {
     $ormMetadata = $em->getClassMetadata($ormEntity);
     if (isset($ormMetadata)) {
       $metadata = array();
+      // Extract Physical Fields
       $fields = $ormMetadata->getFieldNames();
       for ($i = 0; $i < count($fields); $i++) { // Run through Fields
-        $definition = array();
+        $definition = array(
+            'type' => 'text',
+            'length' => 0,
+        );
         $field = $fields[$i];
         $mapping = $ormMetadata->getFieldMapping($field);
         if (!isset($mapping)) {
@@ -554,9 +559,48 @@ class MetadataController extends BaseServiceController {
         // Add Value Definition
         $metadata[$field] = array('value' => $definition);
 
-        // For Generated Fields the Data Direction is 'out' (read-only)
+        // For Generated Fields the Data Direction is 'in' (read-only)
         if ($ormMetadata->isIdentifier($field) && !$ormMetadata->isIdentifierNatural()) {
           $metadata['data-direction'] = 'in';
+        } else {
+          $metadata['data-direction'] = 'both';
+        }
+      }
+
+      // Extract Relations
+      $fields = $ormMetadata->getAssociationNames();
+      for ($i = 0; $i < count($fields); $i++) { // Run through Fields
+        $definition = array('type' => 'reference');
+        $field = $fields[$i];
+        $mapping = $ormMetadata->getAssociationMapping($field);
+        if (!isset($mapping)) {
+          // TODO LOG PROBLEM
+          continue; // Skip Field
+        }
+
+        /* TODO: Refactor
+         * This test here is too adhoc, we have to see how the associations are
+         * setup so as to be able to extract (correctly) the fields involved
+         */
+        if (isset($mapping['joinColumns'])) { // Skip Over One Sided Relations
+          $entity = $this->extractEntity($mapping['targetEntity']);
+          if (!isset($entity)) {
+            // TODO LOG PROBLEM
+            continue; // Skip Field
+          }
+          $entity = strtolower($entity);
+
+          $link_fields = $mapping['joinColumns'];
+          if (count($link_fields) == 1) {
+            $link_field = $link_fields[0]['referencedColumnName'];
+            $definition['link'] = "{$entity}:{$link_field}";
+          } else {
+            // TODO : References Currently Only Allowe for a Single Reference Column (SHOULD LOG WARNING)
+            continue;
+          }
+
+          // Add Value Definition
+          $metadata[$field] = array('value' => $definition);
         }
       }
 
@@ -564,6 +608,15 @@ class MetadataController extends BaseServiceController {
     }
 
     return null;
+  }
+
+  /**
+   * 
+   * @return type
+   */
+  protected function extractEntity($reference) {
+    $parts = explode('\\', $reference);
+    return count($parts) > 0 ? $parts[count($parts) - 1] : null;
   }
 
   /**
@@ -763,7 +816,7 @@ class MetadataController extends BaseServiceController {
            * the same $key from $into (if it exists)
            */
           if (!isset($value)) { // Remove Element from $into if it exists
-            if(key_exists($key, $into)) {
+            if (key_exists($key, $into)) {
               unset($into[$key]);
             }
           } else { // Normal Merge Process
@@ -803,21 +856,7 @@ class MetadataController extends BaseServiceController {
       $variation = StringUtilities::nullOnEmpty($variation);
     }
 
-    return array($entity, isset($variation) ? $variation : 'default');
-  }
-
-  protected function explodeTableID($id) {
-    // Explode the ID (expected format [[table]:]variation)
-    if (stripos($id, ':') === FALSE) {
-      $table = null;
-      $variation = StringUtilities::nullOnEmpty($id);
-    } else {
-      list($table, $variation) = explode(':', $id, 2);
-      $table = StringUtilities::nullOnEmpty($table);
-      $variation = StringUtilities::nullOnEmpty($variation);
-    }
-
-    return array($table, isset($variation) ? $variation : 'default');
+    return array(isset($entity) ? $entity : 'default', isset($variation) ? $variation : 'default');
   }
 
 }

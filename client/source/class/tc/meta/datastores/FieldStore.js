@@ -194,7 +194,7 @@ qx.Class.define("tc.meta.datastores.FieldStore", {
      * @abstract
      * @param name {String} Field Name
      * @return {Boolean} 'true' YES, 'false' Otherwise
-     * @throws if the Data Store is Not Ready
+     * @throws {String} if the Data Store is Not Ready
      */
     hasField: function(name) {
       this._throwIsStoreReady();
@@ -206,7 +206,7 @@ qx.Class.define("tc.meta.datastores.FieldStore", {
      *  
      * @param name {String} Field's name to test.
      * @return {Boolean} 'true' if the field is modifiable, 'false' otherwise.
-     * @throws if the Data Store is Not Ready or Field Does not exist in the Data Store
+     * @throws {String} if the Data Store is Not Ready or Field Does not exist in the Data Store
      */
     isFieldMutable: function(name) {
       this._throwFieldNotExists(name, this.hasField(name));
@@ -219,7 +219,7 @@ qx.Class.define("tc.meta.datastores.FieldStore", {
      *  
      * @param name {String} Field's name to test.
      * @return {Boolean} 'true' field has a value defined, 'false' otherwise.
-     * @throws if the Data Store is Not Ready or Field Does not exist in the Data Store
+     * @throws {String} if the Data Store is Not Ready or Field Does not exist in the Data Store
      */
     isFieldSet: function(name) {
       this._throwFieldNotExists(name, this.hasField(name));
@@ -238,7 +238,7 @@ qx.Class.define("tc.meta.datastores.FieldStore", {
      *
      * @param name {String} Field Name
      * @return {Boolean} 'true' YES, 'false' Otherwise
-     * @throws if the Data Store is Not Ready or Field Does not exist in the Data Store
+     * @throws {String} if the Data Store is Not Ready or Field Does not exist in the Data Store
      */
     isFieldDirty: function(name) {
       this._throwFieldNotExists(name, this.hasField(name));
@@ -251,7 +251,7 @@ qx.Class.define("tc.meta.datastores.FieldStore", {
      *
      * @param name {String} Field Name
      * @return {var} Field Value
-     * @throws if the Data Store is Not Ready or Field Does not exist in the Data Store
+     * @throws {String} if the Data Store is Not Ready or Field Does not exist in the Data Store
      */
     getField: function(name) {
       this._throwFieldNotExists(name, this.hasField(name));
@@ -269,7 +269,7 @@ qx.Class.define("tc.meta.datastores.FieldStore", {
      * Return a Field Value Map, containing the current Field Values
      *
      * @return {Object} Field, Value Tuplets
-     * @throws if the Data Store is Not Ready
+     * @throws {String} if the Data Store is Not Ready
      */
     getFields: function() {
       this._throwIsStoreReady();
@@ -282,7 +282,7 @@ qx.Class.define("tc.meta.datastores.FieldStore", {
      * @param name {String} Field Name
      * @param value {var} Field Value
      * @return {var} The Incoming Field Value or The Actual Value Set (Note: the Value may be modified if Trim and Empty-as-Null are Set)
-     * @throws if the Data Store is Not Ready or Field Does not exist in the Data Store or is not Modifiable
+     * @throws {String} if the Data Store is Not Ready or Field Does not exist in the Data Store or is not Modifiable
      */
     setField: function(name, value) {
       /* TODO : Have to coeerce values to the correct type
@@ -341,7 +341,7 @@ qx.Class.define("tc.meta.datastores.FieldStore", {
      *
      * @param map {Object} Field Value Tuplets
      * @return {Object} Field Value Tuplets of All Modified Fields
-     * @throws if the Data Store is Not Ready
+     * @throws {String} if the Data Store is Not Ready
      */
     setFields: function(map) {
       this._throwIsStoreReady();
@@ -414,7 +414,7 @@ qx.Class.define("tc.meta.datastores.FieldStore", {
      *
      * @param name {String ? null} Field Name or NULL if we would like to reset all fields rather than just a single field.
      * @return {Object} Value Tuplets of All Modified Fields (with new, original value) or NULL if No Changes
-     * @throws if the Data Store is Not Ready or Field does not exist
+     * @throws {String} if the Data Store is Not Ready or Field does not exist
      */
     reset: function(name) {
       this._throwIsStoreReady();

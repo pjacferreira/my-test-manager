@@ -24,20 +24,26 @@
     "profiling",
     "source",
     "source-all",
-    "source-hybrid",    
+    "source-hybrid",
+    "source-server",
+    "source-server-reload",
+    "source-httpd-config",
     "simulation-build",
     "simulation-run",
     "test",
     "test-source",
-    "translation"
+    "translation",
+    "validate-config",
+    "validate-manifest",
+    "watch"
   ],
-  
+
   "default-job" : "source-hybrid",
 
   "let" :
   {
     "APPLICATION"  : "tc",
-    "QOOXDOO_PATH" : "../../qooxdoo-2.1-sdk",
+    "QOOXDOO_PATH" : "../../qooxdoo-3.0.1-sdk",
     "QXTHEME"      : "tc.theme.Theme",
     "API_EXCLUDE"  : ["qx.test.*", "${APPLICATION}.theme.*", "${APPLICATION}.test.*", "${APPLICATION}.simulation.*"],
     "LOCALES"      : [ "en" ],
@@ -66,7 +72,7 @@
     // using a contrib: library, it will be downloaded into the path specified
     // by the 'cache/downloads' config key
     /*
-    "libraries" : 
+    "libraries" :
     {
       "library" :
       [
@@ -83,7 +89,7 @@
 	/*
     ,"build-script" :
     {
-      "compile-options" : 
+      "compile-options" :
       {
         "code" :
         {

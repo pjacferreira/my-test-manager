@@ -156,16 +156,14 @@ class Project {
    */
   public function toArray() {
     $array = array(
-      '__entity' => strtolower($this->entityName()),
+        '__entity' => strtolower($this->entityName()),
     );
 
-    $array = $this->addPropertyIfNotNull($array, 'id');
-    $array = $this->addPropertyIfNotNull($array, 'name');
+    $array = $this->addProperty($array, 'id', $this->getID());
+    $array = $this->addProperty($array, 'name', $this->getName());
     $array = $this->addPropertyIfNotNull($array, 'description');
-    $array =
-      $this->addProperty(
-      $this->addProperty($array, 'organization', $this->organization->getID()),
-                         'container', $this->container->getID());
+    $array = $this->addProperty($array, 'container', $this->container->getID());
+    $array = $this->addProperty($array, 'organization', $this->organization->toArray());
 
     return $array;
   }
@@ -186,7 +184,8 @@ class Project {
   protected function addProperty($array, $name, $value) {
     // Get the Entity Name
     $entity = strtolower($this->entityName());
-    $array["{$name}"] = $value;
+//    $array["{$name}"] = $value;
+    $array["{$entity}:{$name}"] = $value;
     return $array;
   }
 
@@ -199,8 +198,7 @@ class Project {
   protected function addPropertyIfNotNull($array, $prop_name) {
     // Get the Entity Name
     // investigate get_called_class(); in order to create bas class function
-    return isset($this->$prop_name) ? $this->addProperty($array, $prop_name,
-                                                         $this->$prop_name) : $array;
+    return isset($this->$prop_name) ? $this->addProperty($array, $prop_name, $this->$prop_name) : $array;
   }
 
   /**

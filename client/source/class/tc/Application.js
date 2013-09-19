@@ -300,50 +300,10 @@ qx.Class.define("tc.Application", {
         // Set Load Hint
         tab.add(new qx.ui.basic.Label("Loading..."));
 
-        // Create Meta Table
-        var metaPackage = new tc.meta.packages.TablePackage('user:manage');
-        var model = new tc.table.model.MetaTableModel(metaPackage);
-        model.initialize({
-          'ok': function() {
-            // TODO Do the same thing that was done to with sort-on, to filter-on
-            var table = new tc.table.filtered.Table(model);
+        // Create the Table and add it to the Tab
+        this.__addTableToTab('user:manage', tab);
 
-            // Disable Footer
-            table.setStatusBarVisible(false);
-
-            // ** Composite Toolbar + Table **
-            var composite = new qx.ui.container.Composite();
-            composite.setLayout(new qx.ui.layout.VBox(2));
-
-            // Set Table Size
-            var t_width = 100 * model.getColumnCount() + 20;
-            table.set({
-              width: t_width > 600 ? 600 : t_width,
-              height: 400,
-              decorator: null
-            });
-
-            // Create Toolbar for Table - If Possible
-            var toolbar = tc.table.widget.TableToolbarBuilder.build(metaPackage, table);
-            if (toolbar !== null) {
-              toolbar.setShow("icon");
-              composite.add(toolbar);
-            }
-
-            composite.add(table);
-
-            // Clear Tab before Adding Table
-            tab.removeAll();
-            tab.add(composite);
-          },
-          'nok': function(e) {
-            tab.removeAll();
-            tab.add(new qx.ui.basic.Label("Error Loading Table..."));
-            this.__toaster.add('Failed to Load Table Model.');
-          },
-          'context': this
-        });
-
+        // Add TAB to Tab Manager
         this.__tabHolder.addPage('management', 'user', tab, true);
       }
     }, // FUNCTION: __addTabUserManage
@@ -353,7 +313,7 @@ qx.Class.define("tc.Application", {
         this.__createTabHolder();
       }
 
-      if (!this.__tabHolder.hasPage('management', 'organization')) {
+      if (!this.__tabHolder.hasPage('management', 'organizations')) {
         // Create Tab Page
         var tab = new qx.ui.tabview.Page('Organizations');
         tab.setLayout(new qx.ui.layout.VBox());
@@ -361,51 +321,11 @@ qx.Class.define("tc.Application", {
         // Set Load Hint
         tab.add(new qx.ui.basic.Label("Loading..."));
 
-        // Create Meta Table
-        var metaPackage = new tc.meta.packages.TablePackage('organization');
-        var model = new tc.table.model.MetaTableModel(metaPackage);
-        model.initialize({
-          'ok': function() {
-            // TODO Do the same thing that was done to with sort-on, to filter-on
-            var table = new tc.table.filtered.Table(model);
+        // Create the Table and add it to the Tab
+        this.__addTableToTab('organization:manage', tab);
 
-            // Disable Footer
-            table.setStatusBarVisible(false);
-
-            // ** Composite Toolbar + Table **
-            var composite = new qx.ui.container.Composite();
-            composite.setLayout(new qx.ui.layout.VBox(2));
-
-            // Set Table Size
-            var t_width = 100 * model.getColumnCount() + 20;
-            table.set({
-              width: t_width > 600 ? 600 : t_width,
-              height: 400,
-              decorator: null
-            });
-
-            // Create Toolbar for Table - If Possible
-            var toolbar = tc.table.widget.TableToolbarBuilder.build(metaPackage, table);
-            if (toolbar !== null) {
-              toolbar.setShow("icon");
-              composite.add(toolbar);
-            }
-
-            composite.add(table);
-
-            // Clear Tab before Adding Table
-            tab.removeAll();
-            tab.add(composite);
-          },
-          'nok': function(e) {
-            tab.removeAll();
-            tab.add(new qx.ui.basic.Label("Error Loading Table..."));
-            this.__toaster.add('Failed to Load Table Model.');
-          },
-          'context': this
-        });
-
-        this.__tabHolder.addPage('management', 'organization', tab);
+        // Add TAB to Tab Manager
+        this.__tabHolder.addPage('management', 'organizations', tab);
       }
     }, // FUNCTION: __addTabOrganizations
     __addTabProjects: function() {
@@ -420,11 +340,15 @@ qx.Class.define("tc.Application", {
         tab.setLayout(new qx.ui.layout.VBox());
 
         // Set Load Hint
-        tab.add(new qx.ui.basic.Label("Project Management / Users / Permissions / Organizations"));
+        tab.add(new qx.ui.basic.Label("Loading..."));
 
+        // Create the Table and add it to the Tab
+        this.__addTableToTab('project:manage', tab);
+
+        // Add TAB to Tab Manager
         this.__tabHolder.addPage('management', 'projects', tab);
       }
-    },
+    }, // FUNCTION: __addTabProjects
     __addTabTests: function() {
       // Create Tab Holder if it Doesn't Exist
       if (this.__tabHolder === null) {
@@ -441,7 +365,7 @@ qx.Class.define("tc.Application", {
 
         this.__tabHolder.addPage('tests', 'page', tab);
       }
-    },
+    }, // FUNCTION: __addTabTests
     __addTabTesting: function() {
       // Create Tab Holder if it Doesn't Exist
       if (this.__tabHolder === null) {
@@ -458,7 +382,52 @@ qx.Class.define("tc.Application", {
 
         this.__tabHolder.addPage('runs', 'page', tab);
       }
-    }
+    }, // FUNCTION: __addTabTesting
+    __addTableToTab: function(table, tab) {
+      // Create Meta Table
+      var metaPackage = new tc.meta.packages.TablePackage(table);
+      var model = new tc.table.model.MetaTableModel(metaPackage);
+      model.initialize({
+        'ok': function() {
+          // TODO Do the same thing that was done to with sort-on, to filter-on
+          var table = new tc.table.filtered.Table(model);
+
+          // Disable Footer
+          table.setStatusBarVisible(false);
+
+          // ** Composite Toolbar + Table **
+          var composite = new qx.ui.container.Composite();
+          composite.setLayout(new qx.ui.layout.VBox(2));
+
+          // Set Table Size
+          var t_width = 100 * model.getColumnCount() + 20;
+          table.set({
+            width: t_width > 600 ? 600 : t_width,
+            height: 400,
+            decorator: null
+          });
+
+          // Create Toolbar for Table - If Possible
+          var toolbar = tc.table.widget.TableToolbarBuilder.build(metaPackage, table);
+          if (toolbar !== null) {
+            toolbar.setShow("icon");
+            composite.add(toolbar);
+          }
+
+          composite.add(table);
+
+          // Clear Tab before Adding Table
+          tab.removeAll();
+          tab.add(composite);
+        },
+        'nok': function(e) {
+          tab.removeAll();
+          tab.add(new qx.ui.basic.Label("Error Loading Table..."));
+          this.__toaster.add('Failed to Load Table Model.');
+        },
+        'context': this
+      });
+    } // FUNCTION: __addTableToTab
     /*            
      __buildActionRegitry: function() {
      this.__actionRegistry = tc.actions.Registry.getInstance();

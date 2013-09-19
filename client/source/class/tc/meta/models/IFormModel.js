@@ -99,7 +99,7 @@ qx.Interface.define("tc.meta.models.IFormModel", {
      * @abstract
      * @param field {String} Field ID
      * @return {String} Field Type
-     * @throws if the Model has not been initialized or Field Does not exist in Model
+     * @throws {String} if the Model has not been initialized or Field Does not exist in Model
      */
     getFieldType: function(field) {
     },
@@ -111,7 +111,7 @@ qx.Interface.define("tc.meta.models.IFormModel", {
      * @abstract
      * @param field {String} Field ID
      * @return {Boolean} 'true' YES, 'false' Otherwise
-     * @throws if the Model has not been initialized or Field Does not exist in Model
+     * @throws {String} if the Model has not been initialized or Field Does not exist in Model
      */
     isKeyField: function(field) {
     },
@@ -121,7 +121,7 @@ qx.Interface.define("tc.meta.models.IFormModel", {
      * @abstract
      * @param field {String} Field ID
      * @return {String} Field Label
-     * @throws if the Model has not been initialized or Field Does not exist in Model
+     * @throws {String} if the Model has not been initialized or Field Does not exist in Model
      */
     getFieldLabel: function(field) {
     },
@@ -131,7 +131,7 @@ qx.Interface.define("tc.meta.models.IFormModel", {
      * @abstract
      * @param field {String} Field ID
      * @return {String} Field Description String or NULL (if not defined)
-     * @throws if the Model has not been initialized or Field Does not exist in Model
+     * @throws {String} if the Model has not been initialized or Field Does not exist in Model
      */
     getFieldDescription: function(field) {
     },
@@ -141,7 +141,7 @@ qx.Interface.define("tc.meta.models.IFormModel", {
      * @abstract
      * @param field {String} Field ID
      * @return {Integer} 0 - If no maximum length defined, > 0 Otherwise
-     * @throws if the Model has not been initialized or Field Does not exist in Model
+     * @throws {String} if the Model has not been initialized or Field Does not exist in Model
      */
     getFieldLength: function(field) {
     },
@@ -153,7 +153,7 @@ qx.Interface.define("tc.meta.models.IFormModel", {
      * @param field {String} Field ID
      * @return {Integer} 0 - If not a DECIMAL Type Field or No Decimal Places Allowed,
      *                    > 0 Otherwise
-     * @throws if the Model has not been initialized or Field Does not exist in Model
+     * @throws {String} if the Model has not been initialized or Field Does not exist in Model
      */
     getFieldPrecision: function(field) {
     },
@@ -163,7 +163,7 @@ qx.Interface.define("tc.meta.models.IFormModel", {
      * @abstract
      * @param field {String} Field ID
      * @return {Boolean} 'true' YES, 'false' Otherwise
-     * @throws if the Model has not been initialized or Field Does not exist in Model
+     * @throws {String} if the Model has not been initialized or Field Does not exist in Model
      */
     hasFieldDefault: function(field) {
     },
@@ -173,7 +173,7 @@ qx.Interface.define("tc.meta.models.IFormModel", {
      * @abstract
      * @param field {String} Field ID
      * @return {var} Field's default value, NULL if no default defined (or default is NULL)
-     * @throws if the Model has not been initialized or Field Does not exist in Model
+     * @throws {String} if the Model has not been initialized or Field Does not exist in Model
      */
     getFieldDefault: function(field) {
     },
@@ -183,7 +183,7 @@ qx.Interface.define("tc.meta.models.IFormModel", {
      * @abstract
      * @param field {String} Field ID
      * @return {Boolean} 'true' if the field is modifiable, 'false' otherwise.
-     * @throws if the Model has not been initialized or Field Does not exist in Model
+     * @throws {String} if the Model has not been initialized or Field Does not exist in Model
      */
     isFieldReadOnly: function(field) {
     },
@@ -193,7 +193,7 @@ qx.Interface.define("tc.meta.models.IFormModel", {
      * @abstract
      * @param field {String} Field ID
      * @return {Boolean} 'true' if the field is required, 'false' otherwise.
-     * @throws if the Model has not been initialized or Field Does not exist in Model
+     * @throws {String} if the Model has not been initialized or Field Does not exist in Model
      */
     isFieldRequired: function(field) {
     },
@@ -208,7 +208,7 @@ qx.Interface.define("tc.meta.models.IFormModel", {
      * @abstract
      * @param field {String} Field Name to Test
      * @return {Boolean} 'true' YES, 'false' Otherwise
-     * @throws if the Model has not been initialized or Field Does not exist in Model
+     * @throws {String} if the Model has not been initialized or Field Does not exist in Model
      */
     hasFieldValidation: function(field) {
     },
@@ -219,7 +219,7 @@ qx.Interface.define("tc.meta.models.IFormModel", {
      * @param field {String} Field ID
      * @param value {var} Value to Test
      * @return {Boolean} Returns TRUE if the Value is Valid for the Field, FALSE Otherwise
-     * @throws if the Model has not been initialized or Field Does not exist in Model
+     * @throws {String} if the Model has not been initialized or Field Does not exist in Model
      */
     isValidFieldValue: function(field, value) {
     },
@@ -229,7 +229,7 @@ qx.Interface.define("tc.meta.models.IFormModel", {
      * @abstract
      * @param field {String} Field Name to Test
      * @return {Boolean} 'true' YES, 'false' Otherwise
-     * @throws if the Model has not been initialized or Field Does not exist in Model
+     * @throws {String} if the Model has not been initialized or Field Does not exist in Model
      */
     hasFieldTransform: function(field) {
     },
@@ -240,7 +240,7 @@ qx.Interface.define("tc.meta.models.IFormModel", {
      * @param field {String} Field Name to Test
      * @param value {var} Field Value
      * @return {Boolean} 'true' YES, 'false' Otherwise
-     * @throws if the Model has not been initialized or Field Does not exist in Model
+     * @throws {String} if the Model has not been initialized or Field Does not exist in Model
      */
     applyFieldTransform: function(field, value) {
     },
@@ -255,7 +255,7 @@ qx.Interface.define("tc.meta.models.IFormModel", {
      * @abstract
      * @param field {String} Field ID
      * @return {Boolean} 'true' field has a value defined, 'false' otherwise.
-     * @throws if the Model has not been initialized or Field Does not exist in Model
+     * @throws {String} if the Model has not been initialized or Field Does not exist in Model
      */
     isFieldSet: function(field) {
     },
@@ -265,7 +265,7 @@ qx.Interface.define("tc.meta.models.IFormModel", {
      * @abstract
      * @param field {String} Field ID
      * @return {Boolean} 'true' YES, 'false' Otherwise
-     * @throws if the Model has not been initialized or Field Does not exist in Model
+     * @throws {String} if the Model has not been initialized or Field Does not exist in Model
      */
     isFieldDirty: function(field) {
     },
@@ -275,7 +275,7 @@ qx.Interface.define("tc.meta.models.IFormModel", {
      * @abstract
      * @param field {String} Field ID
      * @return {var} Field Value
-     * @throws if the Model has not been initialized or Field Does not exist in Model
+     * @throws {String} if the Model has not been initialized or Field Does not exist in Model
      */
     getFieldValue: function(field) {
     },
@@ -284,7 +284,7 @@ qx.Interface.define("tc.meta.models.IFormModel", {
      *
      * @abstract
      * @return {Object} Field, Value Tuplets
-     * @throws if the Model has not been initialized
+     * @throws {String} if the Model has not been initialized
      */
     getFieldValues: function() {
     },
@@ -295,7 +295,7 @@ qx.Interface.define("tc.meta.models.IFormModel", {
      * @param field {String} Field ID
      * @param value {var} Field Value
      * @return {var} The Incoming Field Value or The Actual Value Set (Note: the Value may be modified if Trim and Empty-as-Null are Set)
-     * @throws if the Model has not been initialized, Field Does not exist in Model or
+     * @throws {String} if the Model has not been initialized, Field Does not exist in Model or
      *   Value is invalid (after transformation and valiation applied).
      */
     setFieldValue: function(field, value) {
@@ -306,7 +306,7 @@ qx.Interface.define("tc.meta.models.IFormModel", {
      * @abstract
      * @param map {Object} Field Value Tuplets
      * @return {Object} Field Value Tuplets of All Modified Fields
-     * @throws if the Model has not been initialized
+     * @throws {String} if the Model has not been initialized
      */
     setFieldValues: function(map) {
     },
@@ -318,7 +318,7 @@ qx.Interface.define("tc.meta.models.IFormModel", {
      * @return {var} if Single Field is being Reset then New Original Field Value is Returned
      *                if All or Fields are being Reset a Field, Value Tuplets of All Modified Fields (with new, original value) or 
      *                NULL if No Changes
-     * @throws if the Model has not been initialized
+     * @throws {String} if the Model has not been initialized
      */
     resetFields: function(field) {
     },
@@ -332,7 +332,7 @@ qx.Interface.define("tc.meta.models.IFormModel", {
      *
      * @abstract
      * @return {String} Form Title
-     * @throws if the Model has not been initialized
+     * @throws {String} if the Model has not been initialized
      */
     getTitle: function() {
     },
@@ -342,7 +342,7 @@ qx.Interface.define("tc.meta.models.IFormModel", {
      *
      * @abstract
      * @return {Integer} Number of Groups
-     * @throws if the Model has not been initialized
+     * @throws {String} if the Model has not been initialized
      */
     getGroupCount: function() {
     },
@@ -353,7 +353,7 @@ qx.Interface.define("tc.meta.models.IFormModel", {
      * @abstract
      * @param group {Integer} Group ID 0 to getGroupCount() -1 
      * @return {String ? null} Group Label
-     * @throws if the Model has not been initialized
+     * @throws {String} if the Model has not been initialized
      */
     getGroupLabel: function(group) {
     },
@@ -363,7 +363,7 @@ qx.Interface.define("tc.meta.models.IFormModel", {
      * @abstract
      * @param group {Integer} Group ID
      * @return {String[]} Array of Field IDs in the Group
-     * @throws if the Model has not been initialized
+     * @throws {String} if the Model has not been initialized
      */
     getGroupFields: function(group) {
     },
@@ -372,7 +372,7 @@ qx.Interface.define("tc.meta.models.IFormModel", {
      *
      * @abstract
      * @return {Boolean} 'true' YES, 'false' Otherwise
-     * @throws if the Model has not been initialized
+     * @throws {String} if the Model has not been initialized
      */
     hasFormValidation: function() {
     },
@@ -382,7 +382,7 @@ qx.Interface.define("tc.meta.models.IFormModel", {
      * @abstract
      * @return {Object} Returns Hash Map of Field, Message Tuplets for all Fields 
      *   that contain invalid values as per the Form Validation.
-     * @throws if the Model has not been initialized
+     * @throws {String} if the Model has not been initialized
      */
     applyFormValidation: function() {
     },
@@ -391,7 +391,7 @@ qx.Interface.define("tc.meta.models.IFormModel", {
      *
      * @abstract
      * @return {Boolean} 'true' YES, 'false' Otherwise
-     * @throws if the Model has not been initialized
+     * @throws {String} if the Model has not been initialized
      */
     hasFormTransform: function() {
     },
@@ -400,7 +400,7 @@ qx.Interface.define("tc.meta.models.IFormModel", {
      * event will be fired with the values of all modified fields.
      *
      * @abstract
-     * @throws if the Model has not been initialized
+     * @throws {String} if the Model has not been initialized
      */
     applyFormTransform: function() {
     },
@@ -414,7 +414,7 @@ qx.Interface.define("tc.meta.models.IFormModel", {
      *
      * @abstract
      * @return {Boolean} 'true' YES, 'false' Otherwise
-     * @throws if the Model has not been initialized
+     * @throws {String} if the Model has not been initialized
      */
     isReadOnly: function() {
     },
@@ -423,7 +423,7 @@ qx.Interface.define("tc.meta.models.IFormModel", {
      *
      * @abstract
      * @return {Boolean} 'true' YES, 'false' Otherwise
-     * @throws if the Model has not been initialized
+     * @throws {String} if the Model has not been initialized
      */
     isDirty: function() {
     },
@@ -432,7 +432,7 @@ qx.Interface.define("tc.meta.models.IFormModel", {
      *
      * @abstract
      * @return {Boolean} 'true' YES, 'false' Otherwise
-     * @throws if the Model has not been initialized
+     * @throws {String} if the Model has not been initialized
      */
     isNew: function() {
     },
@@ -446,7 +446,7 @@ qx.Interface.define("tc.meta.models.IFormModel", {
      *
      * @abstract
      * @return {Boolean} 'true' YES, 'false' Otherwise
-     * @throws if the Model has not been initialized
+     * @throws {String} if the Model has not been initialized
      */
     canLoad: function() {
     },
@@ -455,7 +455,7 @@ qx.Interface.define("tc.meta.models.IFormModel", {
      *
      * @abstract
      * @return {Boolean} 'true' YES, 'false' Otherwise
-     * @throws if the Model has not been initialized
+     * @throws {String} if the Model has not been initialized
      */
     canSave: function() {
     },
@@ -464,7 +464,7 @@ qx.Interface.define("tc.meta.models.IFormModel", {
      *
      * @abstract
      * @return {Boolean} 'true' YES, 'false' Otherwise
-     * @throws if the Model has not been initialized
+     * @throws {String} if the Model has not been initialized
      */
     canErase: function() {
     },
@@ -479,7 +479,7 @@ qx.Interface.define("tc.meta.models.IFormModel", {
      *        - 'nok' (OPTIONAL) called if service execution failed for any reason
      *        - 'context' (OPTIONAL) the 'this' for the function calls  
      *      - that the callback object should specify, at the least, an 'ok' function.
-     * @throws if the Model has not been initialized or The action is not possible on Model
+     * @throws {String} if the Model has not been initialized or The action is not possible on Model
      */
     load: function(callback) {
     },
@@ -494,7 +494,7 @@ qx.Interface.define("tc.meta.models.IFormModel", {
      *        - 'nok' (OPTIONAL) called if service execution failed for any reason
      *        - 'context' (OPTIONAL) the 'this' for the function calls  
      *      - that the callback object should specify, at the least, an 'ok' function.
-     * @throws if the Model has not been initialized or The action is not possible on Model
+     * @throws {String} if the Model has not been initialized or The action is not possible on Model
      */
     save: function(callback) {
     },
@@ -509,7 +509,7 @@ qx.Interface.define("tc.meta.models.IFormModel", {
      *        - 'nok' (OPTIONAL) called if service execution failed for any reason
      *        - 'context' (OPTIONAL) the 'this' for the function calls  
      *      - that the callback object should specify, at the least, an 'ok' function.
-     * @throws if the Model has not been initialized or The action is not possible on Model
+     * @throws {String} if the Model has not been initialized or The action is not possible on Model
      */
     erase: function(callback) {
     }

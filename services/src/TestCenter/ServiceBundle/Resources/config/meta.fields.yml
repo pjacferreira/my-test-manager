@@ -1,5 +1,5 @@
 # Test Center - Compliance Testing Application
-# Copyright (C) 2012 Paulo Ferreira <pf at sourcenotes.org>
+# Copyright (C) 2012 - 2013 Paulo Ferreira <pf at sourcenotes.org>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -20,6 +20,7 @@
 
 fields:
   default:
+    # Default Settings for Physical Fields
     default:
       # Specifies the Parent Field, in the inheritance hierarchy, for this field
       #
@@ -79,20 +80,22 @@ fields:
       # - All Possible Elements are listed below 
       value: 
         # Field Value Type
-        # 
+        # (We Can't Set this Value Here, eitherwise it will override the value
+        #  Retrieved from the ORM Metadata)
         # (REQUIRED)
         #
         # Elements:
         # - TEXT: (One Of: DEFAULT 'text')
-        #   - 'integer'  - Field value is an INTEGER
-        #   - 'boolean'  - Field value is a BOOLEAN
-        #   - 'date'     - Field value is a DAE
-        #   - 'time'     - Field value is a TIME
-        #   - 'datetime' - Field value is a DATE+TIME
-        #   - 'decimal'  - Field value is a DECIMAL
-        #   - 'text'     - Field value is a TEXT
-        #   - 'html'     - Field value is a HTML text
-        type: 'text'
+        #   - 'integer'   - Field value is an INTEGER
+        #   - 'boolean'   - Field value is a BOOLEAN
+        #   - 'date'      - Field value is a DAE
+        #   - 'time'      - Field value is a TIME
+        #   - 'datetime'  - Field value is a DATE+TIME
+        #   - 'decimal'   - Field value is a DECIMAL
+        #   - 'text'      - Field value is a TEXT
+        #   - 'html'      - Field value is a HTML text
+        #   - 'reference' - Value is Refence to another Entity {Object}
+        # type: 'text' 
         # The fields value is auto-generated (assigned by the storage system)
         #
         # (OPTIONAL)
@@ -101,12 +104,14 @@ fields:
         # - BOOLEAN : DEFAULT false
         auto: false
         # Maxmimum (Display) Length for the Field
+        # (We Can't Set this Value Here, eitherwise it will override the value
+        #  Retrieved from the ORM Metadata)
         #
         # (OPTIONAL)
         #
         # Elements:
         # - INTEGER : DEFAULT 0 (means no limit)
-        length: 0
+        # length: 0
         # Precision (number after the period) for decimal values ONLY
         # this value can't be greater than the 'length' element
         #
@@ -153,4 +158,55 @@ fields:
         # Elements:
         # - TEXT : validation EL for a single field
         validation: ~
+    # Default Settings for Reference Fields
+    reference:
+      # Specifies the Parent Field, in the inheritance hierarchy, for this field
+      #
+      # (OPTIONAL)
+      #
+      # Elements:
+      # - TEXT: field_id (pattern entity_id[:field_id] 
+      #   if field_id missing, then default is assumed
+      inherit: default
+      # Field Value Properties
+      #
+      # (REQUIRED: MAP)
+      #
+      # Elements:
+      # - All Possible Elements are listed below 
+      value: 
+        # Field Value Type
+        # (We Can't Set this Value Here, eitherwise it will override the value
+        #  Retrieved from the ORM Metadata)
+        # 
+        # (REQUIRED)
+        #
+        # Elements:
+        # - TEXT: (One Of: DEFAULT 'text')
+        #   - 'integer'   - Field value is an INTEGER
+        #   - 'boolean'   - Field value is a BOOLEAN
+        #   - 'date'      - Field value is a DAE
+        #   - 'time'      - Field value is a TIME
+        #   - 'datetime'  - Field value is a DATE+TIME
+        #   - 'decimal'   - Field value is a DECIMAL
+        #   - 'text'      - Field value is a TEXT
+        #   - 'html'      - Field value is a HTML text
+        #   - 'reference' - Value is Refence to another Entity {Object}
+        # type: 'reference'
+        # Field Value Type
+        # 
+        # (REQUIRED)
+        #
+        # Elements:
+        # - STRING : field_id (entity:field) referred to
+        # link: ~
+        
+        # 
+        # REMOVE PROPERTIES THAT DON'T APPLYMaxmimum (Display) Length for the Field
+        #
+        length: ~
+        precision: ~
+        default: ~
+        trim: ~
+        empty: ~
         

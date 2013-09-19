@@ -302,7 +302,7 @@ qx.Class.define("tc.toaster.Manager", {
     },
 
     __verticalSlideIn: function (win, distance) {
-      qx.bom.element.Animation.animate(win.getContainerElement().getDomElement(), {
+      qx.bom.element.Animation.animate(win.getContentElement().getDomElement(), {
         duration: this.getDelay(),
         delay: 200,
         timing: 'ease-out',
@@ -318,7 +318,7 @@ qx.Class.define("tc.toaster.Manager", {
     },
 
     __verticalShift: function (win, distance) {
-      return qx.bom.element.Animation.animate(win.getContainerElement().getDomElement(), {
+      return qx.bom.element.Animation.animate(win.getContentElement().getDomElement(), {
         duration: this.getDelay(),
         delay: 200,
         timing: 'ease-out',
@@ -334,7 +334,7 @@ qx.Class.define("tc.toaster.Manager", {
     },
 
     __fadeOut: function (win) {
-      qx.bom.element.Animation.animate(win.getContainerElement().getDomElement(), {
+      qx.bom.element.Animation.animate(win.getContentElement().getDomElement(), {
         duration: 5000,
         delay: 200,
         keep: 100,

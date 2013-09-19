@@ -53,6 +53,6 @@ project:
   #
   update:
     inherit: 'project:default'
-    title: Project Modify
+    title: Modify Project
     services:
       create: ~

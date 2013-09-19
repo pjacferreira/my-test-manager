@@ -1,5 +1,5 @@
 # Test Center - Compliance Testing Application
-# Copyright (C) 2012 Paulo Ferreira <pf at sourcenotes.org>
+# Copyright (C) 2012 - 2013 Paulo Ferreira <pf at sourcenotes.org>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -18,42 +18,58 @@
 # Project Table (Metadata Model)
 ##
 project:
+  #
+  # Default Project Table (Model)
+  #
   default:
     inherit: ':default'
     title: Project List
-    #
-    # Datastore Information
-    #
-    datastore:
-      # Source : Service Url (Base)
-      source:
-        url: 'project'
-      # Source : Fields List
-      fields:
-        - 'project:id'
-        - 'project:name'
-        - 'project:organization'
-    #
-    # Table Display Properties
-    #    
-    # Columns to Display
+    services:
+      list: 'project:list'
+      count: 'project:count'
+    fields:
+      - 'project:id'
+      - 'project:name'
+      - 'virtual:filter'
+      - 'virtual:sort'
+      - 'virtual:limit'
     columns:
-        - 'project:id'
-        - 'project:name'
-        - 'project:organization'
-    # Initially Hidden Columns
+      - 'project:id'
+      - 'project:name'
     hidden:
-        - 'project:id'
-    # Is Sortable
-    sortable: true
-    # Columns that can be sorted
+      - 'project:id'
     sort-on:
       - 'project:id'
       - 'project:name'
-    # Is Filterable?
-    filterable: true
-    # Columns that can be filtered
     filter-on:
       - 'project:id'
       - 'project:name'
-      - 'project:organization'
+  #
+  # Project Management Table (Model)
+  #
+  manage:
+    inherit: 'project:default'
+    title: Project Management
+    actions:
+      create:
+        label: 'New Project'
+        shortcut: 'CTRL+N'
+        icon: 'resource/tc/user_add.png'
+        form: 'project:create'
+      edit:
+        label: 'Modify Project'
+        shortcut: 'CTRL+E'
+        icon: 'resource/tc/user_edit.png'
+        form: 'project:update'
+        parameters: 'project:id'
+      display:
+        label: 'Project Information'
+        shortcut: 'CTRL+I'
+        icon: 'resource/tc/user.png'
+        form: 'project:read'
+        parameters: 'project:id'
+      delete:
+        label: 'Delete Project'
+        shortcut: 'CTRL+D'
+        icon: 'resource/tc/user_delete.png'
+        service: 'project:delete'

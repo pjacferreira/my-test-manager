@@ -351,7 +351,7 @@ qx.Class.define("tc.meta.models.FormModel", {
      * @abstract
      * @param field {String} Field ID
      * @return {Boolean} 'true' if the field is required, 'false' otherwise.
-     * @throws if the Model has not been initialized or Field Does not exist in Model
+     * @throws {String} if the Model has not been initialized or Field Does not exist in Model
      */
     isFieldRequired: function(field) {
       return this.isKeyField(field);

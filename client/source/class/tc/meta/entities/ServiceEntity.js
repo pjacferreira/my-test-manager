@@ -60,7 +60,13 @@ qx.Class.define("tc.meta.entities.ServiceEntity", {
     var service = this.__oMetaData.hasOwnProperty('service') ? this.__oMetaData['service'] : null;
     var action = this.__oMetaData.hasOwnProperty('action') ? this.__oMetaData['action'] : null;
 
-    service = tc.util.String.nullOnEmpty(service);
+    if (qx.lang.Type.isString(service)) {
+      service = tc.util.String.nullOnEmpty(service);
+    } else if (qx.lang.Type.isArray(service)) {
+      service = tc.util.Array.clean(tc.util.Array.trim(service));
+    } else {
+      service = null;
+    }
 
     if (qx.lang.Type.isString(action)) {
       action = tc.util.String.nullOnEmpty(action);
@@ -70,11 +76,7 @@ qx.Class.define("tc.meta.entities.ServiceEntity", {
     } else if (!qx.lang.Type.isArray(action)) {
       action = null;
     } else {
-      action = tc.util.Array.clean(
-              tc.util.Array.map(action, function(value) {
-        return tc.util.String.nullOnEmpty(value);
-      }, this)
-              );
+      action = tc.util.Array.clean(tc.util.Array.trim(action));
     }
 
     if (qx.core.Environment.get("qx.debug")) {
@@ -233,7 +235,7 @@ qx.Class.define("tc.meta.entities.ServiceEntity", {
       var rparams = {};
       var rparam_count = 0;
       for (var field in mapFieldValues) {
-        if (this.__allowField(parameters, field) || !this.__excludeField(parameters, field)) {
+        if (!this.__excludeField(parameters, field) && this.__allowField(parameters, field)) {
           rparams[field] = mapFieldValues[field];
           ++rparam_count;
         }

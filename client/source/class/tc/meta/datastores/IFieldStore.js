@@ -71,7 +71,7 @@ qx.Interface.define("tc.meta.datastores.IFieldStore", {
      * @abstract
      * @param name {String} Field Name
      * @return {Boolean} 'true' YES, 'false' Otherwise
-     * @throws if the Data Store is Not Ready
+     * @throws {String} if the Data Store is Not Ready
      */
     hasField: function(name) {
     },
@@ -80,7 +80,7 @@ qx.Interface.define("tc.meta.datastores.IFieldStore", {
      *  
      * @param name {String} Field's name to test.
      * @return {Boolean} 'true' if the field is modifiable, 'false' otherwise.
-     * @throws if the Data Store is Not Ready or Field Does not exist in the Data Store
+     * @throws {String} if the Data Store is Not Ready or Field Does not exist in the Data Store
      */
     isFieldMutable: function(name) {
     },
@@ -89,7 +89,7 @@ qx.Interface.define("tc.meta.datastores.IFieldStore", {
      *  
      * @param name {String} Field's name to test.
      * @return {Boolean} 'true' field has a value defined, 'false' otherwise.
-     * @throws if the Data Store is Not Ready or Field Does not exist in the Data Store
+     * @throws {String} if the Data Store is Not Ready or Field Does not exist in the Data Store
      */
     isFieldSet: function(name) {
     },
@@ -99,7 +99,7 @@ qx.Interface.define("tc.meta.datastores.IFieldStore", {
      * @abstract
      * @param name {String} Field Name
      * @return {Boolean} 'true' YES, 'false' Otherwise
-     * @throws if the Data Store is Not Ready or Field Does not exist in the Data Store
+     * @throws {String} if the Data Store is Not Ready or Field Does not exist in the Data Store
      */
     isFieldDirty: function(name) {
     },
@@ -109,7 +109,7 @@ qx.Interface.define("tc.meta.datastores.IFieldStore", {
      * @abstract
      * @param name {String} Field Name
      * @return {var} Field Value
-     * @throws if the Data Store is Not Ready or Field Does not exist in the Data Store
+     * @throws {String} if the Data Store is Not Ready or Field Does not exist in the Data Store
      */
     getField: function(name) {
     },
@@ -118,7 +118,7 @@ qx.Interface.define("tc.meta.datastores.IFieldStore", {
      *
      * @abstract
      * @return {Object} Field, Value Tuplets
-     * @throws if the Data Store is Not Ready
+     * @throws {String} if the Data Store is Not Ready
      */
     getFields: function() {
     },
@@ -129,7 +129,7 @@ qx.Interface.define("tc.meta.datastores.IFieldStore", {
      * @param name {String} Field Name
      * @param value {var} Field Value
      * @return {var} The Incoming Field Value or The Actual Value Set (Note: the Value may be modified if Trim and Empty-as-Null are Set)
-     * @throws if the Data Store is Not Ready or Field Does not exist in the Data Store
+     * @throws {String} if the Data Store is Not Ready or Field Does not exist in the Data Store
      */
     setField: function(name, value) {
     },
@@ -139,7 +139,7 @@ qx.Interface.define("tc.meta.datastores.IFieldStore", {
      * @abstract
      * @param map {Object} Field Value Tuplets
      * @return {Object} Field Value Tuplets of All Modified Fields
-     * @throws if the Data Store is Not Ready
+     * @throws {String} if the Data Store is Not Ready
      */
     setFields: function(map) {
     },
@@ -151,7 +151,7 @@ qx.Interface.define("tc.meta.datastores.IFieldStore", {
      * @return {var} if Single Field is being Reset then New Original Field Value is Returned
      *                if All or Fields are being Reset a Field, Value Tuplets of All Modified Fields (with new, original value) or 
      *                NULL if No Changes
-     * @throws if the Data Store is Not Ready
+     * @throws {String} if the Data Store is Not Ready
      */
     reset: function(name) {
     }

@@ -44,3 +44,32 @@ organization:
     filter-on:
       - 'organization:id'
       - 'organization:name'
+  #
+  # Organization Management Table (Model)
+  #
+  manage:
+    inherit: 'organization:default'
+    title: Organization Management
+    actions:
+      create:
+        label: 'New Organization'
+        shortcut: 'CTRL+N'
+        icon: 'resource/tc/user_add.png'
+        form: 'organization:create'
+      edit:
+        label: 'Modify Organization'
+        shortcut: 'CTRL+E'
+        icon: 'resource/tc/user_edit.png'
+        form: 'organization:update'
+        parameters: 'organization:id'
+      display:
+        label: 'Organization Information'
+        shortcut: 'CTRL+I'
+        icon: 'resource/tc/user.png'
+        form: 'organization:read'
+        parameters: 'organization:id'
+      delete:
+        label: 'Delete Organization'
+        shortcut: 'CTRL+D'
+        icon: 'resource/tc/user_delete.png'
+        service: 'organization:delete'

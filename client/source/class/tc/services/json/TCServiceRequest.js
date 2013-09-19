@@ -287,6 +287,8 @@ qx.Class.define("tc.services.json.TCServiceRequest", {
         // If we have Parameters, use POST so as to bypass GET request limits
         this.__xhr.setMethod('POST');
         this.__xhr.setRequestData(request['parameters']);
+      } else {
+        this.__xhr.setRequestData(null);
       }
 
       // Send the Request and Wait

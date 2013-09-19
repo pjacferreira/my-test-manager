@@ -95,8 +95,8 @@ qx.Class.define("tc.widgets.ProjectWidget", {
             var entries = response['return'];
             for (var i = 0; i < entries.length; i++) {
               var entry = new tc.data.model.ProjectEntry();
-              entry.setId(entries[i].id);
-              entry.setProject(entries[i].name);
+              entry.setId(entries[i]['project:id']);
+              entry.setProject(entries[i]['project:name']);
               if (entries[i].description != null) {
                 entry.setDescription(entries[i].description);
               }

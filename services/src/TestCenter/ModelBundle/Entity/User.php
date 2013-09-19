@@ -207,8 +207,8 @@ class User {
       '__entity' => $this->entityName(),
     );
 
-    $array = $this->addPropertyIfNotNull($array, 'id');
-    $array = $this->addPropertyIfNotNull($array, 'name');
+    $array = $this->addProperty($array, 'id', $this->getID());
+    $array = $this->addProperty($array, 'name', $this->getName());
     $array = $this->addPropertyIfNotNull($array, 'first_name');
     $array = $this->addPropertyIfNotNull($array, 'last_name');
     $array = $this->addPropertyIfNotNull($array, 's_description');
@@ -229,14 +229,21 @@ class User {
    * @param type $prop_name
    * @return type
    */
-  protected function addPropertyIfNotNull($array, $prop_name) {
+  protected function addProperty($array, $name, $value) {
     // Get the Entity Name
     $entity = strtolower($this->entityName());
-
-    if (isset($this->$prop_name)) { // If Propery Set - Add it
-      $array["{$entity}:{$prop_name}"] = $this->$prop_name;
-    }
+    $array["{$entity}:{$name}"] = $value;
     return $array;
+  }
+
+  /**
+   * 
+   * @param type $array
+   * @param type $prop_name
+   * @return type
+   */
+  protected function addPropertyIfNotNull($array, $prop_name) {
+    return isset($this->$prop_name) ? $this->addProperty($array, $prop_name, $this->$prop_name) : $array;
   }
   
   /**

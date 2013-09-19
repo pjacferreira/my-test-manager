@@ -162,11 +162,11 @@ class Organization {
    */
   public function toArray() {
     $array = array(
-      '__entity' => strtolower($this->entityName()),
+        '__entity' => strtolower($this->entityName()),
     );
 
-    $array = $this->addPropertyIfNotNull($array, 'id');
-    $array = $this->addPropertyIfNotNull($array, 'name');
+    $array = $this->addProperty($array, 'id', $this->getID());
+    $array = $this->addProperty($array, 'name', $this->getName());
     $array = $this->addPropertyIfNotNull($array, 'description');
     $array['container'] = $this->container->getID();
     return $array;
@@ -179,7 +179,20 @@ class Organization {
   public function __toString() {
     return strval($this->id);
   }
- 
+
+  /**
+   * 
+   * @param type $array
+   * @param type $prop_name
+   * @return type
+   */
+  protected function addProperty($array, $name, $value) {
+    // Get the Entity Name
+    $entity = strtolower($this->entityName());
+    $array["{$entity}:{$name}"] = $value;
+    return $array;
+  }
+
   /**
    * 
    * @param type $array
@@ -187,16 +200,9 @@ class Organization {
    * @return type
    */
   protected function addPropertyIfNotNull($array, $prop_name) {
-    // Get the Entity Name
-    $entity = strtolower($this->entityName());
-
-    if (isset($this->$prop_name)) { // If Propery Set - Add it
-      $array["{$entity}:{$prop_name}"] = $this->$prop_name;
-//      $array[$prop_name] = $this->$prop_name;
-    }
-    return $array;
+    return isset($this->$prop_name) ? $this->addProperty($array, $prop_name, $this->$prop_name) : $array;
   }
-  
+
   /**
    * 
    * @return type
@@ -204,5 +210,6 @@ class Organization {
   protected function entityName() {
     $i = strlen(__NAMESPACE__);
     return substr(__CLASS__, $i + 1);
-  }  
+  }
+
 }

@@ -177,7 +177,7 @@ qx.Class.define("tc.meta.packages.FormPackage", {
             // CASE 3: fields = [ ('label' -> string | array) ||  string, ... ]
             arFields = [];
 
-            var entry, fields, label;
+            var entry, fields;
             var normalized = [];
             for (var group in form.fields) {
               if (form.fields.hasOwnProperty(group)) {

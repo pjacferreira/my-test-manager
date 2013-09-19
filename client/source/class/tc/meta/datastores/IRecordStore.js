@@ -83,7 +83,7 @@ qx.Interface.define("tc.meta.datastores.IRecordStore", {
      * @param ok {Function} Function to be called, if action succeeds
      * @param nok {Function ? null} Function to be called, if action fails
      * @param context {Object ? this} Context in which the functions are executed (if not provided, run within the context of the data store)
-     * @throws if the Data Store is Not Ready or The action is not possible on the data store
+     * @throws {String} if the Data Store is Not Ready or The action is not possible on the data store
      */
     load: function(ok, nok, context) {
     },
@@ -94,7 +94,7 @@ qx.Interface.define("tc.meta.datastores.IRecordStore", {
      * @param ok {Function} Function to be called, if action succeeds
      * @param nok {Function ? null} Function to be called, if action fails
      * @param context {Object ? this} Context in which the functions are executed (if not provided, run within the context of the data store)
-     * @throws if the Data Store is Not Ready or The action is not possible on the data store
+     * @throws {String} if the Data Store is Not Ready or The action is not possible on the data store
      */
     save: function(ok, nok, context) {
     },
@@ -105,7 +105,7 @@ qx.Interface.define("tc.meta.datastores.IRecordStore", {
      * @param ok {Function} Function to be called, if action succeeds
      * @param nok {Function ? null} Function to be called, if action fails
      * @param context {Object ? this} Context in which the functions are executed (if not provided, run within the context of the data store)
-     * @throws if the Data Store is Not Ready or The action is not possible on the data store
+     * @throws {String} if the Data Store is Not Ready or The action is not possible on the data store
      */
     erase: function(ok, nok, context) {
     }
