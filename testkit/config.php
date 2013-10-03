@@ -19,10 +19,13 @@
 
 $DOCROOT = 'http://localhost:64000/testcenter/services/web/app_dev.php';
 $TESTSDIR = 'tests';
+$SIMULATE = true;               // SIMULATE RUN (i.e. list test execution order)
 $STOP_ON_FAIL = true;
 $DEBUG = false;
 $XDEBUG = 'netbeans-xdebug';
-$BREAK_ON_TEST= 'projects:900';  // Break On a Specific Test (allows us to create a specific state, from which we can, manually, continue testing)
+$USE_GRAPHVIZ = true;
+
+// $BREAK_ON_TEST= 'projects:900';  // Break On a Specific Test (allows us to create a specific state, from which we can, manually, continue testing)
 
 /* TODO Consider the Following Scenarios
  * 1. Break on Exception (DONE)
@@ -33,21 +36,19 @@ $BREAK_ON_TEST= 'projects:900';  // Break On a Specific Test (allows us to creat
 
 // Basic Auto Loader for Namespaces
 spl_autoload_register(
-    function($className)
-    {
-        $className = str_replace("_", "\\", $className);
-        $className = ltrim($className, '\\');
-        $fileName = '';
-        $namespace = '';
-        if ($lastNsPos = strripos($className, '\\'))
-        {
+        function($className) {
+          $className = str_replace("_", "\\", $className);
+          $className = ltrim($className, '\\');
+          $fileName = '';
+          $namespace = '';
+          if ($lastNsPos = strripos($className, '\\')) {
             $namespace = substr($className, 0, $lastNsPos);
             $className = substr($className, $lastNsPos + 1);
             $fileName = str_replace('\\', DIRECTORY_SEPARATOR, $namespace) . DIRECTORY_SEPARATOR;
-        }
-        $fileName .= str_replace('_', DIRECTORY_SEPARATOR, $className) . '.php';
+          }
+          $fileName .= str_replace('_', DIRECTORY_SEPARATOR, $className) . '.php';
 
-        require_once $fileName;
-    }
+          require_once $fileName;
+        }
 );
 ?>

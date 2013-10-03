@@ -41,11 +41,11 @@ function testFiles($dir) {
   if ($handle = opendir($dir)) {
     while (false !== ($entry = readdir($handle))) {
       if (
-        ($entry != ".") &&
-        ($entry != "..") &&
-        is_readable("{$dir}/{$entry}") &&
-        (strlen($entry) > 4) &&
-        (strtoupper(substr($entry, strlen($entry) - 4)) == '.PHP')
+              ($entry != ".") &&
+              ($entry != "..") &&
+              is_readable("{$dir}/{$entry}") &&
+              (strlen($entry) > 4) &&
+              (strtoupper(substr($entry, strlen($entry) - 4)) == '.PHP')
       ) {
         $files[] = $entry;
       }
@@ -86,7 +86,7 @@ function loadFile($testSet, $filepath) {
 function runTests($testSet, $client, &$cookiejar) {
   assert('isset($testSet) && is_object($testSet)');
 
-  global $BREAK_ON_TEST, $XDEBUG, $TESTS_RUN, $TESTS_FAILED, $STOP_ON_FAIL;
+  global $BREAK_ON_TEST, $XDEBUG, $TESTS_RUN, $TESTS_FAILED, $STOP_ON_FAIL, $SIMULATE;
   global $DOCROOT;
 
   // Total Time Executing Tests
@@ -115,73 +115,77 @@ function runTests($testSet, $client, &$cookiejar) {
         echo "{$message}\n";
         break;
       case Test::STANDARD: // Service Test
-        // Get Renderer and Validator for the Test
-        $validator = $test->getValidator();
-        if (!isset($validator)) {
-          $validator = \api\validators\ValidateNULL::getInstance();
-        }
-        $renderer = $test->getRenderer();
-        if (!isset($renderer)) {
-          $renderer = \api\renderers\RenderNULL::getInstance();
-        }
+        if (isset($SIMULATE) && $SIMULATE) {
+          echo "SIMULATE [{$test->getKey()}]";
+        } else {
+          // Get Renderer and Validator for the Test
+          $validator = $test->getValidator();
+          if (!isset($validator)) {
+            $validator = \api\validators\ValidateNULL::getInstance();
+          }
+          $renderer = $test->getRenderer();
+          if (!isset($renderer)) {
+            $renderer = \api\renderers\RenderNULL::getInstance();
+          }
 
-        try {
-          // Create Request
-          $tstart = microtime(true);
-          $url = $test->toUrl();
-          if (($TESTS_RUN == 1) && isset($XDEBUG)) {
-            // Activate XDEBUG for the Tests (XDEBUG Will be run against the request, and not locally)
-            if (stripos($url, '?') === FALSE) {
-              $url .= "?XDEBUG_SESSION_START=$XDEBUG";
-            } else {
-              $url -= "&XDEBUG_SESSION_START=$XDEBUG";
+          try {
+            // Create Request
+            $tstart = microtime(true);
+            $url = $test->toUrl();
+            if (($TESTS_RUN == 1) && isset($XDEBUG)) {
+              // Activate XDEBUG for the Tests (XDEBUG Will be run against the request, and not locally)
+              if (stripos($url, '?') === FALSE) {
+                $url .= "?XDEBUG_SESSION_START=$XDEBUG";
+              } else {
+                $url -= "&XDEBUG_SESSION_START=$XDEBUG";
+              }
             }
-          }
-          $request = $client->get("$DOCROOT/$url");
-          $tdelta = microtime(true) - $tstart;
-          $ttotal += $tdelta;
+            $request = $client->get("$DOCROOT/$url");
+            $tdelta = microtime(true) - $tstart;
+            $ttotal += $tdelta;
 
-          // Add Cookies
-          $cookiejar->removeExpired();
-          foreach ($cookiejar as $cookie) {
-            $request->addCookie($cookie->getName(), $cookie->getValue());
-          }
+            // Add Cookies
+            $cookiejar->removeExpired();
+            foreach ($cookiejar as $cookie) {
+              $request->addCookie($cookie->getName(), $cookie->getValue());
+            }
 
-          // Execute Request
-          $response = $request->send();
+            // Execute Request
+            $response = $request->send();
 
-          // Save the Response Cookies
-          $cookiejar->addCookiesFromResponse($response);
+            // Save the Response Cookies
+            $cookiejar->addCookiesFromResponse($response);
 
-          // Did the Test Pass ?
-          $passed = $validator->verify($response);
-          if (!$passed) {
-            $TESTS_FAILED += 1;
-            echo "FAILED";
-          } else {
-            echo "PASSED";
-          }
+            // Did the Test Pass ?
+            $passed = $validator->verify($response);
+            if (!$passed) {
+              $TESTS_FAILED += 1;
+              echo "FAILED";
+            } else {
+              echo "PASSED";
+            }
 
-          // Test Results
-          echo '-> REQUEST [' . $request->getMethod() . ' - ' . $request->getUrl() . ']';
-          echo "<- RESPONSE [{$response->getStatusCode()}:{$response->getReasonPhrase()}:$tdelta-" . $renderer->render($response) . "]\n";
-        } catch (Guzzle\Http\Exception\ClientErrorResponseException $e) {
-          $request = $e->getRequest();
-          $response = $request->getResponse();
+            // Test Results
+            echo '-> REQUEST [' . $request->getMethod() . ' - ' . $request->getUrl() . ']';
+            echo "<- RESPONSE [{$response->getStatusCode()}:{$response->getReasonPhrase()}:$tdelta-" . $renderer->render($response) . "]\n";
+          } catch (Guzzle\Http\Exception\ClientErrorResponseException $e) {
+            $request = $e->getRequest();
+            $response = $request->getResponse();
 
-          // Did the Test Pass ?
-          $passed = $validator->verify($response);
-          if (!$passed) {
-            $TESTS_FAILED += 1;
-            echo "FAILED";
-          } else {
-            echo "PASSED";
-          }
+            // Did the Test Pass ?
+            $passed = $validator->verify($response);
+            if (!$passed) {
+              $TESTS_FAILED += 1;
+              echo "FAILED";
+            } else {
+              echo "PASSED";
+            }
 
-          // Test Results
-          echo '-> REQUEST [' . $request->getMethod() . ' - ' . $request->getUrl() . ']';
-          echo '<- RESPONSE [' . $response->getStatusCode() . ':' . $response->getReasonPhrase() . "]\n";
+            // Test Results
+            echo '-> REQUEST [' . $request->getMethod() . ' - ' . $request->getUrl() . ']';
+            echo '<- RESPONSE [' . $response->getStatusCode() . ':' . $response->getReasonPhrase() . "]\n";
 //        echo $request . "\n\n" . $response;
+          }
         }
     }
 
@@ -206,7 +210,7 @@ if (isset($testfiles)) {
       loadFile($set, "{$TESTSDIR}/{$file}");
     } catch (\Exception $e) {
       echo "** ERROR: Failed Processing File[$file].\n";
-      echo $e->getMessage()."\n";
+      echo $e->getMessage() . "\n";
       echo $e->getTraceAsString();
       exit;
     }

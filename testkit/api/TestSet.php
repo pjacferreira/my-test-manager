@@ -26,8 +26,7 @@ require_once 'utility.php';
  *
  * @author pferreira
  */
-class TestSet
-  implements \Iterator {
+class TestSet implements \Iterator {
 
   protected $m_arSequence;
   protected $m_arTestMap;
@@ -103,7 +102,8 @@ class TestSet
   public function sequence() {
     if (!isset($this->m_arSequence)) {
 
-      global $DEBUG;
+      global $DEBUG, $USE_GRAPHVIZ;
+
 
       /* TODO Optimize
        * Certain Maps are Not Required even though they are interesting for debugging
@@ -211,17 +211,15 @@ class TestSet
           }
 
           // Check How Many Dependencies we still have left
-          $diff = array_uintersect($run_order, $children,
-            function($t1, $t2) {
-              $compare = strcmp($t1->getGroup(), $t2->getGroup());
-              return ($compare === 0) ? $t1->getSequence() - $t2->getSequence() : $compare;
-            });
+          $diff = array_uintersect($run_order, $children, function($t1, $t2) {
+                    $compare = strcmp($t1->getGroup(), $t2->getGroup());
+                    return ($compare === 0) ? $t1->getSequence() - $t2->getSequence() : $compare;
+                  });
 
-          $diff = array_udiff($children, $diff,
-            function($t1, $t2) {
-              $compare = strcmp($t1->getGroup(), $t2->getGroup());
-              return ($compare === 0) ? $t1->getSequence() - $t2->getSequence() : $compare;
-            });
+          $diff = array_udiff($children, $diff, function($t1, $t2) {
+                    $compare = strcmp($t1->getGroup(), $t2->getGroup());
+                    return ($compare === 0) ? $t1->getSequence() - $t2->getSequence() : $compare;
+                  });
 
           // See if we have any missing dependencies and handle accordingly
           if (count($diff) != count($children)) { // Dependecy Count has decreased
@@ -238,9 +236,15 @@ class TestSet
 
       logger("\nRun Order\n");
       if (isset($DEBUG) && $DEBUG) {
+        if (isset($USE_GRAPHVIZ) && $USE_GRAPHVIZ) {
+          $this->dumpGraphVIZ($run_order);
+        } else {
+          $this->dumpList($run_order);
+        }
+
         $index = 1;
         foreach ($run_order as $test) {
-          echo "{$index} -> {$test->getGroup()}:{$test->getSequence()}\n";
+          echo "{$index} -> {$test->getKey()}\n";
           $index++;
         }
       }
@@ -248,20 +252,11 @@ class TestSet
       if (count($mapBefore)) {
         $count = count($mapBefore);
         echo "\nUnresolved Tests [$count]\n";
-        foreach ($mapBefore as $key => $dependencies) {
-          echo "{$key} [";
-          $bfirst = true;
-          foreach ($dependencies as $test) {
-            if ($bfirst) {
-              echo "{$test->getGroup()}:{$test->getSequence()}";
-              $bfirst = false;
-            } else {
-              echo ", {$test->getGroup()}:{$test->getSequence()}";
-            }
-          }
-          echo "]\n";
+        if (isset($USE_GRAPHVIZ) && $USE_GRAPHVIZ) {
+          $this->dumpGraphVIZ($mapBefore);
+        } else {
+          $this->dumpList($mapBefore);
         }
-
         throw new \Exception("Unresolved Dependencies.");
       }
 
@@ -308,11 +303,41 @@ class TestSet
        *         therefore, the after dependency 'a' <= 'b', 'c', can be written as before dependencies 'b' <= 'a' and
        *         'c' <= 'a'
        */
-
       $this->m_arSequence = $run_order;
     }
 
     return $this->m_arSequence;
+  }
+
+  protected function dumpList($map) {
+    foreach ($map as $key => $dependencies) {
+      echo "{$key} [";
+      $bfirst = true;
+      foreach ($dependencies as $test) {
+        if ($bfirst) {
+          echo "{$test->getKey()}";
+          $bfirst = false;
+        } else {
+          echo ", {$test->getKey()}";
+        }
+      }
+      echo "]\n";
+    }
+  }
+
+  protected function dumpGraphVIZ($map) {
+    // Start Graph
+    echo "digraph G {\n";
+
+    // Create Nodes
+    foreach ($map as $key => $dependencies) {
+      foreach ($dependencies as $test) {
+        echo "\"{$test->getKey()}\"->\"{$key}\";\n";
+      }
+    }
+
+    // End Graph
+    echo "}\n";
   }
 
   /**
@@ -385,7 +410,7 @@ class TestSet
           $map[$key][] = $this->m_arTestMap[$dep_key];
         }
       } else {
-        throw new \Exception("Dependency {$dep_key} is not part of the Test Set.");
+        throw new \Exception("Test [{$key}] has an unresolved dependency [{$dep_key}].");
       }
     }
 
@@ -437,22 +462,21 @@ class TestSet
      * 2. keys with lower number of dependencies
      * 3. key name (lowest to highest)
      */
-    uksort($map,
-      function($a, $b) use($map) {
-        if ($a === 'null') { //
-          return -1;
-        } else if ($b === 'null') {
-          return 1;
-        } else {
-          $ca = count($map[$a]);
-          $cb = count($map[$b]);
-          if ($ca != $cb) {
-            return $ca < $cb ? -1 : 1;
-          } else {
-            return strcmp($a, $b) <= 0 ? -1 : 1;
-          }
-        }
-      });
+    uksort($map, function($a, $b) use($map) {
+              if ($a === 'null') { //
+                return -1;
+              } else if ($b === 'null') {
+                return 1;
+              } else {
+                $ca = count($map[$a]);
+                $cb = count($map[$b]);
+                if ($ca != $cb) {
+                  return $ca < $cb ? -1 : 1;
+                } else {
+                  return strcmp($a, $b) <= 0 ? -1 : 1;
+                }
+              }
+            });
 
     return $map;
   }

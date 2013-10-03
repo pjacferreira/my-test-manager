@@ -21,27 +21,49 @@ namespace tests;
 
 use api\TestFactory;
 
+// $SKIP = true; // Skip the File for Current Test
+
 $TESTS = array(
-  // START: Session Tests
-  TestFactory::marker('session', 1, 'Session Tests : START'),
-  // LOGIN ADMIN
-  TestFactory::marker('session', 100, 'PRE Admin Login')->
-    after('session', 1),
-  TestFactory::tcServiceTest('session', 110, 'session/login', 'admin/admin')->
-    after('session', 100),
-  TestFactory::tcServiceTest('session', 111, 'session/whoami')->
-    after('session', 110),
-  TestFactory::marker('session', 199, 'POST Admin Login')->
-    after('session', 110),
-  // LOGOUT ADMIN
-  TestFactory::marker('session', 900, 'PRE Admin Logout')->
-    after('session', 199),
-  TestFactory::tcServiceTest('session', 910, 'session/logout')->
-    after('session', 900),
-  TestFactory::marker('session', 920, 'POST Admin Logout')->
-    after('session', 910),
-  // END: Session Tests
-  TestFactory::marker('session', 999, 'Session Tests : END')->
-    after('session', 920),
+    // START: ALL TEstintin
+    TestFactory::marker('session', 1, 'START: TESTING'),
+    // ADMIN LOGIN
+    TestFactory::marker('session', 100, 'PRE Admin LOGIN')->
+            after('session', 1),
+    TestFactory::tcServiceTest('session', 110, 'session/login', 'admin/admin')->
+            after('session', 100),
+    TestFactory::tcServiceTest('session', 111, 'session/user/whoami')->
+            after('session', 110),
+    TestFactory::marker('session', 199, 'POST Admin Login')->
+            after('session', 111),
+    // USER TESTS
+    TestFactory::marker('session', 200, 'START: USER TESTING')->
+            after('session', 199),
+    TestFactory::marker('session', 300, 'PRE User Test Preparation')->
+            after('session', 200),
+    TestFactory::tcServiceTest('session', 310, 'session/logout')->
+            after('session', 300),
+    TestFactory::marker('session', 399, 'POST User Test Preparation')->
+            after('session', 310),
+    TestFactory::marker('session', 799, 'END: USER TESTING')->
+            after('session', 399),
+    // CLEANUP PREPARATION
+    TestFactory::marker('session', 800, 'CLEANUP: Start Preparation')->
+            after('session', 799),
+    TestFactory::tcServiceTest('session', 810, 'session/logout')->
+            after('session', 800),
+    TestFactory::tcServiceTest('session', 820, 'session/login', 'admin/admin')->
+            after('session', 810),
+    TestFactory::marker('session', 899, 'CLEANUP: END Preparation')->
+            after('session', 820),
+    // CLEAN UP
+    TestFactory::marker('session', 900, 'CLEANUP: START')->
+            after('session', 899),
+    TestFactory::tcServiceTest('session', 910, 'session/logout')->
+            after('session', 900),
+    TestFactory::marker('session', 920, 'CLEANUP: END')->
+            after('session', 910),
+    // END: ALL TESTING
+    TestFactory::marker('session', 999, 'END: TESTING')->
+            after('session', 920),
 );
 ?>

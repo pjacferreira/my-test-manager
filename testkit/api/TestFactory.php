@@ -42,7 +42,6 @@ class TestFactory {
     $nPriority = integer_gt($nPriority);
 
     if (isset($sGroup) && isset($nPriority)) {
-      $sMessage = string_onEmpty($sMessage);
       return Test::getMarker($sGroup, $nPriority)->setRenderer(new renderers\RenderMessage(isset($sMessage) ? $sMessage : 'MARKER'));
     }
 
@@ -60,8 +59,7 @@ class TestFactory {
    * @return type
    * @throws \Exception
    */
-  public static function serviceTest($sGroup, $nSequence, $service, $p_route,
-                                     $p_request = null, $r_code = 200) {
+  public static function serviceTest($sGroup, $nSequence, $service, $p_route, $p_request = null, $r_code = 200) {
     $sGroup = string_onEmpty($sGroup);
     $nSequence = integer_gt($nSequence);
     $service = self::extractService($service);
@@ -72,11 +70,11 @@ class TestFactory {
       $r_code = integer_gt($r_code, 0, 200);
 
       return Test::getTest($sGroup, $nSequence)
-          ->setService($service)
-          ->setParameters($p_route)
-          ->setParameters($p_request, false)
-          ->setValidator(validators\ValidateResponseCode::getInstance($r_code))
-          ->setRenderer(renderers\RenderNULL::getInstance());
+                      ->setService($service)
+                      ->setParameters($p_route)
+                      ->setParameters($p_request, false)
+                      ->setValidator(validators\ValidateResponseCode::getInstance($r_code))
+                      ->setRenderer(renderers\RenderNULL::getInstance());
     }
 
     throw new \Exception("ERROR: Missing or Invalid GROUP and PRIORITY Parameters.");
@@ -93,12 +91,9 @@ class TestFactory {
    * @param type $json
    * @return type
    */
-  public static function tcServiceTest($sGroup, $nPriority, $service, $p_route = null,
-                                       $p_request = null, $bOK = true,
-                                       $json = true) {
+  public static function tcServiceTest($sGroup, $nPriority, $service, $p_route = null, $p_request = null, $bOK = true, $json = true) {
 
-    $test = self::serviceTest($sGroup, $nPriority, $service, $p_route,
-                              $p_request);
+    $test = self::serviceTest($sGroup, $nPriority, $service, $p_route, $p_request);
     if ($json) { // Display JSON Result
       $test->setRenderer(renderers\RenderTCService::getInstance());
     }
@@ -112,10 +107,16 @@ class TestFactory {
    * @throws \Exception
    */
   protected static function extractService($service) {
-    $service = self::explodeRoute($service);
+    if (isset($service)) {
+      if (is_string($service)) {
+        $service = self::explodeRoute($service);
+      } if (!is_array($service)) {
+        unset($service);
+      }
 
-    if (isset($service) && is_array($service)) {
-      return $service;
+      if (isset($service)) {
+        return $service;
+      }
     }
 
     throw new \Exception("REQUIRED: Valid Service Parameter.");
@@ -127,14 +128,19 @@ class TestFactory {
    * @return type
    */
   protected static function explodeRoute($route) {
-    if (isset($route) && is_string($route)) {
-      $route = string_onEmpty($route);
-      if (isset($route)) {
-        return explode('/', $route);
+    if (isset($route)) {
+      if (is_string($route)) {
+        $route = string_onEmpty($route);
+        if (isset($route)) {
+          return explode('/', $route);
+        }
+      } else if (is_array($route)) {
+        // TODO use array_map to atleast mark empty strings as null
+        return $route;
       }
     }
 
-    return isset($route) ? $route : null;
+    return null;
   }
 
   /**
@@ -143,14 +149,17 @@ class TestFactory {
    * @return type
    */
   protected static function explodeRequest($parameters) {
-    if (isset($parameters) && is_string($parameters)) {
-      $parameters = string_onEmpty($parameters);
-      if (isset($parameters)) {
-        return explode('&', $parameters);
+    if (isset($parameters) && is_array($parameters)) {
+      $result = null;
+      foreach ($parameters as $name => $value) {
+        $value = string_onEmpty($value, '');
+        $result = isset($result) ? "{$result}&{$name}={$value}" : "{$name}={$value}";
       }
+
+      return $result;
     }
 
-    return isset($parameters) ? $parameters : null;
+    return isset($parameters) ? string_onEmpty($parameters) : null;
   }
 
 }
