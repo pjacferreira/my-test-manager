@@ -109,17 +109,17 @@ qx.Bootstrap.define("tc.table.widget.TableToolbarBuilder", {
 
               // Event : Data Loaded from Backend
               form.addListener("formSubmitted", function(e) {
-                this.info("Data Saved");
+//                this.info("Data Saved");
                 dialog.close();
               }, this);
               // Event : Data Synchronized to Backend
               form.addListener("formCancelled", function(e) {
-                this.info("Form Cancelled");
+//                this.info("Form Cancelled");
                 dialog.close();
               }, this);
               // Event : Error Loading Form or in Data Synchronization
               form.addListener("nok", function(e) {
-                this.error("Error");
+//                this.error("Error");
                 dialog.close();
               }, this);
 

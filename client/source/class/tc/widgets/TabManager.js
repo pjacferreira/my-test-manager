@@ -300,7 +300,7 @@ qx.Class.define("tc.widgets.TabManager", {
         group = this.__validateGroup(group);
         if (group !== null) {
           group = this.__tabGroups[group];
-          var tabs = this.__tabGroups[group]['tabs'];
+          var tabs = group['tabs'];
           if (tabs.hasOwnProperty(page)) {
             return tabs[page];
           }

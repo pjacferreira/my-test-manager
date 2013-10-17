@@ -75,7 +75,7 @@ qx.Class.define("tc.meta.entities.FieldEntity", {
      * @return {Boolean ? false} 'true' YES, 'false' Otherwise
      */
     isVirtual: function() {
-      return this.__oMetaData.hasOwnProperty('virtual') ? this.__oMetaData['virtual'] == true : false;
+      return this.__oMetaData.hasOwnProperty('virtual') ? !!this.__oMetaData['virtual'] : false;
     },
     /**
      * Is this a KEY Field (A Field whose value can be used to uniquely identify
@@ -85,7 +85,7 @@ qx.Class.define("tc.meta.entities.FieldEntity", {
      * @return {Boolean ? false} 'true' YES, 'false' Otherwise
      */
     isKey: function() {
-      return this.__oMetaData.hasOwnProperty('key') ? this.__oMetaData['key'] == true : false;
+      return this.__oMetaData.hasOwnProperty('key') ? !!this.__oMetaData['key'] : false;
     },
     /**
      * Return's a Field Label
@@ -109,7 +109,7 @@ qx.Class.define("tc.meta.entities.FieldEntity", {
      * @return {Boolean ? false} 'true' YES, 'false' Otherwise
      */
     isAutoValue: function() {
-      return this.__oMetaDataValue.hasOwnProperty('auto') ? this.__oMetaDataValue['auto'] == true : false;
+      return this.__oMetaDataValue.hasOwnProperty('auto') ? !!this.__oMetaDataValue['auto'] : false;
     },
     /**
      * Should the field be trimmed, before validation?
@@ -117,7 +117,7 @@ qx.Class.define("tc.meta.entities.FieldEntity", {
      * @return {Boolean ? true} 'true' YES, 'false' Otherwise
      */
     isTrimmed: function() {
-      return this.__oMetaDataValue.hasOwnProperty('trim') ? this.__oMetaDataValue['trim'] == true : true;
+      return this.__oMetaDataValue.hasOwnProperty('trim') ? !!this.__oMetaDataValue['trim'] : true;
     },
     /**
      * Should an Empty String be Treated as a NULL?
@@ -140,7 +140,7 @@ qx.Class.define("tc.meta.entities.FieldEntity", {
      * @return {Boolean ? true} 'true' YES, 'false' Otherwise
      */
     isNullable: function() {
-      return this.__oMetaDataValue.hasOwnProperty('nullable') ? this.__oMetaDataValue['nullable'] == true : true;
+      return this.__oMetaDataValue.hasOwnProperty('nullable') ? !!this.__oMetaDataValue['nullable'] : true;
     },
     /**
      * Return the type of the value for the field.
@@ -180,7 +180,7 @@ qx.Class.define("tc.meta.entities.FieldEntity", {
      * @return {Boolean ? false} 'true' YES, 'false' Otherwise
      */
     hasDefault: function() {
-      return this.__oMetaDataValue.hasOwnProperty('default') ? this.__oMetaDataValue['default'] == true : false;
+      return this.__oMetaDataValue.hasOwnProperty('default');
     },
     /**
      * Return default value for the field.
@@ -196,7 +196,7 @@ qx.Class.define("tc.meta.entities.FieldEntity", {
      * @return {Boolean ? false} 'true' YES, 'false' Otherwise
      */
     hasValidator: function() {
-      return this.__oMetaDataValue.hasOwnProperty('validation') ? this.__oMetaDataValue['validation'] == true : false;
+      return this.__oMetaDataValue.hasOwnProperty('validation');
     },
     /**
      * Retrieves a function, if one is defined, that can be used to validate the

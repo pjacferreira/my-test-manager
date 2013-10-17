@@ -15,28 +15,28 @@
  ************************************************************************ */
 
 /**
- * Form Meta Package Class
+ * List Meta Package Class
  */
-qx.Class.define("tc.meta.packages.FormPackage", {
+qx.Class.define("tc.meta.packages.ListPackage", {
   extend: tc.meta.packages.BasePackage,
-  implement: tc.meta.packages.IFormPackage,
+  implement: tc.meta.packages.IListPackage,
   /*
    *****************************************************************************
    CONSTRUCTOR / DESTRUCTOR
    *****************************************************************************
    */
   /**
-   * Constructor for an Form MetaPackage
+   * Constructor for an List MetaPackage
    * 
-   * @param form {String} Form ID
+   * @param list {String} List ID
    */
-  construct: function(form) {
+  construct: function(list) {
     this.base(arguments);
 
-    this.__sForm = tc.util.String.nullOnEmpty(form);
+    this.__sList = tc.util.String.nullOnEmpty(list);
 
     if (qx.core.Environment.get("qx.debug")) {
-      qx.core.Assert.assertString(form, "[form] Should be a Non Empty String!");
+      qx.core.Assert.assertString(list, "[list] Should be a Non Empty String!");
     }
   },
   /**
@@ -46,7 +46,7 @@ qx.Class.define("tc.meta.packages.FormPackage", {
     this.base(arguments);
 
     // Clear Variables
-    this.__sForm = null;
+    this.__sList = null;
     this.__oMetaData = null;
     this.__oFieldsPackage = null;
     this.__oServicesPackage = null;
@@ -57,7 +57,7 @@ qx.Class.define("tc.meta.packages.FormPackage", {
    *****************************************************************************
    */
   members: {
-    __sForm: null,
+    __sList: null,
     __oMetaData: null,
     __oFieldsPackage: null,
     __oServicesPackage: null,
@@ -84,23 +84,23 @@ qx.Class.define("tc.meta.packages.FormPackage", {
       callback = this._prepareCallback(callback);
 
       if (!this.isReady()) {
-        if (this.__sForm !== null) {
+        if (this.__sList !== null) {
           // Load Form Definition
-          tc.services.Meta.form(this.__sForm,
-                  function(form) {
-                    this.__oMetaData = this.__postProcess(form);
+          tc.services.Meta.list(this.__sList,
+                  function(list) {
+                    this.__oMetaData = this.__postProcess(list);
                     if ((this.__oMetaData !== null) && (this.__oFieldsPackage !== null)) {
                       this._bReady = true;
                     }
 
-                    this._callbackPackageReady(callback, this._bReady, "Invalid Form Definition");
+                    this._callbackPackageReady(callback, this._bReady, "Invalid List Definition");
                   },
                   function(error) {
                     this._callbackPackageReady(callback, false, error);
                   }, this);
 
         } else {
-          this._callbackPackageReady(callback, false, "Missing Form ID to build Package.");
+          this._callbackPackageReady(callback, false, "Missing List ID to build Package.");
         }
       } else {
         this._callbackPackageReady(callback, true);
@@ -110,7 +110,7 @@ qx.Class.define("tc.meta.packages.FormPackage", {
     }, // FUNCTION: initialize
     /*
      *****************************************************************************
-     INTERFACE METHODS : IFormMetaPackage
+     INTERFACE METHODS : IListMetaPackage
      *****************************************************************************
      */
     /**
@@ -136,15 +136,15 @@ qx.Class.define("tc.meta.packages.FormPackage", {
       return this.__oServicesPackage;
     },
     /**
-     * Get Form Container (IMetaForm Instance)
+     * Get Form Container (IMetaList Instance)
      *
-     * @return {tc.meta.entities.IMetaForm} Return Form Metadata Entity
+     * @return {tc.meta.entities.IMetaList} Return List Metadata Entity
      * @throw If Package not Ready
      */
-    getForm: function() {
+    getList: function() {
       this._throwIsPackageReady();
 
-      return new tc.meta.entities.FormEntity(this.__sForm, this.__oMetaData);
+      return new tc.meta.entities.ListEntity(this.__sList, this.__oMetaData);
     },
     /*
      *****************************************************************************
@@ -154,90 +154,58 @@ qx.Class.define("tc.meta.packages.FormPackage", {
     /**
      * 
      */
-    __postProcess: function(form) {
-      if (qx.lang.Type.isObject(form) &&
-              form.hasOwnProperty('title') &&
-              form.hasOwnProperty('fields')) {
-
-        // Normalize Form Definition
-        var arFields = null;
-        if (form.hasOwnProperty('fields')) { // Normalize Fields Property
-          if (qx.lang.Type.isString(form.fields)) {
+    __postProcess: function(list) {
+      if (qx.lang.Type.isObject(list) &&
+              list.hasOwnProperty('key') && qx.lang.Type.isString(list.key) &&
+              list.hasOwnProperty('fields') &&
+              list.hasOwnProperty('services')) {
+        // Normalize Fields Property
+        if (list.hasOwnProperty('fields')) { // Normalize Fields Property
+          if (qx.lang.Type.isString(list.fields)) {
             // CASE 1: fields = field_id or {CSV STRING} field_id, ..., field_id
-            form.fields = tc.util.Array.clean(tc.util.Array.trim(tc.util.Array.CSVtoArray(form.fields)));
+            list.fields = tc.util.Array.clean(tc.util.Array.trim(tc.util.Array.CSVtoArray(list.fields)));
           }
 
-          if (qx.lang.Type.isArray(form.fields)) { // Ungrouped Fields
-            // CASE 2: fields = [field_id, ..., field_id]
-            // Save All Fields Sorted
-            arFields = form.fields.slice(0).sort();
-            // Convert to GROUP with No Label
-            form.fields = [form.fields];
-          } else if (qx.lang.Type.isObject(form.fields)) { // Grouped Fields
-            // CASE 3: fields = [ ('label' -> string | array) ||  string, ... ]
-            arFields = [];
-
-            var entry, fields;
-            var normalized = [];
-            for (var group in form.fields) {
-              if (form.fields.hasOwnProperty(group)) {
-                entry = form.fields[group];
-                if (qx.lang.Type.isString(entry)) {
-                  fields = tc.util.Array.clean(tc.util.Array.trim(this.__CSVToArray(entry)));
-                } else if(qx.lang.Type.isArray(entry)) {
-                  fields = tc.util.Array.clean(tc.util.Array.trim(entry));
-                } else { // Skip Invalid Types
-                  continue;
-                }
-
-
-                if (/^\d+$/.test(group)) { // If Group Name is an Integer, then we have, an Un-named group
-                  normalized.push(fields);
-                } else { // Named Group
-                  entry = {};
-                  entry[group] = fields;
-                  normalized.push(entry);
-                }
-                
-                // Merge into All Fields
-                arFields = tc.util.Array.union(arFields, fields.slice(0).sort());
-              }
-            }
-
-            if (arFields.length === 0) { // No Fields in Form
-              form.fields = null;
-            } else {
-              form.fields = normalized;
-              this.__oFieldsPackage = new tc.meta.packages.FieldsPackage(arFields);
-            }
+          // Create Fields Package
+          if (list.fields.length > 0) { // No Fields in Form
+            this.__oFieldsPackage = new tc.meta.packages.FieldsPackage(tc.util.Array.union(list.fields.slice(0).sort(), [list.key]));
+          } else {
+            list.fields = null;
           }
         }
 
-        if (form.hasOwnProperty('services')) { // Normalize Services Property
-          if (qx.lang.Type.isObject(form.services)) {
+        // Normalize Services Property
+        if (list.hasOwnProperty('services')) {
+          if (qx.lang.Type.isObject(list.services)) {
             var arServices = [];
-            for (var service in form.services) {
-              if (form.services.hasOwnProperty(service)) {
-                if (qx.lang.Type.isString(form.services[service])) {
-                  arServices.push(form.services[service]);
+            for (var service in list.services) {
+              if (list.services.hasOwnProperty(service)) {
+                if (qx.lang.Type.isString(list.services[service])) {
+                  arServices.push(list.services[service]);
                 }
               }
             }
 
-            if (arServices.length === 0) {
-              form.services = null;
-            } else {
+            if (arServices.length > 0) {
               this.__oServicesPackage = new tc.meta.packages.ServicesPackage(arServices);
+            } else {
+              list.services = null;
             }
           } else {
-            form.services = null;
+            list.services = null;
           }
         }
-      } else { // Invalid Form Definition
-        form = null;
+
+        // Normalize Display Property
+        if (!list.hasOwnProperty('display') ||
+                !qx.lang.Type.isString(list.display)) {
+          list.display = list.key;
+        }
+      } else { // Invalid List Definition
+        list = null;
       }
 
-      return form;
+      return list;
     }, // FUNCTION: __postProcess
     /*
      *****************************************************************************

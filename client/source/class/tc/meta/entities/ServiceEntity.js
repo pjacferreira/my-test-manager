@@ -234,16 +234,52 @@ qx.Class.define("tc.meta.entities.ServiceEntity", {
       var parameters = this.__oMetaDataParams;
       var rparams = {};
       var rparam_count = 0;
+      var inList = parameters['exclude'];
       for (var field in mapFieldValues) {
-        if (!this.__excludeField(parameters, field) && this.__allowField(parameters, field)) {
-          rparams[field] = mapFieldValues[field];
-          ++rparam_count;
+        // Phase 1 : See if Field is Excluded
+        inList = parameters['exclude'];
+        if ((inList !== null) && this.__fieldInList(field, inList)) {
+          // EXCLUDE: Field is Excluded
+          continue;
         }
+
+        inList = parameters['allow'];
+        if (inList !== null) {
+          if (!this.__fieldInList(field, inList)) {
+            // EXCLUDE: Field is not in the Allowed List
+            continue;
+          }
+        }
+
+        /* USE OF ALLOW / EXCLUDE: (EXCLUDE is ALWAYS TESTED 1st - if it exists)
+         * example 1:
+         *   allow: null
+         *   exclude: [field 1]
+         *   - implies we allow all fields except 'field 1'
+         * example 2:
+         *   allow: [field 1, field 2]
+         * or
+         *   allow: [field 1, field 2]
+         *   exclude: null
+         *   - implies we allow only fields 'field 1' and 'field 2'
+         * example 3:
+         *   allow: [field 1, field 2]
+         *   exclude: [field 1]
+         *   - implies we allow only allow 'field 2'
+         *   ** THIS could have just as easily been written
+         *   allow: [field 2]
+         * or
+         *   allow: [field 2]
+         *   exclude: null  
+         */
+        // FIELD : Passed
+        rparams[field] = mapFieldValues[field];
+        ++rparam_count;
       }
 
       if (parameters.hasOwnProperty('require') && parameters['require']) {
         if (rparam_count === 0) {
-          throw "Service [service] requires parametes, and no parameter fields available or allowed";
+          throw "Service [service] requires parameters, and no parameter fields available or allowed";
         }
       }
 
@@ -343,34 +379,6 @@ qx.Class.define("tc.meta.entities.ServiceEntity", {
 
       return values.length > 0 ? values : null;
     }, // FUNCTION: __buildSingleKey             
-    __allowField: function(parameters, field) {
-      // Test if Field is Allowed
-      var allow = parameters['allow'];
-      if (allow !== null) {
-        return this.__fieldInList(field, allow);
-      } else {
-        /* Last Effort 
-         * 1. if Require === true 
-         * 2. exclude === null
-         * then all fields are allowed
-         */
-        return parameters['require'] && (parameters['exclude'] === null);
-      }
-    }, // FUNCTION: __allowField 
-    __excludeField: function(parameters, field) {
-      // Test if Field is Excluded
-      var exclude = parameters['exclude'];
-      if (exclude !== null) {
-        return this.__fieldInList(field, exclude);
-      } else {
-        /* Last Effort 
-         * 1. if Require === true 
-         * 2. allow === null
-         * then all fields not explicitly excluded will be allowed
-         */
-        return !parameters['require'] || (parameters['allow'] !== null);
-      }
-    }, // FUNCTION: __excludeField     
     __fieldInList: function(field, list) {
       if (qx.lang.Type.isString(list)) {// Handle Single String as Allow
         list = [list];
@@ -381,7 +389,7 @@ qx.Class.define("tc.meta.entities.ServiceEntity", {
         var entity = field_parts[0];
         for (var i = 0; i < list.length; ++i) {
           var list_parts = this.__splitField(list[i]);
-          if ((list_parts[0] !== '*') && (entity !== list_parts[0])) {
+          if ((list_parts[0] !== '*') && (entity !== field_parts[0])) {
             // No Possible Match on Entity
             continue;
           }

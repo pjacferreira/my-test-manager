@@ -185,10 +185,13 @@ qx.Class.define("tc.meta.models.FormModel", {
       this.fireDataEvent('model-fields-changed', e.getData());
     },
     _eventRecordLoaded: function(e) {
+      this.fireEvent("loaded");
     },
     _eventRecordSaved: function(e) {
+      this.fireEvent("saved");
     },
     _eventRecordErased: function(e) {
+      this.fireEvent("erased");
     },
     /*
      *****************************************************************************
@@ -245,6 +248,16 @@ qx.Class.define("tc.meta.models.FormModel", {
      FIELD (GENERAL PROPERTIES) RELATED MEMBERS
      *****************************************************************************
      */
+    /**
+     * Return's a Field Meta Data Entity
+     *
+     * @param field {String} Field ID
+     * @return {tc.meta.entities.IMetaField} Field Entity
+     * @throw if the Model has not been initialized or Field Does not exist in Model
+     */
+    getFieldEntity: function(field) {
+      return this._getFieldEntity(field);
+    },
     /**
      * Return the type of the value for the field.
      * Note: The return value should be ONE OF the Following Values:

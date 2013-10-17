@@ -32,8 +32,8 @@ qx.Bootstrap.define("tc.util.Array", {
     /**
      * Returns an array, that is the intersection of 2 (previously) sorted arrays.
      *
-     * @param a First Array (Sorted)
-     * @param b Second Array (Sorted)
+     * @param a {Array} First Array (Sorted)
+     * @param b {Array} Second Array (Sorted)
      * @return {Array} Resultant Intersection
      */
     intersection: function(a, b) {
@@ -62,8 +62,8 @@ qx.Bootstrap.define("tc.util.Array", {
      * Returns an array, that is the union of 2 (previously) sorted arrays.
      * If an element co-exists in both arrays, only a single element will exist in the result.
      *
-     * @param a First Array (Sorted)
-     * @param b Second Array (Sorted)
+     * @param a {Array} First Array (Sorted)
+     * @param b {Array} Second Array (Sorted)
      * @return {Array} Resultant Union
      */
     union: function(a, b) {
@@ -78,8 +78,8 @@ qx.Bootstrap.define("tc.util.Array", {
      * Set Theory Difference http://en.wikipedia.org/wiki/Complement_(set_theory)
      * Returns the elements in array B, that are not part of array A
      *
-     * @param a First Array (Sorted)
-     * @param b Second Array (Sorted)
+     * @param a {Array} First Array (Sorted)
+     * @param b {Array} Second Array (Sorted)
      * @return {Array} Resultant Difference
      */
     difference: function(a, b) {
@@ -111,8 +111,9 @@ qx.Bootstrap.define("tc.util.Array", {
      * Set Theory Difference http://en.wikipedia.org/wiki/Complement_(set_theory)
      * Returns the elements in array B, that are not part of array A
      *
-     * @param a First Array (Sorted)
-     * @param b Second Array (Sorted)
+     * @param array {Array} The Array to map the function over.
+     * @param callback {Function} The function to apply to the array elements
+     * @param thisArg {Object? null} The context in which to call the function
      * @return {Array} Resultant Difference
      */
     map: function(array, callback, thisArg) {

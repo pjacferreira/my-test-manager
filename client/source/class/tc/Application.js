@@ -14,10 +14,6 @@
  
  ************************************************************************ */
 
-/* ************************************************************************
- #asset(tc/user_green.png)
- ************************************************************************ */
-
 /**
  * This is the main application class of your custom application "testcenter_web"
  */
@@ -30,16 +26,10 @@ qx.Class.define("tc.Application", {
    */
 
   members: {
+    __sessionState: null,
     __paneHeader: null,
     __paneContent: null,
-    __sessionManager: null,
     __toaster: null,
-    __counter: 1,
-    __menubar: null,
-    __currentUser: null,
-    __actionRegistry: null,
-    __widgetOrganizations: null,
-    __widgetProjects: null,
     __tabHolder: null,
     /**
      * This method contains the initial application code and gets called
@@ -51,6 +41,9 @@ qx.Class.define("tc.Application", {
       // Call super class
       this.base(arguments);
 
+      // Initialize Memebers
+      this.__sessionState = {};
+
       // Enable logging in debug variant
       if (qx.core.Environment.get("qx.debug")) {
         // support native logging capabilities, e.g. Firebug for Firefox
@@ -59,33 +52,16 @@ qx.Class.define("tc.Application", {
         qx.log.appender.Console;
       }
 
+      // Create Header Pane
+      this.__initializeHeader();
+
       // Create the Seperate Panes
-      this.__createHeader(60);
-      this.__createContent();
+      this.__initializeContent();
 
       // Create Toaster
       this.__toaster = new tc.toaster.Manager();
-
-      // Create the Session Manager
-      this.__sessionManager = new tc.session.Manager();
-
-      // Add the Panes to the Window
-      this.getRoot().add(this.__paneHeader, {
-        top: 5,
-        left: 5,
-        right: 5
-      });
-      this.getRoot().add(this.__paneContent, {
-        top: 70,
-        left: 5,
-        right: 5,
-        bottom: 5
-      });
-
-      // Initialize the Header Pane
-      this.__initializeHeader();
     },
-    __createHeader: function(height) {
+    __initializeHeader: function() {
       // Create the layout for the Header Pane
       var layout = new qx.ui.layout.HBox(5, 'right');
       layout.setReversed(true);
@@ -93,119 +69,375 @@ qx.Class.define("tc.Application", {
       // Create Page Header
       this.__paneHeader = new qx.ui.container.Composite();
       this.__paneHeader.setLayout(layout);
-      this.__paneHeader.setHeight(height);
-    }, // FUNCTION: __createHeader
-    __createContent: function() {
+      this.__paneHeader.setHeight(30);
+
+      // Add the Pane to the Window
+      this.getRoot().add(this.__paneHeader, {
+        top: 5,
+        left: 5,
+        right: 5
+      });
+
+      // Create Login Widget
+      var widget = this.__createLoginWidget();
+
+      // Add Handlers for Session Login/Logout      
+      var ec = tc.event.EventCentral.getInstance();
+      ec.addListener(ec.basicFilter("session", ["login", "logout"]), function(e) {
+        var login = e.getEventSubType() === "login";
+        login ? this.__doLogin(e.getData()) : this.__doLogout();
+      }, this);
+
+      // Create Container for Widgets in the Header Pane
+      this.__paneHeader.$$widget = {};
+
+      // Add Login Widget to the Header Pane
+      this.__addHeaderWidget('login', widget);
+    }, // FUNCTION: __initializeHeader
+    __initializeContent: function() {
       // Create Content Pane
       this.__paneContent = new qx.ui.container.Composite();
       this.__paneContent.setLayout(new qx.ui.layout.Canvas());
-    }, // FUNCTION: __createContent
-    __initializeHeader: function() {
-      // Create the Login Widget
-      var login = new tc.widgets.LoginWidget();
-      login.addListener("user-change", function(e) {
-        this.__doLogin(e.getData());
-      }, this);
-      login.addListener("no-user", function(e) {
-        this.__doLogout();
-      }, this);
 
-      // Add Elements to Pane Header
-      this.__paneHeader.add(login);
-    }, // FUNCTION: __initializeHeader
+      // Add the Pane to the Window
+      this.getRoot().add(this.__paneContent, {
+        top: 50,
+        left: 5,
+        right: 5,
+        bottom: 5
+      });
+    }, // FUNCTION: __initializeContent
     __doLogin: function(user) {
-      if (this.__widgetOrganizations == null) {
+      if (!this.__sessionState['user']) {
+        // Save Current Session User
+        this.__sessionState['user'] = user;
+
         // Create the Organization Widget (Only After Session User Set)
-        this.__widgetOrganizations = new tc.widgets.OrganizationWidget();
-        this.__widgetOrganizations.addListener("org-change", function(e) {
-          this.__setOrganization(e.getData());
-        }, this);
-        this.__widgetOrganizations.addListener("org-none", function(e) {
-          this.__noOrganization();
+        var widget = this.__createOrganizationWidget();
+
+        // Add Handler for Session Organization Change
+        var ec = tc.event.EventCentral.getInstance();
+        ec.addListener(ec.basicFilter("session", "organization"), function(e) {
+          var organization = e.getData();
+          (organization !== "null") ? this.__setOrganization(organization) : this.__clearOrganization();
         }, this);
 
-        this.__paneHeader.add(this.__widgetOrganizations);
+        // Add Widget to the Header Pane
+        this.__addHeaderWidget('organizations', widget);
+
+        // Add Tabs (User Profile, Users Manager, Organizations Manager)
+        this.__addTabUser();
+        this.__addTabUserManage();
+        this.__addTabOrganizations();
+
+        // NOTIFICATION
+        this.__toaster.add('Logged In [' + user['user:name'] + ']');
       }
-      this.__addTabUser();
-      this.__addTabUserManage();
-      this.__toaster.add('Logged In [' + user['user:name'] + "]");
     },
     __doLogout: function() {
-      // Projects
-      if (this.__widgetProjects != null) {
-        this.__paneHeader.remove(this.__widgetProjects);
-        this.__widgetProjects = null;
-      }
+      if (this.__sessionState['user']) {
+        // Remove Current Session User
+        delete this.__sessionState['user'];
 
-      // Organizations
-      if (this.__widgetOrganizations != null) {
-        this.__paneHeader.remove(this.__widgetOrganizations);
-        this.__widgetOrganizations = null;
+        // Remove All Un-necessary Widgets
+        var widgets = ['projects', 'organizations'];
+        for (var i = 0; i < widgets.length; ++i) {
+          this.__removeHeaderWidget(widgets[i]);
+        }
+
+        // Remove All Tabs - Clear Content Pane
+        this.__tabHolder.removeGroup();
+
+        // NOTIFICATION
+        this.__toaster.add('User Logged Out');
       }
-      this.__removeAllTabs();
-      this.__toaster.add('User Logged Out');
     },
     __setOrganization: function(orgId) {
       tc.services.Session.setOrganization(orgId,
               function(organization) {
-                // Add Project Selection Box
-                if (this.__widgetProjects == null) {
+                this.__sessionState['organization'] = organization;
+
+                var widget = this.__getHeaderWidget('projects');
+                if (widget === null) {
                   // Create and Add New Projects Widget
-                  this.__widgetProjects = new tc.widgets.ProjectWidget();
-                  this.__widgetProjects.addListener("project-change", function(e) {
-                    this.__setProject(e.getData());
-                  }, this);
-                  this.__widgetProjects.addListener("project-none", function(e) {
-                    this.__noProject();
+                  widget = this.__createProjectWidget();
+
+                  //Add Handler for Session Project Change
+                  var ec = tc.event.EventCentral.getInstance();
+                  ec.addListener(ec.basicFilter("session", "project"), function(e) {
+                    var project = e.getData();
+                    (project !== "null") ? this.__setProject(project) : this.__clearProject();
                   }, this);
 
-                  this.__paneHeader.add(this.__widgetProjects);
-                } else {
-                  // Try to Repaint the Widget
-                  this.__widgetProjects.refresh();
+                  // Add Widget to the Header Pane
+                  this.__addHeaderWidget('projects', widget);
+                } else { // Force Widget Refresh
+                  widget.refresh();
                 }
+
+                // Add Projects Tab
+                this.__addTabProjects(true);
+
+                // NOTIFICATION
+                this.__toaster.add('New Organization [' + orgId + ']');
               },
-              null, this);
-
-      // Set the Session Organization
-      this.__toaster.add('New Organization [' + orgId + "]");
-
-      // Add Organizations Tab
-      this.__addTabOrganizations();
+              function(error) {
+                this.__toaster.add('Error Setting Organization [' + orgId + ']');
+              }, this);
     },
-    __noOrganization: function() {
-      // Projects
-      if (this.__widgetProjects != null) {
-        this.__paneHeader.remove(this.__widgetProjects);
-        this.__widgetProjects = null;
-      }
+    __clearOrganization: function() {
+      /* TODO: If We hane No Session Organization, the Organization Widget has
+       * to reflect that, or we should not be allowed to clear the Session Organization.
+       */
+      if (this.__sessionState['organization']) {
+        tc.services.Session.clearOrganization(
+                function(result) {
+                  // Remove Current Session Organization
+                  delete this.__sessionState['organization'];
 
-      this.__toaster.add('Organization Cleared');
-      this.__sessionManager.setOrganization(null);
+                  // Remove Un-necessary Elements
+                  this.__removeHeaderWidget('projects');
+                  this.__tabHolder.removePage('management', 'projects');
+                  this.__tabHolder.removeGroup('tests');
+                  this.__tabHolder.removeGroup('runs');
+
+                  // Notification
+                  this.__toaster.add('Organization Cleared');
+                },
+                function(error) {
+                  this.__toaster.add('Error Clearing Session Organization');
+                }, this);
+      }
     },
     __setProject: function(projectId) {
       tc.services.Session.setProject(projectId,
               function(project) {
+                // Save Current Session Project
+                this.__sessionState['project'] = project;
+
+                // Add Tab Tests and Runs
+                this.__addTabTests(true);
+                this.__addTabRuns(true);
+
+                // Set the Session Project
+                this.__toaster.add('Project Project [' + projectId + ']');
               },
-              null, this);
-
-      // Set the Session Project
-      this.__toaster.add('Project Project [' + projectId + "]");
-
-      // Add Project and Tests Tab
-      this.__addTabProjects();
-      this.__addTabTests();
-      this.__addTabTesting();
+              function(error) {
+                this.__toaster.add('Error Setting Project [' + projectId + ']');
+              }, this);
     },
-    __noProject: function() {
-      this.__toaster.add('Project Cleared');
-      this.__sessionManager.setOrganization(null);
-    },
-    __removeAllTabs: function() {
-      if (this.__tabHolder !== null) {
-        this.__tabHolder.removePages();
+    __clearProject: function() {
+      /* TODO: If We hane No Session Project, the Project Widget has
+       * to reflect that, or we should not be allowed to clear the Session Project.
+       */
+
+      if (this.__sessionState['project']) {
+        tc.services.Session.clearProject(
+                function(result) {
+                  // Remove Current Session Project
+                  delete this.__sessionState['project'];
+
+                  // Remove Un-necessary Elements
+                  this.__tabHolder.removeGroup('tests');
+                  this.__tabHolder.removeGroup('runs');
+
+                  // Notification
+                  this.__toaster.add('Project Cleared');
+                },
+                function(error) {
+                  this.__toaster.add('Error Clearing Session Project');
+                }, this);
       }
     },
+    __getHeaderWidget: function(id) {
+      return this.__paneHeader.$$widget.hasOwnProperty(id) ? this.__paneHeader.$$widget[id] : null;
+    },
+    __addHeaderWidget: function(id, widget) {
+      if (!this.__paneHeader.$$widget[id]) {
+        this.__paneHeader.$$widget[id] = widget;
+        this.__paneHeader.add(widget);
+
+        return true;
+      }
+
+      // TODO Log Duplicate Add
+      return false;
+    },
+    __removeHeaderWidget: function(id) {
+      if (this.__paneHeader.$$widget[id]) {
+        this.__paneHeader.remove(this.__paneHeader.$$widget[id]);
+        delete this.__paneHeader.$$widget[id];
+
+        return true;
+      }
+
+      return false;
+    },
+    __createLoginWidget: function() {
+      // Create the Login Widget
+      var widget = new tc.widgets.LoginWidget();
+
+      // Hook Event Central to Login/Logout Process
+      var ec = tc.event.EventCentral.getInstance();
+      ec.bindDataEvent(widget, "user-change", "session", "login");
+      ec.bindEvent(widget, "no-user", "session", "logout");
+
+      return widget;
+    }, // FUNCTION: __createLoginWidget
+    __createOrganizationWidget: function() {
+      // Create the Organization Widget (Only After Session User Set)
+      var widget = qx.ui.form.SelectBox();
+      var model = new qx.data.Array('Loading');
+      var controller = new qx.data.controller.List(model, widget);
+
+      // Start Loading the List into the Widget
+      this.__startListLoad(controller, 'organization:user',
+              function() {
+                this.__toaster.add('Organization Widgets Loaded');
+              },
+              function(message) {
+                this.__toaster.add('Failed to Load Organization Wdigets [' + message + ']');
+              }, this);
+
+      // Capture Change Selection
+      widget.addListener("changeSelection", function(e) {
+        if (widget.isReady() && !widget.isSelectionEmpty()) {
+          // Get Selection
+          var selection = e.getData();
+
+          // Get the Organization ID Associated with the Selection
+          var id = selection[0].getModel().getId();
+
+          // Fire Event Central Session Organization Change Event
+          var ec = tc.event.EventCentral.getInstance();
+          ec.fireDataEvent("session", "organization", id);
+        }
+      }, this);
+
+      return widget;
+    }, // FUNCTION: __createOrganizationWidget
+    __createProjectWidget: function() {
+      // Create and Add New Projects Widget
+      var widget = qx.ui.form.SelectBox();
+      var model = new qx.data.Array('Loading');
+      var controller = new qx.data.controller.List(model, widget);
+
+      // Start Loading the List into the Widget
+      this.__startListLoad(controller, 'project:user_org',
+              function() {
+                this.__toaster.add('Project Widgets Loaded');
+              },
+              function(message) {
+                this.__toaster.add('Failed to Load Project Wdigets [' + message + ']');
+              }, this);
+
+      // Capture Change Selection
+      widget.addListener("changeSelection", function(e) {
+        if (widget.isReady() && !widget.isSelectionEmpty()) {
+          // Get Selection
+          var selection = e.getData();
+
+          // Get the Organization ID Associated with the Selection
+          var id = selection[0].getModel().getId();
+
+          // Fire Event Central Session Organization Change Event
+          var ec = tc.event.EventCentral.getInstance();
+          ec.fireDataEvent("session", "project", id);
+        }
+      }, this);
+
+      return widget;
+    }, // FUNCTION: __createProjectWidget       
+    /**
+     * Builds a Widget for Reference Fields. 
+     * NOTE: see notes {@link qx.data.marshal.IMarshalerDelegate.}
+     *
+     * @param controller {qx.data.controller.List} the Controller for the List Widget
+     * @param listId {String} Meta List ID to use for Loading the Widget
+     */
+    __startListLoad: function(controller, listId, ok, nok, context) {
+      if (!qx.lang.Type.isObject(context)) {
+        context = this;
+      }
+
+      // Create List Package and Initialize it
+      var package = new tc.meta.packages.ListPackage(listId);
+
+      // Initialize the List Package
+      package.initialize({
+        'ok': function() {
+          // Now We Ready the List
+          var list = package.getList();
+
+          // Build a Fields Package, with all the fields required to build the Adaptor Class
+          var fields = list.getColumns();
+          fields.push(list.getKeyField());
+          fields.push(list.getDisplayField());
+          fields = new tc.meta.packages.FieldsPackage(fields);
+
+          // Initialize the Fields Package
+          fields.initialize({
+            'ok': function() {
+
+              // Initialize the Services Packages
+              var services = package.getServices();
+              services.initialize({
+                'ok': function() {
+                  var listService = services.getService('list');
+
+                  // Note: The List is Loaded Asynchronously (The Widget is Built, before we have the items to load into it)
+                  listService.execute(null, {
+                    'ok': function(records) {
+                      var clazz = tc.meta.widgets.DataAdaptor.buildClazz(fields);
+
+                      var items = [];
+                      for (var i = 0; i < records.length; ++i) {
+                        items.push(new clazz(records[i]));
+                      }
+
+                      var model = new qx.data.Array(items);
+                      if (items.length) {
+                        controller.setLabelPath(clazz.fieldToProperty(list.getDisplayField()));
+                      }
+                      controller.setModel(model);
+                      if (qx.lang.Type.isFunction(ok)) {
+                        ok.call(context);
+                      }
+                    },
+                    'nok': function(message) {
+                      if (qx.lang.Type.isFunction(nok)) {
+                        nok.call(context, message);
+                      }
+                    },
+                    context: this
+                  });
+                },
+                'nok': function(message) {
+                  if (qx.lang.Type.isFunction(nok)) {
+                    nok.call(context, message);
+                  }
+                },
+                context: this
+              });
+            },
+            'nok': function(message) {
+              if (qx.lang.Type.isFunction(nok)) {
+                nok.call(context, message);
+              }
+            },
+            context: this
+          });
+        },
+        'nok': function(message) {
+          if (qx.lang.Type.isFunction(nok)) {
+            nok.call(context, message);
+          }
+        },
+        'context': this
+      });
+
+      return true;
+    }, // FUNCTION: __startListLoad    
     __createTabHolder: function() {
       // Create Tab Group Manager
       this.__tabHolder = new tc.widgets.TabManager(new qx.ui.tabview.TabView());
@@ -286,13 +518,13 @@ qx.Class.define("tc.Application", {
         }, null, this);
       }
     },
-    __addTabUserManage: function() {
+    __addTabUserManage: function(refresh) {
       // Create Tab Holder if it Doesn't Exist
       if (this.__tabHolder == null) {
         this.__createTabHolder();
       }
 
-      if (!this.__tabHolder.hasPage('management', 'user')) {
+      if (!this.__tabHolder.hasPage('management', 'users')) {
         // Create Tab Page
         var tab = new qx.ui.tabview.Page('User Manager');
         tab.setLayout(new qx.ui.layout.VBox());
@@ -304,10 +536,16 @@ qx.Class.define("tc.Application", {
         this.__addTableToTab('user:manage', tab);
 
         // Add TAB to Tab Manager
-        this.__tabHolder.addPage('management', 'user', tab, true);
+        this.__tabHolder.addPage('management', 'users', tab, true);
+      } else if (refresh) {
+        // Get the TAB
+        var tab = this.__tabHolder.getPage('management', 'users');
+
+        // Extract the Hidden Table Object and Force a Reload of the Datas
+        tab.$$table.getTableModel().reloadData();
       }
     }, // FUNCTION: __addTabUserManage
-    __addTabOrganizations: function() {
+    __addTabOrganizations: function(refresh) {
       // Create Tab Holder if it Doesn't Exist
       if (this.__tabHolder === null) {
         this.__createTabHolder();
@@ -326,9 +564,15 @@ qx.Class.define("tc.Application", {
 
         // Add TAB to Tab Manager
         this.__tabHolder.addPage('management', 'organizations', tab);
+      } else if (refresh) {
+        // Get the TAB
+        var tab = this.__tabHolder.getPage('management', 'organizations');
+
+        // Extract the Hidden Table Object and Force a Reload of the Datas
+        tab.$$table.getTableModel().reloadData();
       }
     }, // FUNCTION: __addTabOrganizations
-    __addTabProjects: function() {
+    __addTabProjects: function(refresh) {
       // Create Tab Holder if it Doesn't Exist
       if (this.__tabHolder === null) {
         this.__createTabHolder();
@@ -347,6 +591,12 @@ qx.Class.define("tc.Application", {
 
         // Add TAB to Tab Manager
         this.__tabHolder.addPage('management', 'projects', tab);
+      } else if (refresh) {
+        // Get the TAB
+        var tab = this.__tabHolder.getPage('management', 'projects');
+
+        // Extract the Hidden Table Object and Force a Reload of the Datas
+        tab.$$table.getTableModel().reloadData();
       }
     }, // FUNCTION: __addTabProjects
     __addTabTests: function() {
@@ -366,7 +616,7 @@ qx.Class.define("tc.Application", {
         this.__tabHolder.addPage('tests', 'page', tab);
       }
     }, // FUNCTION: __addTabTests
-    __addTabTesting: function() {
+    __addTabRuns: function() {
       // Create Tab Holder if it Doesn't Exist
       if (this.__tabHolder === null) {
         this.__createTabHolder();
@@ -382,7 +632,7 @@ qx.Class.define("tc.Application", {
 
         this.__tabHolder.addPage('runs', 'page', tab);
       }
-    }, // FUNCTION: __addTabTesting
+    }, // FUNCTION: __addTabRuns
     __addTableToTab: function(table, tab) {
       // Create Meta Table
       var metaPackage = new tc.meta.packages.TablePackage(table);
@@ -419,6 +669,7 @@ qx.Class.define("tc.Application", {
           // Clear Tab before Adding Table
           tab.removeAll();
           tab.add(composite);
+          tab.$$table = table;
         },
         'nok': function(e) {
           tab.removeAll();

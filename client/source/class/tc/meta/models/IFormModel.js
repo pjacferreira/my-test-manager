@@ -89,6 +89,16 @@ qx.Interface.define("tc.meta.models.IFormModel", {
      *****************************************************************************
      */
     /**
+     * Return's a Field Meta Data Entity
+     *
+     * @param field {String} Field ID
+     * @return {tc.meta.entities.IMetaField} Field Entity
+     * @throw if the Model has not been initialized or Field Does not exist in Model
+     */
+    getFieldEntity: function(field) {
+      return this._getFieldEntity(field);
+    },
+    /**
      * Return the type of the value for the field.
      * Note: The return value should be ONE OF the Following Values:
      * 'boolean'

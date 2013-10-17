@@ -21,15 +21,6 @@ qx.Class.define("tc.widgets.OrganizationWidget", {
   extend: qx.ui.form.SelectBox,
   /*
    *****************************************************************************
-   EVENTS
-   *****************************************************************************
-   */
-  events: {
-    "org-none": "qx.event.type.Event",
-    "org-change": "qx.event.type.Data"
-  },
-  /*
-   *****************************************************************************
    CONSTRUCTOR / DESTRUCTOR
    *****************************************************************************
    */
@@ -46,28 +37,19 @@ qx.Class.define("tc.widgets.OrganizationWidget", {
    */
   members: {
     __dataStore: null,
-    __initialized: false,
-    // overridden
-    _onListChangeSelection: function(e) {
-      // Call the Base Function 
-      this.base(arguments, e);
-
-      if (this.__initialized) { // Only Fire Events if the List is Initialized
-        var selection = e.getData();
-        if (selection.length > 0) { // Have a Selection
-          var id = selection[0].getModel().getId();
-          this.fireDataEvent("org-change", id);
-        } else { // No Selection
-          this.fireEvent("org-none");
-        }
-      }
-    }, // FUNCTION: _onListChangeSelection
+    __ready: false,
     /**
-     * @lint ignoreUndefined(__TC_SERVICES_ROOT)
+     * return {Boolean} TRUE, widget is fully loaded and ready to work, FALSE otherwise
+     */
+    isReady: function() {
+      return this.__ready;
+    },
+    /**
+     * @lint ignore(__TC_SERVICES_ROOT)
      */
     refresh: function() {
-      // Mark the List as Not Ready
-      this.__initialized = false;
+      // Set Ready State
+      this.__ready = false;
 
       // Get the List Widget
       var list = this.getChildrenContainer();
@@ -80,7 +62,7 @@ qx.Class.define("tc.widgets.OrganizationWidget", {
 
       // Create the JSON Data Store
       var save_this = this;
-      this.__dataStore = new qx.data.store.Json(__TC_SERVICES_ROOT + '/user/org/list', {
+      this.__dataStore = new qx.data.store.Json(__TC_SERVICES_ROOT + '/session/orgs/list', {
         manipulateData: function(response) {
           var error = response.error;
           var data = [];
@@ -121,17 +103,22 @@ qx.Class.define("tc.widgets.OrganizationWidget", {
       var list = this.getChildrenContainer();
 
       // Create Controller for the List Widget
-      var controller = new qx.data.controller.List(null, list);
+      var controller = new qx.data.controller.List(null, list,"organization");
 
       // create the delegate to change the bindings
       var delegate = {
         configureItem: function(item) {
           item.setPadding(3);
-        },
+        }
+        /* NO LONGER REQUIRED, since we specifically stated what property to bind to the
+         * label, when we created the controller.
+         */
+        /*
         bindItem: function(controller, item, id) {
           controller.bindProperty("organization", "label", null, item, id);
           controller.bindProperty("", "model", null, item, id);
         }
+        */        
       };
       controller.setDelegate(delegate);
 
@@ -142,7 +129,7 @@ qx.Class.define("tc.widgets.OrganizationWidget", {
       list.removeAll();
 
       // Change the Model (Data) for the List
-      this.__initialized = true;
+      this.__ready = true;
       controller.setModel(model);
 
       // Log Success

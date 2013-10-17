@@ -53,7 +53,7 @@ qx.Class.define("tc.meta.forms.Form", {
       event: "changeModel"
     },
     widgetFactory: {
-      check: "tc.meta.forms.DefaultWidgetFactory",
+      check: "tc.meta.widgets.IWidgetFactory",
       nullable: false,
       apply: "_applyFactory",
       event: "reloadForm"
@@ -193,7 +193,13 @@ qx.Class.define("tc.meta.forms.Form", {
     },
     // property modifier
     _applyFactory: function(newFactory, oldFactory) {
-      // TODO Clear Form and Rebuild Widgets
+      if (oldFactory != null) {
+        oldFactory.removeListener('complete', this.eventWidgetsReady, this);
+        oldFactory.removeListener('nok', this.eventWidgetError, this);
+      }
+
+      newFactory.addListener('complete', this.eventWidgetsReady, this);
+      newFactory.addListener('nok', this.eventWidgetError, this);
     },
     /*
      ***************************************************************************
@@ -235,6 +241,13 @@ qx.Class.define("tc.meta.forms.Form", {
       // Notify the Application
       this.fireEvent("formSubmitted");
     },
+    eventWidgetsReady: function(e) {
+      // Widgets are Completely Loaded - We can now set starting values
+      this.__setWidgetValues(this.__formIV);
+    },
+    eventWidgetError: function(e) {
+      this.error("IWidgetFactory: " + e.getData());
+    },
     /*
      ***************************************************************************
      INITIALIZATION FUNCTIONS
@@ -270,9 +283,9 @@ qx.Class.define("tc.meta.forms.Form", {
       if (this.__callStages(this,
               [
                 this.__createSubmitButton,
-//                this.__createFieldWidgets,
-                this.__buildFormUI,
-                {"__setWidgetValues": this.__formIV},
+                this.__createFieldWidgets,
+                this.__buildFormUI
+//                {"__setWidgetValues": this.__formIV},
               ],
               true)) {
         this._callbackModelReady(callback, true);
@@ -293,7 +306,8 @@ qx.Class.define("tc.meta.forms.Form", {
     __createSubmitButton: function() {
 
       // BUTTON: Confirmation
-      this.__buttonSubmit = this.getWidgetFactory().createSubmitButton();
+      this.__buttonSubmit = new qx.ui.form.Button("Submit");
+
       this.__buttonSubmit.addListener("execute", function(e) { // Trigger Form Validation
         if (this.getModel().isDirty()) { // For was modified : Validate and Save if Complete
           this.validate();
@@ -303,6 +317,39 @@ qx.Class.define("tc.meta.forms.Form", {
       }, this);
 
       return true;
+    },
+    /**
+     *
+     * @return {Boolean}
+     * @private
+     */
+    __createFieldWidgets: function() {
+      if (qx.core.Environment.get("qx.debug")) {
+        this.assertNull(this.__fieldWidgets, "Multiple Initializations of the Form");
+      }
+
+      // Initialize Field Widgets Cache
+      this.__fieldWidgets = {};
+
+      // Get Group Count
+      var model = this.getModel();
+      var groups = model.getGroupCount();
+      if (groups > 0) {
+        // Initialize Cache of Field Widgets
+        var fields = [];
+        for (var i = 0; i < groups; ++i) {
+          fields = tc.util.Array.union(fields, model.getGroupFields(i).sort());
+        }
+
+        var field, mapFields = {};
+        for (var j = 0; j < fields.length; ++j) {
+          field = fields[j];
+          mapFields[field] = model.getFieldEntity(field);
+        }
+
+        // Create all the Widgets Required
+        this.__fieldWidgets = this.getWidgetFactory().createWidgets(mapFields);
+      }
     },
     /**
      *
@@ -327,36 +374,37 @@ qx.Class.define("tc.meta.forms.Form", {
         return true;
       };
 
-      // Initialize Cache for Field Widgets
-      if (this.__fieldWidgets === null) {
-        this.__fieldWidgets = {};
-      }
-
+      // Get Group Count
       var groups = model.getGroupCount();
-      var label, fields, key, widget;
-      for (var i = 0; i < groups; ++i) {
+      if (groups > 0) {
+        // Build Form
+        var fields, label, key, widget;
+        for (var i = 0; i < groups; ++i) {
 
-        // Get the Group Label
-        label = model.getGroupLabel(i);
-        if (label != null) { // No Label so do not add
-          this.addGroupHeader(label);
-        }
+          // Get the Group Label
+          label = model.getGroupLabel(i);
+          if (label != null) { // No Label so do not add
+            this.addGroupHeader(label);
+          }
 
-        // Add Field Widgets
-        fields = model.getGroupFields(i);
-        for (var j = 0; j < fields.length; ++j) {
-          key = fields[j];
-          if (!this.__fieldWidgets.hasOwnProperty(key)) {
-            widget = this.__createWidget(key);
-            this.__fieldWidgets[key] = widget;
-            this.add(widget, model.getFieldLabel(key), functionValidate);
-          } else {
-            // TODO : This is actually a BUG a form can't have 2 references to the same field
+          // Add Field Widgets
+          fields = model.getGroupFields(i);
+          for (var j = 0; j < fields.length; ++j) {
+            key = fields[j];
+
+            // Get the Previous Created Widget
+            widget = this.__fieldWidgets[key];
+
+            if (qx.lang.Type.isObject(widget)) {
+              widget = this.__applyWidgetOptions(key, widget);
+              this.add(widget, model.getFieldLabel(key), functionValidate);
+            } else {
+              // TODO : Field Failed to Create - Should Display Error Message
+            }
           }
         }
-      }
 
-      if (groups > 0) { // Add Submit Button
+        // Add Ubmit Button
         this.addButton(this.__buttonSubmit);
 
         // Get Validation Manager
@@ -379,14 +427,6 @@ qx.Class.define("tc.meta.forms.Form", {
      ***************************************************************************
      HELPER FUNCTIONS
      ***************************************************************************
-     */
-    /**
-     *
-     * @param context
-     * @param stages
-     * @param abortOnFalse
-     * @return {Boolean}
-     * @private
      */
     __callStages: function(context, stages, abortOnFalse) {
       var passed = false, stage;
@@ -436,40 +476,39 @@ qx.Class.define("tc.meta.forms.Form", {
 
       return passed;
     },
-    __createWidget: function(field) {
+    __applyWidgetOptions: function(field, widget) {
       if (qx.core.Environment.get("qx.debug")) {
-        this.assertNotNull(field, "Invalid argument 'field'.");
+        this.assertNotNull(field, "Invalid parameter [field].");
+        this.assertObject(widget, "Invalid parameter [widget].");
       }
 
-      var widget = this.getWidgetFactory().createFieldWidget(this.getModel().getFieldType(field));
-      if (widget) {
-        widget.__fieldID = field;
-        this.__applyPlaceholder(field, widget);
-        this.__applyLength(field, widget);
-        this.__applyIsRequired(field, widget);
-        if (this.__isReadOnly(field)) {
-          widget.setEnabled(false);
-        } else {
-          widget.addListener("changeValue", function(e) {
-            var widget = e.getTarget();
-            if (!widget.__flagResetValue) {
-              var value = e.getData();
-              var model = this.getModel();
+      widget.__fieldID = field;
+      this.__applyPlaceholder(field, widget);
+      this.__applyLength(field, widget);
+      this.__applyIsRequired(field, widget);
 
-              if (!this.__disableDataStoreUpdate) {
-                // Set the Value for the Field (Capturing the return value, in the case it has been changed)
-                var newValue = model.setFieldValue(widget.__fieldID, value);
-                if (newValue !== value) { // Return Value is Different than Sent Value (Modify the Widget's Value)
-                  widget.__flagResetValue = true; // Mark the Widget as Having it's Value Modified
-                  widget.setValue(newValue);
-                }
+      if (this.__isReadOnly(field)) {
+        widget.setEnabled(false);
+      } else {
+        widget.addListener("changeValue", function(e) {
+          var widget = e.getTarget();
+          if (!widget.__flagResetValue) {
+            var value = e.getData();
+            var model = this.getModel();
+
+            if (!this.__disableDataStoreUpdate) {
+              // Set the Value for the Field (Capturing the return value, in the case it has been changed)
+              var newValue = model.setFieldValue(widget.__fieldID, value);
+              if (newValue !== value) { // Return Value is Different than Sent Value (Modify the Widget's Value)
+                widget.__flagResetValue = true; // Mark the Widget as Having it's Value Modified
+                widget.setValue(newValue);
               }
-            } else { // Just Resetting the Widget's Value (avoid a second call to the model's setFieldValue)
-              widget.__flagResetValue = false;
             }
+          } else { // Just Resetting the Widget's Value (avoid a second call to the model's setFieldValue)
+            widget.__flagResetValue = false;
+          }
 
-          }, this);
-        }
+        }, this);
       }
 
       return widget;

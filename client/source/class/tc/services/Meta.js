@@ -26,29 +26,33 @@ qx.Class.define("tc.services.Meta", {
    *****************************************************************************
    */
   statics: {
-    actions: function(list, ok, nok, context) {
-      if (qx.lang.Type.isArray(list)) {
-        list = tc.util.Array.clean(
-                tc.util.Array.map(list, function(value) {
-          return tc.util.String.nullOnEmpty(value, true);
+    /**
+     * Generate a Request for a List's Metadata. 
+     *
+     * @param id {String} List ID
+     * @param ok {Function ? null} Function to if successfull
+     * @param nok {Function ? null} Function to Call in Case of Error
+     * @param context {Object ? null} Context in which to call the callback function, if NULL, the current this will be used
+     * @return {Integer} Service Request Queue ID
+     */
+    list: function(id, ok, nok, context) {
+      id = tc.util.String.nullOnEmpty(id, true);
+      if (id !== null) {
+        // Cleanup 'type' parameter
+        var idx = id.indexOf(':');
+        if (idx < 0) {
+          id += ':default';
         }
-        ));
-
-        if (list !== null) {
-          list = list.join(',');
+        if (idx === id.length - 1) {
+          id += 'default';
         }
-      } else if (qx.lang.Type.isString(list)) {
-        list = tc.util.String.nullOnEmpty(list, true);
-      } else {
-        throw 'Invalid Required Parameters [list]';
-      }
 
-      if (list != null) {
+        // Build Request
         var service = tc.services.json.TCServiceRequest.getInstance();
-        var request = service.buildRequest(service.buildURL('meta', 'actions'), {'list': list},
-        function(response) {
-          this._processPassThrough(response, ok, context);
-        },
+        var request = service.buildRequest(service.buildURL('meta', 'list', id), null,
+                function(response) {
+                  this._processPassThrough(response, ok, context);
+                },
                 function(error) {
                   this._processPassThrough(error, nok, context);
                 },
@@ -56,17 +60,27 @@ qx.Class.define("tc.services.Meta", {
         return service.queueRequests(request);
       }
 
-      throw 'Missing or Invalid Required Parameters [list]';
+      throw 'Missing or Invalid Required Parameters [id]';
     },
+    /**
+     * Generate a Request for a Table's Metadata. 
+     *
+     * @param id {String} Table ID
+     * @param ok {Function ? null} Function to if successfull
+     * @param nok {Function ? null} Function to Call in Case of Error
+     * @param context {Object ? null} Context in which to call the callback function, if NULL, the current this will be used
+     * @return {Integer} Service Request Queue ID
+     */
     table: function(id, ok, nok, context) {
       id = tc.util.String.nullOnEmpty(id, true);
       if (id !== null) {
         // Cleanup 'type' parameter
         var idx = id.indexOf(':');
-        if(idx < 0) {
-          id+=':default';
-        } if(idx === id.length-1) {
-          id+='default';
+        if (idx < 0) {
+          id += ':default';
+        }
+        if (idx === id.length - 1) {
+          id += 'default';
         }
 
         // Build Request
@@ -84,15 +98,25 @@ qx.Class.define("tc.services.Meta", {
 
       throw 'Missing or Invalid Required Parameters [id]';
     },
+    /**
+     * Generate a Request for a Form's Metadata. 
+     *
+     * @param id {String} Form ID
+     * @param ok {Function ? null} Function to if successfull
+     * @param nok {Function ? null} Function to Call in Case of Error
+     * @param context {Object ? null} Context in which to call the callback function, if NULL, the current this will be used
+     * @return {Integer} Service Request Queue ID
+     */
     form: function(id, ok, nok, context) {
       id = tc.util.String.nullOnEmpty(id, true);
       if (id !== null) {
         // Cleanup 'type' parameter
         var idx = id.indexOf(':');
-        if(idx < 0) {
-          id+=':default';
-        } if(idx === id.length-1) {
-          id+='default';
+        if (idx < 0) {
+          id += ':default';
+        }
+        if (idx === id.length - 1) {
+          id += 'default';
         }
 
         // Build Request
@@ -110,23 +134,15 @@ qx.Class.define("tc.services.Meta", {
 
       throw 'Missing or Invalid Required Parameters [id]';
     },
-    field: function(id, ok, nok, context) {
-      id = tc.util.String.nullOnEmpty(name, true);
-      if (id !== null) {
-        var service = tc.services.json.TCServiceRequest.getInstance();
-        var request = service.buildRequest(service.buildURL('meta', 'field', id), null,
-                function(response) {
-                  this._processPassThrough(response, ok, context);
-                },
-                function(error) {
-                  this._processPassThrough(error, nok, context);
-                },
-                this);
-        return service.queueRequests(request);
-      }
-
-      throw 'Missing or Invalid Required Parameters [id]';
-    },
+    /**
+     * Generate a Request the Metadata for a Single Field or Multiple Fields. 
+     *
+     * @param id {Var} Field ID (String) or Field List (Array)
+     * @param ok {Function ? null} Function to if successfull
+     * @param nok {Function ? null} Function to Call in Case of Error
+     * @param context {Object ? null} Context in which to call the callback function, if NULL, the current this will be used
+     * @return {Integer} Service Request Queue ID
+     */
     fields: function(list, ok, nok, context) {
       if (qx.lang.Type.isArray(list)) {
         list = tc.util.Array.clean(
@@ -159,23 +175,15 @@ qx.Class.define("tc.services.Meta", {
 
       throw 'Missing or Invalid Required Parameters [list]';
     },
-    service: function(id, ok, nok, context) {
-      id = tc.util.String.nullOnEmpty(name, true);
-      if (id !== null) {
-        var service = tc.services.json.TCServiceRequest.getInstance();
-        var request = service.buildRequest(service.buildURL('meta', 'service', id), null,
-                function(response) {
-                  this._processPassThrough(response, ok, context);
-                },
-                function(error) {
-                  this._processPassThrough(error, nok, context);
-                },
-                this);
-        return service.queueRequests(request);
-      }
-
-      throw 'Missing or Invalid Required Parameters [id]';
-    },
+    /**
+     * Generate a Request the Metadata for a Single Service or Multiple Services. 
+     *
+     * @param id {Var} Service ID (String) or Service List (Array)
+     * @param ok {Function ? null} Function to if successfull
+     * @param nok {Function ? null} Function to Call in Case of Error
+     * @param context {Object ? null} Context in which to call the callback function, if NULL, the current this will be used
+     * @return {Integer} Service Request Queue ID
+     */
     services: function(list, ok, nok, context) {
       if (qx.lang.Type.isArray(list)) {
         list = tc.util.Array.clean(
