@@ -15,46 +15,44 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ##
-# Project Entity Forms (Metadata Model)
+# Run Entity Forms (Metadata Model)
 ##
-project:
+run:
   #
-  # Default Project FORM (Model)
+  # Default Run FORM (Model)
   #
   default:
     inherit: default
-    title: Project
+    title: Run
     fields: 
-      'Information': ['project:id', 'project:name']
-      'Description': ['project:description']
+      'Information': ['run:id']
+      'Grouping': ['run:group', 'run:name']
+      'Test Set': ['run:testset']
+      'Description': ['run:description']
     services:
-      create: 'project:create'
-      read: 'project:read'
-      update: 'project:update'
+      create: 'run:create'
+      read: 'run:read'
+      update: 'run:update'
   #
-  # Create Project Form
+  # Create Run Form
   #
   create:
-    inherit: 'project:default'
-    title: Create Project
-    fields: 
-      'Organization' : ['project:organization']
-      'Information': ['project:id', 'project:name']
-      'Description': ['project:description']
+    inherit: 'run:default'
+    title: Create Run
   #
-  # Project Details Form
+  # Run Details Form
   #
   read:
-    inherit: 'project:default'
-    title: Project Details
+    inherit: 'run:default'
+    title: Run Details
     services:
       create: ~
       update: ~
   #
-  # Project Update Form
+  # Run Update Form
   #
   update:
-    inherit: 'project:default'
-    title: Modify Project
+    inherit: 'run:default'
+    title: Modify Run
     services:
       create: ~

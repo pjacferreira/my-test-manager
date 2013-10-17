@@ -15,46 +15,27 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ##
-# Project Entity Forms (Metadata Model)
+# Runs Lists Definition
 ##
-project:
+runs:
   #
-  # Default Project FORM (Model)
+  # List All Runs for Current Session Project
   #
-  default:
+  project:
     inherit: default
-    title: Project
-    fields: 
-      'Information': ['project:id', 'project:name']
-      'Description': ['project:description']
     services:
-      create: 'project:create'
-      read: 'project:read'
-      update: 'project:update'
+      list: 'runs:list'
+      count: 'runs:count'
+    key: 'runs:id'
+    display: 'runs:name'
+    fields:
+      - 'runs:id'
+      - 'runs:name'
   #
-  # Create Project Form
+  # List Runs in Current Session Project, Owned by the Current Session User
   #
-  create:
-    inherit: 'project:default'
-    title: Create Project
-    fields: 
-      'Organization' : ['project:organization']
-      'Information': ['project:id', 'project:name']
-      'Description': ['project:description']
-  #
-  # Project Details Form
-  #
-  read:
-    inherit: 'project:default'
-    title: Project Details
+  project_user:
+    inherit: project
     services:
-      create: ~
-      update: ~
-  #
-  # Project Update Form
-  #
-  update:
-    inherit: 'project:default'
-    title: Modify Project
-    services:
-      create: ~
+      list: 'runs:user_set_list'
+      count: 'runs:user_set_count'

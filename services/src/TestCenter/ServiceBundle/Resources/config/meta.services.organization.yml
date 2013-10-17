@@ -18,19 +18,21 @@
 # Organinzation Service Definitions
 ##
 organization:
-  default:
+  manage:
     inherit: default
-    service: org
+    service: 
+      - manage
+      - org
     parameters:
       allow: 'organization:*'
     
   #
   # Create Organization Record
   # URL :
-  # - org/create/{organization:name}[?field=value-tuplet[&...]]
+  # - manage/org/create/{organization:name}[?field=value-tuplet[&...]]
   #
   create:
-    inherit: 'organization:default'
+    inherit: 'organization:manage'
     action: create
     key: 'organization:name'
     parameters:
@@ -38,11 +40,11 @@ organization:
   #
   # Read Organization Record
   # URL : 
-  # - org/read/{organization:id}   or
-  # - org/read/{organization:name}
+  # - manage/org/read/{organization:id}   or
+  # - manage/org/read/{organization:name}
   #
   read:    
-    inherit: 'organization:default'
+    inherit: 'organization:manage'
     action: read
     keys:
       - 'organization:id'
@@ -52,11 +54,11 @@ organization:
   #
   # Update Organization Record
   # URL : 
-  # - org/read/{organization:id}?field=value-tuplet[&...]   or
-  # - org/read/{organization:name}?field=value-tuplet[&...]
+  # - manage/org/read/{organization:id}?field=value-tuplet[&...]   or
+  # - manage/org/read/{organization:name}?field=value-tuplet[&...]
   #
   update:
-    inherit: 'organization:default'
+    inherit: 'organization:manage'
     action: update
     keys:
       - 'organization:id'
@@ -67,11 +69,11 @@ organization:
   #
   # Delete Organization Record
   # URL : 
-  # - org/delete/{organization:id}   or
-  # - org/delete/{organization:name}
+  # - manage/org/delete/{organization:id}   or
+  # - manage/org/delete/{organization:name}
   #
   delete:
-    inherit: 'organization:default'
+    inherit: 'organization:manage'
     action: delete
     keys:
       - 'organization:id'
@@ -81,21 +83,47 @@ organization:
   #
   # List Organization Records
   # URL : 
-  # - org/list[?field=value-tuplet[&...]]
+  # - manage/orgs/list[?field=value-tuplet[&...]]
   #
   list: 
-    inherit: 'organization:default'
+    inherit: 'organization:manage'
+    service: 
+      - manage
+      - orgs
     action: list
     parameters: 
       allow: ['virtual:filter','virtual:sort','virtual:limit']
   #
   # Count Organization Records
   # URL : 
-  # - org/count[?field=value-tuplet[&...]]
+  # - manage/orgs/count[?field=value-tuplet[&...]]
   #
   count:
-    inherit: 'organization:default'
+    inherit: 'organization:manage'
+    service: 
+      - manage
+      - orgs
     action: count
     parameters:
-      allow: ['virtual:filter','virtual:sort','virtual:limit']
+      allow: ['virtual:filter']
+  #
+  # List the Organizations the Current Session User Belongs to
+  # URL : 
+  # - manage/orgs/list[?field=value-tuplet[&...]]
+  #
+  user_list: 
+    inherit: 'organization:list'
+    service: 
+      - session
+      - orgs
+  #
+  # Count the Organizations the Current Session User Belongs to
+  # URL : 
+  # - manage/orgs/count[?field=value-tuplet[&...]]
+  #
+  user_count:
+    inherit: 'organization:count'
+    service: 
+      - session
+      - orgs
     

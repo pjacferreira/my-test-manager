@@ -1,0 +1,158 @@
+# Test Center - Compliance Testing Application
+# Copyright (C) 2012 - 2013 Paulo Ferreira <pf at sourcenotes.org>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+##
+# Test Service Definitions
+##
+test:
+  #
+  # Defaults for Test Management
+  #
+  manage:
+    inherit: default
+    service: 
+      - testing
+      - test
+    parameters:
+      allow: 'test:*'
+      exclude: ['test:id', 'test:creator', 'test:date_created', 'test:last_modifier', 'test:date_modified', 'test:owner', project:*']
+  #
+  # Defaults for Test Listing
+  #
+  listing:
+    inherit: default
+    service: 
+      - testing
+      - tests
+    parameters: 
+      allow: ['virtual:filter','virtual:sort','virtual:limit']
+  #
+  # Create Test Within the Current Session Project
+  # URL :
+  # - testing/test/create/{test:name}[?field=value-tuplet[&...]]
+  #
+  create:
+    inherit: 'test:manage'
+    action: create
+    key: 'test:name'
+  #
+  # Read Test Record
+  # URL : 
+  # - testing/test/read/{test:id}  
+  #
+  read:    
+    inherit: 'test:manage'
+    action: read
+    key: 'test:id'
+    parameters:
+      allow: ~
+      exclude: ~
+  #
+  # Update Test Record
+  # URL : 
+  # - testing/test/update/{test:id}?field=value-tuplet[&...]   
+  #
+  update:
+    inherit: 'test:manage'
+    action: update
+    key: 'test:id'
+    parameters:
+      allow: ~
+      exclude: ~
+  #
+  # Modify Test State
+  # URL : 
+  # - testing/test/state/set/{test:id}/{test:state}   
+  #
+  modify_state:
+    inherit: 'test:manage'
+    service: 
+      - testing
+      - test
+      - state
+    action: set
+    key: [ 'test:id', 'test:state' ]
+    parameters:
+      allow: ~
+      exclude: ~
+  #
+  # Modify Test Owner
+  # URL : 
+  # - testing/test/owner/set/{test:id}/{user:id}   
+  #
+  modify_owner:
+    inherit: 'test:manage'
+    service: 
+      - testing
+      - test
+      - owner
+    action: set
+    key: [ 'test:id', 'user:id' ]
+    parameters:
+      allow: ~
+      exclude: ~
+  #
+  # Delete Test Record
+  # URL : 
+  # - testing/test/delete/{test:id}   
+  #
+  delete:
+    inherit: 'test:manage'
+    action: delete
+    key: 'test:id'
+    parameters:
+      allow: ~
+      exclude: ~
+  #
+  # List All Tests for Current Session Project
+  # URL : 
+  # - testing/tests/list[?field=value-tuplet[&...]]
+  #
+  list: 
+    inherit: 'test:listing'
+    action: list
+  #
+  # Count All Tests for Current Session Project
+  # URL : 
+  # - testing/tests/count[?field=value-tuplet[&...]]
+  #
+  count:
+    inherit: 'test:listing'
+    action: count
+    parameters:
+      allow: ['virtual:filter']
+  #
+  # List Tests for Current Session Project, Owned by the Current Session User
+  # URL : 
+  # - testing/tests/user/list[?field=value-tuplet[&...]]
+  #
+  user_test_list: 
+    inherit: 'test:list'
+    service: 
+      - testing
+      - tests
+      - user
+  #
+  # Count Tests for Current Session Project, Owned by the Current Session User
+  # URL : 
+  # - testing/tests/user/count[?field=value-tuplet[&...]]
+  #
+  user_test_count:
+    inherit: 'test:count'
+    service: 
+      - testing
+      - tests
+      - user

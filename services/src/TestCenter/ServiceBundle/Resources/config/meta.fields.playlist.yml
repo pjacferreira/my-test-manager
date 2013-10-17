@@ -15,10 +15,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ##
-# Organization Entity (Properties Metadata)
+# PlayList Entity (Properties Metadata)
 ##
-
-organization:
+playlist:
   default: 
     inherit: default
     data-direction: both
@@ -26,45 +25,63 @@ organization:
     inherit: default:key
     data-direction: in
     label: ID
-    description: Unique Organization Identifier
+    description: Unique Entry Identifier
     value: 
       type: integer
       auto: true
-  name:
-    inherit: organization:default
-    key: true
-    label: Name
-    description: Unique Organization Name
-  description:
-    inherit: organization:default
-    label: Description
-    description: Organization Information
+  run:
+    inherit: ':reference'
+    label: Run
+    description: Run Associated with Entry
+    value: 
+      auto: true
+    reference:
+      object: run
+      key: run:id
+    display:
+      field: 'run:name'
+  sequence: 
+    inherit: playlist:default
+    label: Sequence
+    description: Play List Sequence Number
+    value: 
+      type: integer
+  test:
+    inherit: ':reference'
+    label: Test
+    description: Test for Entry
+    value: 
+      auto: true
+    reference:
+      object: test
+      key: test:id
+    display:
+      field: 'test:name'
+  step: 
+    inherit: step:sequence
+    label: Step
+  state: 
+    inherit: playlist:default
+    label: State
+    description: Play List Entry Execution State
+    value: 
+      type: integer
+  state_code: 
+    inherit: playlist:default
+    label: Code
+    description: Play List Entry Execution State
+    value: 
+      type: integer
+  comment:
+    inherit: playlist:default
+    label: Comment
+    description: Comment for Entry
     value: 
       type: html
-  creator:
-    inherit: ':reference'
-    label: Creator
-    description: User that created this organization
-    value: 
-      auto: true
-      nullable: false
-    reference:
-      object: user
-      key: user:id
-    display:
-      field: 'user:name'
-  date_created:
-    inherit: user:default
-    label: Created
-    description: User Password
-    value: 
-      type: datetime
-      auto: true
-      nullable: false
   last_modifier:
     inherit: ':reference'
     label: Last Modifier
-    description: User that last modified this organization
+    description: User that last modified this Run
     value: 
       auto: true
     reference:

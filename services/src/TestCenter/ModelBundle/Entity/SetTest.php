@@ -22,14 +22,14 @@ namespace TestCenter\ModelBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * TestCenter\ModelBundle\Entity\TestStep
+ * TestCenter\ModelBundle\Entity\SetTest
  *
- * @ORM\Table(name="t_test_steps")
- * @ORM\Entity(repositoryClass="TestCenter\ModelBundle\Repository\TestStepRepository")
+ * @ORM\Table(name="t_set_tests")
+ * @ORM\Entity(repositoryClass="TestCenter\ModelBundle\Repository\SetTestRepository")
  * 
  * @author Paulo Ferreira
  */
-class TestStep extends AbstractEntity {
+class SetTest extends AbstractEntity {
 
   /**
    * @var integer $id
@@ -41,12 +41,12 @@ class TestStep extends AbstractEntity {
   private $id;
 
   /**
-   * @var integer $test
+   * @var integer $set
    *
-   * @ORM\ManyToOne(targetEntity="Test")
-   * @ORM\JoinColumn(name="id_test", referencedColumnName="id")
+   * @ORM\ManyToOne(targetEntity="Set")
+   * @ORM\JoinColumn(name="id_set", referencedColumnName="id")
    */
-  private $test;
+  private $set;
 
   /**
    * @var integer $sequence
@@ -54,21 +54,14 @@ class TestStep extends AbstractEntity {
    * @ORM\Column(name="sequence", type="integer")
    */
   private $sequence;
-  // TODO Add Index that makes sure that $sequence is unique within test
 
   /**
-   * @var string $name
+   * @var integer $test
    *
-   * @ORM\Column(name="name", type="string", length=80)
+   * @ORM\ManyToOne(targetEntity="Test")
+   * @ORM\JoinColumn(name="id_test", referencedColumnName="id")
    */
-  private $name;
-
-  /**
-   * @var text $description
-   *
-   * @ORM\Column(name="description", type="text", nullable=true)
-   */
-  private $description;
+  private $test;
 
   /**
    * Get id
@@ -80,21 +73,21 @@ class TestStep extends AbstractEntity {
   }
 
   /**
-   * Get test
+   * Get testset
    *
-   * @return TestCenter\ModelBundle\Entity\Test 
+   * @return TestCenter\ModelBundle\Entity\TestSet 
    */
-  public function getTest() {
-    return $this->test;
+  public function getSet() {
+    return $this->set;
   }
 
   /**
-   * Set test
+   * Set testset
    *
-   * @param TestCenter\ModelBundle\Entity\Test $test
+   * @param TestCenter\ModelBundle\Entity\TestSet $set
    */
-  public function setTest(\TestCenter\ModelBundle\Entity\Test $test) {
-    $this->test = $test;
+  public function setSet(\TestCenter\ModelBundle\Entity\Set $set) {
+    $this->set = $set;
   }
 
   /**
@@ -116,39 +109,21 @@ class TestStep extends AbstractEntity {
   }
 
   /**
-   * Get Step Name
+   * Get test
    *
-   * @return string 
+   * @return TestCenter\ModelBundle\Entity\Test 
    */
-  public function getName() {
-    return $this->name;
+  public function getTest() {
+    return $this->test;
   }
 
   /**
-   * Set Name
+   * Set test
    *
-   * @param string $name
+   * @param TestCenter\ModelBundle\Entity\Test $test
    */
-  public function setName($name) {
-    $this->name = $name;
-  }
-
-  /**
-   * Get description
-   *
-   * @return text 
-   */
-  public function getDescription() {
-    return $this->description;
-  }
-
-  /**
-   * Set description
-   *
-   * @param text $description
-   */
-  public function setDescription($description) {
-    $this->description = $description;
+  public function setTest(\TestCenter\ModelBundle\Entity\Test $test) {
+    $this->test = $test;
   }
 
   /**
@@ -158,10 +133,9 @@ class TestStep extends AbstractEntity {
     $array = parent::toArray();
 
     $array = $this->addProperty($array, 'id');
+    $array = $this->addReferencePropertyIfNotNull($array, 'set');
+    $array = $this->addProperty($array, 'sequence');
     $array = $this->addReferencePropertyIfNotNull($array, 'test');
-    $array = $this->addProperty($array, 'seqeuence');
-    $array = $this->addProperty($array, 'name');
-    $array = $this->addPropertyIfNotNull($array, 'description');
 
     return $array;
   }

@@ -29,7 +29,7 @@ use Doctrine\ORM\Mapping as ORM;
  * 
  * @author Paulo Ferreira
  */
-class Project {
+class Project extends AbstractEntity {
 
   /**
    * @var integer $id
@@ -38,21 +38,21 @@ class Project {
    * @ORM\Id
    * @ORM\GeneratedValue(strategy="AUTO")
    */
-  private $id;
+  protected $id;
 
   /**
    * @var string $name
    *
    * @ORM\Column(name="name", type="string", length=40)
    */
-  private $name;
+  protected $name;
 
   /**
    * @var text $description
    *
    * @ORM\Column(name="description", type="text", nullable=true)
    */
-  private $description;
+  protected $description;
 
   /**
    * @var integer $organization
@@ -60,7 +60,14 @@ class Project {
    * @ORM\ManyToOne(targetEntity="Organization", inversedBy="projects")
    * @ORM\JoinColumn(name="id_organization", referencedColumnName="id")
    * */
-  private $organization;
+  protected $organization;
+
+  /**
+   * @var integer $tests
+   *
+   * @ORM\OneToMany(targetEntity="Test", mappedBy="project")
+   * */
+  protected $tests;
 
   /**
    * @var integer $container
@@ -68,7 +75,38 @@ class Project {
    * @ORM\OneToOne(targetEntity="Container")
    * @ORM\JoinColumn(name="id_root", referencedColumnName="id")
    * */
-  private $container;
+  protected $container;
+
+  /**
+   * @ORM\ManyToOne(targetEntity="User")
+   * @ORM\JoinColumn(name="id_creator", referencedColumnName="id")
+   */
+  private $creator;
+
+  /**
+   * @var datetime $date_created
+   *
+   * @ORM\Column(name="dt_creation", type="datetime")
+   */
+  protected $date_created;
+
+  /**
+   * @ORM\ManyToOne(targetEntity="User")
+   * @ORM\JoinColumn(name="id_modifier", referencedColumnName="id", nullable=true)
+   */
+  private $last_modifier;
+
+  /**
+   * @var datetime $date_modified
+   *
+   * @ORM\Column(name="dt_modified", type="datetime", nullable=true)
+   */
+  protected $date_modified;
+
+  public function __construct() {
+    $this->tests = new \Doctrine\Common\Collections\ArrayCollection();
+    $this->date_created = new \DateTime();
+  }
 
   /**
    * Get id
@@ -116,24 +154,6 @@ class Project {
   }
 
   /**
-   * Set container
-   *
-   * @param TestCenter\ModelBundle\Entity\Container $container
-   */
-  public function setContainer(\TestCenter\ModelBundle\Entity\Container $container) {
-    $this->container = $container;
-  }
-
-  /**
-   * Get container
-   *
-   * @return TestCenter\ModelBundle\Entity\Container
-   */
-  public function getContainer() {
-    return $this->container;
-  }
-
-  /**
    * Set description
    *
    * @param text $description
@@ -152,18 +172,46 @@ class Project {
   }
 
   /**
+   * Get tests
+   *
+   * @return Doctrine\Common\Collections\Collection 
+   */
+  public function getTests() {
+    return $this->tests;
+  }
+
+  /**
+   * Set container
+   *
+   * @param TestCenter\ModelBundle\Entity\Container $container
+   */
+  public function setContainer(\TestCenter\ModelBundle\Entity\Container $container) {
+    $this->container = $container;
+  }
+
+  /**
+   * Get container
+   *
+   * @return TestCenter\ModelBundle\Entity\Container
+   */
+  public function getContainer() {
+    return $this->container;
+  }
+
+  /**
    * @return array
    */
   public function toArray() {
-    $array = array(
-        '__entity' => strtolower($this->entityName()),
-    );
+    $array = parent::toArray();
 
-    $array = $this->addProperty($array, 'id', $this->getID());
-    $array = $this->addProperty($array, 'name', $this->getName());
+    $array = $this->addProperty($array, 'id');
+    $array = $this->addProperty($array, 'name');
     $array = $this->addPropertyIfNotNull($array, 'description');
-    $array = $this->addProperty($array, 'container', $this->container->getID());
-    $array = $this->addProperty($array, 'organization', $this->organization->toArray());
+    $array = $this->addReferencePropertyIfNotNull($array, 'organization');
+    $array = $this->addReferencePropertyIfNotNull($array, 'creator');
+    $array = $this->addProperty($array, 'date_created');
+    $array = $this->addReferencePropertyIfNotNull($array, 'last_modifier');
+    $array = $this->addPropertyIfNotNull($array, 'date_modified');
 
     return $array;
   }
@@ -177,32 +225,6 @@ class Project {
 
   /**
    * 
-   * @param type $array
-   * @param type $prop_name
-   * @return type
-   */
-  protected function addProperty($array, $name, $value) {
-    // Get the Entity Name
-    $entity = strtolower($this->entityName());
-//    $array["{$name}"] = $value;
-    $array["{$entity}:{$name}"] = $value;
-    return $array;
-  }
-
-  /**
-   * 
-   * @param type $array
-   * @param type $prop_name
-   * @return type
-   */
-  protected function addPropertyIfNotNull($array, $prop_name) {
-    // Get the Entity Name
-    // investigate get_called_class(); in order to create bas class function
-    return isset($this->$prop_name) ? $this->addProperty($array, $prop_name, $this->$prop_name) : $array;
-  }
-
-  /**
-   * 
    * @return type
    */
   protected function entityName() {
@@ -210,4 +232,93 @@ class Project {
     return substr(__CLASS__, $i + 1);
   }
 
+    /**
+     * Set date_created
+     *
+     * @param datetime $dateCreated
+     */
+    public function setDateCreated($dateCreated)
+    {
+        $this->date_created = $dateCreated;
+    }
+
+    /**
+     * Get date_created
+     *
+     * @return datetime 
+     */
+    public function getDateCreated()
+    {
+        return $this->date_created;
+    }
+
+    /**
+     * Set date_modified
+     *
+     * @param datetime $dateModified
+     */
+    public function setDateModified($dateModified)
+    {
+        $this->date_modified = $dateModified;
+    }
+
+    /**
+     * Get date_modified
+     *
+     * @return datetime 
+     */
+    public function getDateModified()
+    {
+        return $this->date_modified;
+    }
+
+    /**
+     * Add tests
+     *
+     * @param TestCenter\ModelBundle\Entity\Test $tests
+     */
+    public function addTest(\TestCenter\ModelBundle\Entity\Test $tests)
+    {
+        $this->tests[] = $tests;
+    }
+
+    /**
+     * Set creator
+     *
+     * @param TestCenter\ModelBundle\Entity\User $creator
+     */
+    public function setCreator(\TestCenter\ModelBundle\Entity\User $creator)
+    {
+        $this->creator = $creator;
+    }
+
+    /**
+     * Get creator
+     *
+     * @return TestCenter\ModelBundle\Entity\User 
+     */
+    public function getCreator()
+    {
+        return $this->creator;
+    }
+
+    /**
+     * Set last_modifier
+     *
+     * @param TestCenter\ModelBundle\Entity\User $lastModifier
+     */
+    public function setLastModifier(\TestCenter\ModelBundle\Entity\User $lastModifier)
+    {
+        $this->last_modifier = $lastModifier;
+    }
+
+    /**
+     * Get last_modifier
+     *
+     * @return TestCenter\ModelBundle\Entity\User 
+     */
+    public function getLastModifier()
+    {
+        return $this->last_modifier;
+    }
 }

@@ -15,46 +15,27 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ##
-# Project Entity Forms (Metadata Model)
+# Project Lists Definition
 ##
 project:
   #
-  # Default Project FORM (Model)
+  # List All Projects in the System
   #
-  default:
+  all:
     inherit: default
-    title: Project
-    fields: 
-      'Information': ['project:id', 'project:name']
-      'Description': ['project:description']
     services:
-      create: 'project:create'
-      read: 'project:read'
-      update: 'project:update'
+      list: 'project:list'
+      count: 'project:count'
+    key: 'project:id'
+    display: 'project:name'
+    fields:
+      - 'project:id'
+      - 'project:name'
   #
-  # Create Project Form
+  # List All Projects for the Current Session User / Organization
   #
-  create:
-    inherit: 'project:default'
-    title: Create Project
-    fields: 
-      'Organization' : ['project:organization']
-      'Information': ['project:id', 'project:name']
-      'Description': ['project:description']
-  #
-  # Project Details Form
-  #
-  read:
-    inherit: 'project:default'
-    title: Project Details
+  user_org:
+    inherit: all
     services:
-      create: ~
-      update: ~
-  #
-  # Project Update Form
-  #
-  update:
-    inherit: 'project:default'
-    title: Modify Project
-    services:
-      create: ~
+      list: 'project:user_org_list'
+      count: 'project:user_org_count'

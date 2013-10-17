@@ -22,14 +22,14 @@ namespace TestCenter\ModelBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * TestCenter\ModelBundle\Entity\User
+ * TestCenter\ModelBundle\Entity\Set
  *
- * @ORM\Table(name="t_users")
- * @ORM\Entity(repositoryClass="TestCenter\ModelBundle\Repository\UserRepository")
+ * @ORM\Table(name="t_sets")
+ * @ORM\Entity(repositoryClass="TestCenter\ModelBundle\Repository\SetRepository")
  * 
  * @author Paulo Ferreira
  */
-class User extends AbstractEntity {
+class Set extends AbstractEntity {
 
   /**
    * @var integer $id
@@ -38,49 +38,41 @@ class User extends AbstractEntity {
    * @ORM\Id
    * @ORM\GeneratedValue(strategy="AUTO")
    */
-  protected $id;
+  private $id;
+
+  /**
+   * @ORM\ManyToOne(targetEntity="Project")
+   * @ORM\JoinColumn(name="id_project", referencedColumnName="id")
+   * */
+  private $project;
+
+  /**
+   * @var string $group
+   *
+   * @ORM\Column(name="set_group", type="string", length=60, nullable=true)
+   */
+  private $group;
 
   /**
    * @var string $name
    *
-   * @ORM\Column(name="name", type="string", length=40)
+   * @ORM\Column(name="name", type="string", length=60)
    */
-  protected $name;
+  private $name;
 
   /**
-   * @var string $first_name
+   * @var text $description
    *
-   * @ORM\Column(name="first_name", type="string", length=40, nullable=true)
+   * @ORM\Column(name="description", type="text", nullable=true)
    */
-  protected $first_name;
+  private $description;
 
   /**
-   * @var string $last_name
+   * @var integer $state
    *
-   * @ORM\Column(name="last_name", type="string", length=80, nullable=true)
+   * @ORM\Column(name="state", type="integer")
    */
-  protected $last_name;
-
-  /**
-   * @var string $password
-   *
-   * @ORM\Column(name="password", type="string", length=64)
-   */
-  protected $password;
-
-  /**
-   * @var text $s_description
-   *
-   * @ORM\Column(name="s_description", type="string", length=80, nullable=true)
-   */
-  protected $s_description;
-
-  /**
-   * @var text $l_description
-   *
-   * @ORM\Column(name="l_description", type="text", nullable=true)
-   */
-  protected $l_description;
+  private $state;
 
   /**
    * @ORM\ManyToOne(targetEntity="User")
@@ -91,7 +83,7 @@ class User extends AbstractEntity {
   /**
    * @var datetime $date_created
    *
-   * @ORM\Column(name="dt_creation", type="datetime", nullable=false)
+   * @ORM\Column(name="dt_creation", type="datetime")
    */
   protected $date_created;
 
@@ -108,17 +100,68 @@ class User extends AbstractEntity {
    */
   protected $date_modified;
 
+  /**
+   * @ORM\ManyToOne(targetEntity="User")
+   * @ORM\JoinColumn(name="id_owner", referencedColumnName="id")
+   */
+  private $owner;
+
   public function __construct() {
     $this->date_created = new \DateTime();
   }
-  
+
   /**
    * Get id
    *
-   * @return integer
+   * @return integer 
    */
   public function getId() {
     return $this->id;
+  }
+
+  /**
+   * Get project
+   *
+   * @return TestCenter\ModelBundle\Entity\Project 
+   */
+  public function getProject() {
+    return $this->project;
+  }
+
+  /**
+   * Set project
+   *
+   * @param TestCenter\ModelBundle\Entity\Project $project
+   */
+  public function setProject(\TestCenter\ModelBundle\Entity\Project $project) {
+    $this->project = $project;
+  }
+
+  /**
+   * Get group
+   *
+   * @return string 
+   */
+  public function getGroup() {
+    return $this->group;
+  }
+
+  /**
+   * Set group
+   *
+   * @param string $group
+   */
+  public function setGroup($group) {
+    $this->group = $group;
+  }
+
+  /**
+   * Get name
+   *
+   * @return string 
+   */
+  public function getName() {
+    return $this->name;
   }
 
   /**
@@ -131,111 +174,21 @@ class User extends AbstractEntity {
   }
 
   /**
-   * Get name
-   *
-   * @return string
-   */
-  public function getName() {
-    return $this->name;
-  }
-
-  /**
-   * Set password
-   *
-   * @param string $password
-   */
-  public function setPassword($password) {
-    $this->password = $password;
-  }
-
-  /**
-   * Get password
-   *
-   * @return string
-   */
-  public function getPassword() {
-    return $this->password;
-  }
-
-  /**
-   * Set first_name
-   *
-   * @param string $firstName
-   */
-  public function setFirstName($firstName) {
-    $this->first_name = $firstName;
-  }
-
-  /**
-   * Get first_name
-   *
-   * @return string 
-   */
-  public function getFirstName() {
-    return $this->first_name;
-  }
-
-  /**
-   * Set last_name
-   *
-   * @param string $lastName
-   */
-  public function setLastName($lastName) {
-    $this->last_name = $lastName;
-  }
-
-  /**
-   * Get last_name
-   *
-   * @return string 
-   */
-  public function getLastName() {
-    return $this->last_name;
-  }
-
-  /**
-   * Set s_description
-   *
-   * @param string $sDescription
-   */
-  public function setSDescription($sDescription) {
-    $this->s_description = $sDescription;
-  }
-
-  /**
-   * Get s_description
-   *
-   * @return string 
-   */
-  public function getSDescription() {
-    return $this->s_description;
-  }
-
-  /**
-   * Set l_description
-   *
-   * @param text $lDescription
-   */
-  public function setLDescription($lDescription) {
-    $this->l_description = $lDescription;
-  }
-
-  /**
-   * Get l_description
+   * Get description
    *
    * @return text 
    */
-  public function getLDescription() {
-    return $this->l_description;
+  public function getDescription() {
+    return $this->description;
   }
 
   /**
-   * Set creator
+   * Set description
    *
-   * @param TestCenter\ModelBundle\Entity\User $creator
+   * @param text $description
    */
-  public function setCreator(\TestCenter\ModelBundle\Entity\User $creator) {
-    $this->creator = $creator;
+  public function setDescription($description) {
+    $this->description = $description;
   }
 
   /**
@@ -248,12 +201,12 @@ class User extends AbstractEntity {
   }
 
   /**
-   * Set date_created
+   * Set creator
    *
-   * @param datetime $dateCreated
+   * @param TestCenter\ModelBundle\Entity\User $creator
    */
-  public function setDateCreated($dateCreated) {
-    $this->date_created = $dateCreated;
+  public function setCreator(\TestCenter\ModelBundle\Entity\User $creator) {
+    $this->creator = $creator;
   }
 
   /**
@@ -266,12 +219,12 @@ class User extends AbstractEntity {
   }
 
   /**
-   * Set last_modifier
+   * Set date_created
    *
-   * @param TestCenter\ModelBundle\Entity\User $lastModifier
+   * @param datetime $dateCreated
    */
-  public function setLastModifier(\TestCenter\ModelBundle\Entity\User $lastModifier) {
-    $this->last_modifier = $lastModifier;
+  public function setDateCreated($dateCreated) {
+    $this->date_created = $dateCreated;
   }
 
   /**
@@ -284,12 +237,12 @@ class User extends AbstractEntity {
   }
 
   /**
-   * Set date_modified
+   * Set last_modifier
    *
-   * @param datetime $dateModified
+   * @param TestCenter\ModelBundle\Entity\User $lastModifier
    */
-  public function setDateModified($dateModified) {
-    $this->date_modified = $dateModified;
+  public function setLastModifier(\TestCenter\ModelBundle\Entity\User $lastModifier) {
+    $this->last_modifier = $lastModifier;
   }
 
   /**
@@ -302,21 +255,50 @@ class User extends AbstractEntity {
   }
 
   /**
+   * Set date_modified
+   *
+   * @param datetime $dateModified
+   */
+  public function setDateModified($dateModified) {
+    $this->date_modified = $dateModified;
+  }
+
+  /**
+   * Get owner
+   *
+   * @return TestCenter\ModelBundle\Entity\User 
+   */
+  public function getOwner() {
+    return $this->owner;
+  }
+
+  /**
+   * Set owner
+   *
+   * @param TestCenter\ModelBundle\Entity\User $owner
+   */
+  public function setOwner(\TestCenter\ModelBundle\Entity\User $owner) {
+    $this->owner = $owner;
+  }
+
+  /**
    * @return array
    */
   public function toArray() {
     $array = parent::toArray();
 
     $array = $this->addProperty($array, 'id');
+    $array = $this->addReferencePropertyIfNotNull($array, 'project');
     $array = $this->addProperty($array, 'name');
-    $array = $this->addPropertyIfNotNull($array, 'first_name');
-    $array = $this->addPropertyIfNotNull($array, 'last_name');
-    $array = $this->addPropertyIfNotNull($array, 's_description');
-    $array = $this->addPropertyIfNotNull($array, 'l_description');
+    $array = $this->addPropertyIfNotNull($array, 'group');
+    $array = $this->addPropertyIfNotNull($array, 'description');
+    $array = $this->addProperty($array, 'state');
     $array = $this->addReferencePropertyIfNotNull($array, 'creator');
     $array = $this->addProperty($array, 'date_created');
     $array = $this->addReferencePropertyIfNotNull($array, 'last_modifier');
     $array = $this->addPropertyIfNotNull($array, 'date_modified');
+    $array = $this->addReferencePropertyIfNotNull($array, 'owner');
+
     return $array;
   }
 
@@ -334,6 +316,24 @@ class User extends AbstractEntity {
   protected function entityName() {
     $i = strlen(__NAMESPACE__);
     return substr(__CLASS__, $i + 1);
+  }
+
+  /**
+   * Set state
+   *
+   * @param integer $state
+   */
+  public function setState($state) {
+    $this->state = $state;
+  }
+
+  /**
+   * Get state
+   *
+   * @return integer 
+   */
+  public function getState() {
+    return $this->state;
   }
 
 }

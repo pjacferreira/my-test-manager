@@ -158,6 +158,38 @@ fields:
         # Elements:
         # - TEXT : validation EL for a single field
         validation: ~
+    # Default Settings for Physical Fields
+    key:
+      # Specifies the Parent Field, in the inheritance hierarchy, for this field
+      #
+      # (OPTIONAL)
+      #
+      # Elements:
+      # - TEXT: field_id (pattern entity_id[:field_id] 
+      #   if field_id missing, then default is assumed
+      inherit: default
+      # Specifies if the field is a key field (a key field is one, that can 
+      # uniquely identify a record within the storage system)
+      #
+      # (REQUIRED: FOR A KEY FIELD)
+      #
+      # Elements:
+      # - BOOLEAN : TRUE
+      key: true
+      # Field Value Properties
+      #
+      # (REQUIRED: MAP)
+      #
+      # Elements:
+      # - All Possible Elements are listed below 
+      value: 
+        # The fields value is auto-generated (assigned by the storage system)
+        #
+        # (REQUIRED: FOR A KEY FIELD - CAN'T BE NULL)
+        #
+        # Elements:
+        # - BOOLEAN : FALSE (Key Fields Can't be NULL)
+        nullable: false
     # Default Settings for Reference Fields
     reference:
       # Specifies the Parent Field, in the inheritance hierarchy, for this field
@@ -200,6 +232,7 @@ fields:
         # Elements:
         # - STRING : field_id (entity:field) referred to
         # link: ~
+        type: reference
         
         # 
         # REMOVE PROPERTIES THAT DON'T APPLYMaxmimum (Display) Length for the Field

@@ -18,34 +18,51 @@
 # Project Service Definitions
 ##
 project:
-  default:
+  #
+  # Defaults for Project Management
+  #
+  manage:
     inherit: default
-    service: project
+    service: 
+      - manage
+      - project
     parameters:
       allow: 'project:*'
-    
+  #
+  # Defaults for Project Listing
+  #
+  listing:
+    inherit: default
+    service: 
+      - manage
+      - projects
+    parameters: 
+      allow: ['virtual:filter','virtual:sort','virtual:limit']
   #
   # Create Project Within the Current Session Organization
   # URL :
-  # - project/create/{project:name}[?field=value-tuplet[&...]]
+  # - manage/org/project/create/{organization:id}/{project:name}[?field=value-tuplet[&...]]
   #
   create:
-    inherit: 'project:default'
+    inherit: 'project:manage'
     service: 
+      - manage
       - org
-      - projects
+      - project
     action: create
-    key: 'project:name'
+    key:
+      - 'organization:id'
+      - 'project:name'
     parameters:
-      exclude: ['project:id', 'project:name']
+      exclude: ['project:id', 'project:name', 'organization:id']
   #
   # Read Project Record
   # URL : 
-  # - project/read/{project:id}   or
-  # - project/read/{project:name}
+  # - manage/project/read/{project:id}   or
+  # - manage/project/read/{project:name}
   #
   read:    
-    inherit: 'project:default'
+    inherit: 'project:manage'
     action: read
     keys:
       - 'project:id'
@@ -55,11 +72,11 @@ project:
   #
   # Update Project Record
   # URL : 
-  # - project/read/{project:id}?field=value-tuplet[&...]   or
-  # - project/read/{project:name}?field=value-tuplet[&...]
+  # - manage/project/update/{project:id}?field=value-tuplet[&...]   or
+  # - manage/project/update/{project:name}?field=value-tuplet[&...]
   #
   update:
-    inherit: 'project:default'
+    inherit: 'project:manage'
     action: update
     keys:
       - 'project:id'
@@ -70,11 +87,11 @@ project:
   #
   # Delete Project Record
   # URL : 
-  # - project/delete/{project:id}   or
-  # - project/delete/{project:name}
+  # - manage/project/delete/{project:id}   or
+  # - manage/project/delete/{project:name}
   #
   delete:
-    inherit: 'project:default'
+    inherit: 'project:manage'
     action: delete
     keys:
       - 'project:id'
@@ -84,27 +101,41 @@ project:
   #
   # List Project Records
   # URL : 
-  # - project/list[?field=value-tuplet[&...]]
+  # - manage/projects/list[?field=value-tuplet[&...]]
   #
   list: 
-    inherit: 'project:default'
-    service: 
-      - org
-      - projects
+    inherit: 'project:listing'
     action: list
-    parameters: 
-      allow: ['virtual:filter','virtual:sort','virtual:limit']
   #
   # Count Project Records
   # URL : 
-  # - project/count[?field=value-tuplet[&...]]
+  # - manage/projects/count[?field=value-tuplet[&...]]
   #
   count:
-    inherit: 'project:default'
-    service: 
-      - org
-      - projects
+    inherit: 'project:listing'
     action: count
     parameters:
-      allow: ['virtual:filter','virtual:sort','virtual:limit']
-    
+      allow: ['virtual:filter']
+  #
+  # List the Projects for the Current Session User / Organization
+  # URL : 
+  # - session/org/projects/list[?field=value-tuplet[&...]]
+  #
+  user_org_list: 
+    inherit: 'project:list'
+    service: 
+      - session
+      - org
+      - projects      
+  #
+  # Count the Projects for the Current Session User / Organization
+  # URL : 
+  # - session/org/projects/count[?field=value-tuplet[&...]]
+  #
+  user_org_count:
+    inherit: 'project:count'
+    service: 
+      - session
+      - org
+      - projects
+      

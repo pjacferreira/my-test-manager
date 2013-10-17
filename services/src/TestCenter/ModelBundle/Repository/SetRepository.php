@@ -23,12 +23,11 @@ use Doctrine\ORM\EntityRepository;
 use TestCenter\ModelBundle\API\TypeCache;
 
 /**
- * Description of TestSetRepository
+ * Description of SetRepository
  *
  * @author Paulo Ferreira
  */
-class TestSetRepository
-  extends EntityRepository {
+class SetRepository extends EntityRepository {
 
   /**
    * 
@@ -109,8 +108,8 @@ class TestSetRepository
 
     // Build Query
     $sql = 'SELECT count(e) ' .
-      " FROM {$this->getEntityName()} e" .
-      ' WHERE ce.project = ?1';
+            " FROM {$this->getEntityName()} e" .
+            ' WHERE ce.project = ?1';
     $query = $this->getEntityManager()->createQuery($sql);
 
     // Set Query Parameters

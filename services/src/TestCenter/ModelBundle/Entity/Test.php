@@ -1,4 +1,5 @@
 <?php
+
 /* Test Center - Compliance Testing Application
  * Copyright (C) 2012 Paulo Ferreira <pf at sourcenotes.org>
  *
@@ -15,6 +16,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 namespace TestCenter\ModelBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
@@ -27,7 +29,7 @@ use Doctrine\ORM\Mapping as ORM;
  * 
  * @author Paulo Ferreira
  */
-class Test {
+class Test extends AbstractEntity {
 
   /**
    * @var integer $id
@@ -39,7 +41,7 @@ class Test {
   private $id;
 
   /**
-   * @ORM\ManyToOne(targetEntity="Project")
+   * @ORM\ManyToOne(targetEntity="Project", inversedBy="tests")
    * @ORM\JoinColumn(name="id_project", referencedColumnName="id")
    * */
   private $project;
@@ -52,6 +54,13 @@ class Test {
   private $name;
 
   /**
+   * @var string $group
+   *
+   * @ORM\Column(name="test_group", type="string", length=60, nullable=true)
+   */
+  private $group;
+
+  /**
    * @var text $description
    *
    * @ORM\Column(name="description", type="text", nullable=true)
@@ -59,12 +68,55 @@ class Test {
   private $description;
 
   /**
+   * @var integer $state
+   *
+   * @ORM\Column(name="state", type="integer")
+   */
+  private $state;
+  
+  /**
    * @var integer $container
    *
    * @ORM\OneToOne(targetEntity="Container")
    * @ORM\JoinColumn(name="id_docroot", referencedColumnName="id")
    * */
   private $container;
+
+  /**
+   * @ORM\ManyToOne(targetEntity="User")
+   * @ORM\JoinColumn(name="id_creator", referencedColumnName="id")
+   */
+  private $creator;
+
+  /**
+   * @var datetime $date_created
+   *
+   * @ORM\Column(name="dt_creation", type="datetime")
+   */
+  protected $date_created;
+
+  /**
+   * @ORM\ManyToOne(targetEntity="User")
+   * @ORM\JoinColumn(name="id_modifier", referencedColumnName="id", nullable=true)
+   */
+  private $last_modifier;
+
+  /**
+   * @var datetime $date_modified
+   *
+   * @ORM\Column(name="dt_modified", type="datetime", nullable=true)
+   */
+  protected $date_modified;
+
+  /**
+   * @ORM\ManyToOne(targetEntity="User")
+   * @ORM\JoinColumn(name="id_owner", referencedColumnName="id")
+   */
+  private $owner;
+
+  public function __construct() {
+    $this->date_created = new \DateTime();
+  }
 
   /**
    * Get id
@@ -76,39 +128,12 @@ class Test {
   }
 
   /**
-   * Set name
+   * Get project
    *
-   * @param string $name
+   * @return TestCenter\ModelBundle\Entity\Project 
    */
-  public function setName($name) {
-    $this->name = $name;
-  }
-
-  /**
-   * Get name
-   *
-   * @return string 
-   */
-  public function getName() {
-    return $this->name;
-  }
-
-  /**
-   * Set description
-   *
-   * @param text $description
-   */
-  public function setDescription($description) {
-    $this->description = $description;
-  }
-
-  /**
-   * Get description
-   *
-   * @return text 
-   */
-  public function getDescription() {
-    return $this->description;
+  public function getProject() {
+    return $this->project;
   }
 
   /**
@@ -121,12 +146,57 @@ class Test {
   }
 
   /**
-   * Get project
+   * Get name
    *
-   * @return TestCenter\ModelBundle\Entity\Project 
+   * @return string 
    */
-  public function getProject() {
-    return $this->project;
+  public function getName() {
+    return $this->name;
+  }
+
+  /**
+   * Set name
+   *
+   * @param string $name
+   */
+  public function setName($name) {
+    $this->name = $name;
+  }
+
+  /**
+   * Get group
+   *
+   * @return string 
+   */
+  public function getGroup() {
+    return $this->group;
+  }
+
+  /**
+   * Set group
+   *
+   * @param string $group
+   */
+  public function setGroup($group) {
+    $this->group = $group;
+  }
+
+  /**
+   * Get description
+   *
+   * @return text 
+   */
+  public function getDescription() {
+    return $this->description;
+  }
+
+  /**
+   * Set description
+   *
+   * @param text $description
+   */
+  public function setDescription($description) {
+    $this->description = $description;
   }
 
   /**
@@ -148,22 +218,113 @@ class Test {
   }
 
   /**
+   * Get creator
+   *
+   * @return TestCenter\ModelBundle\Entity\User 
+   */
+  public function getCreator() {
+    return $this->creator;
+  }
+
+  /**
+   * Set creator
+   *
+   * @param TestCenter\ModelBundle\Entity\User $creator
+   */
+  public function setCreator(\TestCenter\ModelBundle\Entity\User $creator) {
+    $this->creator = $creator;
+  }
+
+  /**
+   * Get date_created
+   *
+   * @return datetime 
+   */
+  public function getDateCreated() {
+    return $this->date_created;
+  }
+
+  /**
+   * Set date_created
+   *
+   * @param datetime $dateCreated
+   */
+  public function setDateCreated($dateCreated) {
+    $this->date_created = $dateCreated;
+  }
+
+  /**
+   * Get last_modifier
+   *
+   * @return TestCenter\ModelBundle\Entity\User 
+   */
+  public function getLastModifier() {
+    return $this->last_modifier;
+  }
+
+  /**
+   * Get date_modified
+   *
+   * @return datetime 
+   */
+  public function getDateModified() {
+    return $this->date_modified;
+  }
+
+  /**
+   * Set last_modifier
+   *
+   * @param TestCenter\ModelBundle\Entity\User $lastModifier
+   */
+  public function setLastModifier(\TestCenter\ModelBundle\Entity\User $lastModifier) {
+    $this->last_modifier = $lastModifier;
+  }
+
+  /**
+   * Set date_modified
+   *
+   * @param datetime $dateModified
+   */
+  public function setDateModified($dateModified) {
+    $this->date_modified = $dateModified;
+  }
+
+  /**
+   * Get owner
+   *
+   * @return TestCenter\ModelBundle\Entity\User 
+   */
+  public function getOwner() {
+    return $this->owner;
+  }
+
+  /**
+   * Set owner
+   *
+   * @param TestCenter\ModelBundle\Entity\User $owner
+   */
+  public function setOwner(\TestCenter\ModelBundle\Entity\User $owner) {
+    $this->owner = $owner;
+  }
+
+  /**
    * @return array
    */
   public function toArray() {
-    $array = array(
-      'id' => $this->id,
-      'name' => $this->name,
-      'project' => $this->project->getID()
-    );
+    $array = parent::toArray();
 
-    if (isset($this->description)) { // If Description Set - Add it
-      $array['description'] = $this->description;
-    }
+    $array = $this->addProperty($array, 'id');
+    $array = $this->addReferencePropertyIfNotNull($array, 'project');
+    $array = $this->addProperty($array, 'name');
+    $array = $this->addPropertyIfNotNull($array, 'group');
+    $array = $this->addPropertyIfNotNull($array, 'description');
+    $array = $this->addProperty($array, 'state');
+    $array = $this->addReferencePropertyIfNotNull($array, 'creator');
+    $array = $this->addProperty($array, 'date_created');
+    $array = $this->addReferencePropertyIfNotNull($array, 'last_modifier');
+    $array = $this->addPropertyIfNotNull($array, 'date_modified');
+    $array = $this->addReferencePropertyIfNotNull($array, 'owner');
 
-    if (isset($this->container)) { // If Container Set - Add it
-      $array['container'] = $this->container->getId();
-    }
     return $array;
   }
 
@@ -174,4 +335,33 @@ class Test {
     return strval($this->id);
   }
 
+  /**
+   * 
+   * @return type
+   */
+  protected function entityName() {
+    $i = strlen(__NAMESPACE__);
+    return substr(__CLASS__, $i + 1);
+  }
+
+
+    /**
+     * Set state
+     *
+     * @param integer $state
+     */
+    public function setState($state)
+    {
+        $this->state = $state;
+    }
+
+    /**
+     * Get state
+     *
+     * @return integer 
+     */
+    public function getState()
+    {
+        return $this->state;
+    }
 }

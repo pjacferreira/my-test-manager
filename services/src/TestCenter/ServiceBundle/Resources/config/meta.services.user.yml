@@ -18,18 +18,20 @@
 # User Service Definitions
 ##
 user:
-  default:
+  manage:
     inherit: default
-    service: user
+    service: 
+      - manage
+      - user
     parameters:
       allow: 'user:*'
     
   #
   # Create User Record
-  # URL : user/create/{user:name}[?field=value-tuplet[&...]]
+  # URL : manage/user/create/{user:name}[?field=value-tuplet[&...]]
   #
   create:
-    inherit: 'user:default'
+    inherit: 'user:manage'
     action: create
     key: 'user:name'
     parameters:
@@ -37,11 +39,11 @@ user:
   #
   # Read User Record
   # URL : 
-  # - user/read/{user:id}   or
-  # - user/read/{user:name}
+  # - manage/user/read/{user:id}   or
+  # - manage/user/read/{user:name}
   #
   read:    
-    inherit: 'user:default'
+    inherit: 'user:manage'
     action: read
     keys:
       - 'user:id'
@@ -52,11 +54,11 @@ user:
   #
   # Update User Record
   # URL : 
-  # - user/update/{user:id}?field=value-tuplet[&...]   or
-  # - user/update/{user:name}?field=value-tuplet[&...]
+  # - manage/user/update/{user:id}?field=value-tuplet[&...]   or
+  # - manage/user/update/{user:name}?field=value-tuplet[&...]
   #
   update:
-    inherit: 'user:default'
+    inherit: 'user:manage'
     action: update
     keys:
       - 'user:id'
@@ -68,11 +70,11 @@ user:
   #
   # Update User Password
   # URL : 
-  # - user/update/{user:id}?password=value   or
-  # - user/update/{user:name}?password=value
+  # - manage/user/update/{user:id}?password=value   or
+  # - manage/user/update/{user:name}?password=value
   #
   update-password:
-    inherit: 'user:default'
+    inherit: 'user:manage'
     action: update
     keys:
       - 'user:id'
@@ -84,11 +86,11 @@ user:
   #
   # Delete User Record
   # URL : 
-  # - user/delete/{user:id}   or
-  # - user/delete/{user:name}
+  # - manage/user/delete/{user:id}   or
+  # - manage/user/delete/{user:name}
   #
   delete:
-    inherit: 'user:default'
+    inherit: 'user:manage'
     action: delete
     keys:
       - 'user:id'
@@ -98,21 +100,27 @@ user:
   #
   # List User Records
   # URL : 
-  # - user/list[?field=value-tuplet[&...]]
+  # - manage/users/list[?field=value-tuplet[&...]]
   #
   list: 
-    inherit: 'user:default'
+    inherit: 'user:manage'
+    service: 
+      - manage
+      - users
     action: list
     parameters: 
       allow: ['virtual:filter','virtual:sort','virtual:limit']
   #
   # Count User Records
   # URL : 
-  # - user/count[?field=value-tuplet[&...]]
+  # - manage/users/count[?field=value-tuplet[&...]]
   #
   count:
-    inherit: 'user:default'
+    inherit: 'user:manage'
+    service: 
+      - manage
+      - users
     action: count
     parameters:
-      allow: ['virtual:filter','virtual:sort','virtual:limit']
+      allow: ['virtual:filter']
     

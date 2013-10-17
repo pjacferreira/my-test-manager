@@ -22,11 +22,11 @@ namespace TestCenter\ModelBundle\Repository;
 use Doctrine\ORM\EntityRepository;
 
 /**
- * Description of TestSetLinkRepository
+ * Description of SetTestRepository
  *
  * @author Paulo Ferreira
  */
-class TestSetLinkRepository
+class SetTestRepository
   extends EntityRepository {
 
   /**
@@ -39,7 +39,7 @@ class TestSetLinkRepository
     assert('isset($set) && is_object($set)');
     assert('isset($sequence) && is_integer($sequence) && ($sequence > 0)');
 
-    return $this->findOneBy(array('testset' => $set, 'sequence' => $sequence));
+    return $this->findOneBy(array('set' => $set, 'sequence' => $sequence));
   }
 
   /**
@@ -52,7 +52,7 @@ class TestSetLinkRepository
     assert('isset($set) && is_object($set)');
     assert('isset($test) && is_object($test)');
 
-    return $this->findOneBy(array('testset' => $set, 'test' => $test));
+    return $this->findOneBy(array('set' => $set, 'test' => $test));
   }
 
   /**
@@ -114,27 +114,27 @@ class TestSetLinkRepository
   /**
    * 
    * @param type $set
-   * @param type $testseq
+   * @param type $sequence
    * @return boolean
    * @throws \Exception
    */
-  public function removeLink($set, $testseq) {
+  public function removeLink($set, $sequence) {
     assert('isset($set) && is_object($set)');
-    assert('isset($testseq) && (is_object($testseq) || (is_integer($testseq) && ($testseq > 0)))');
+    assert('isset($sequence) && (is_object($sequence) || (is_integer($sequence) && ($sequence > 0)))');
 
     // Find the Link to Remove
-    if (is_integer($testseq)) {
-      $link = $this->findBySequence($set, $testseq);
+    if (is_integer($sequence)) {
+      $link = $this->findBySequence($set, $sequence);
     } else {
-      $link = $this->findByTest($set, $testseq);
+      $link = $this->findByTest($set, $sequence);
     }
 
     // Throw Exception if We Don't Find the Link
     if (!isset($link)) {
-      if (is_integer($testseq)) {
-        throw new \Exception("There is no Test with Sequence #[$testseq] in the Test Set [{$set->getId()}].", 3);
+      if (is_integer($sequence)) {
+        throw new \Exception("There is no Test with Sequence #[$sequence] in the Test Set [{$set->getId()}].", 3);
       } else {
-        throw new \Exception("Test[{$testseq->getId()}] is not part of the Test Set [{$set->getId()}].", 3);
+        throw new \Exception("Test[{$sequence->getId()}] is not part of the Test Set [{$set->getId()}].", 3);
       }
     }
 
@@ -148,29 +148,29 @@ class TestSetLinkRepository
   /**
    * 
    * @param type $set
-   * @param type $testseq
+   * @param type $sequence
    * @param type $to
    * @return boolean
    * @throws \Exception
    */
-  public function moveLink($set, $testseq, $to) {
+  public function moveLink($set, $sequence, $to) {
     assert('isset($set) && is_object($set)');
-    assert('isset($testseq) && (is_object($testseq) || (is_integer($testseq) && ($testseq > 0)))');
+    assert('isset($sequence) && (is_object($sequence) || (is_integer($sequence) && ($sequence > 0)))');
     assert('isset($to) && is_integer($to) && ($to > 0)');
 
     // Find the Link to Move
-    if (is_integer($testseq)) {
-      $link = $this->findBySequence($set, $testseq);
+    if (is_integer($sequence)) {
+      $link = $this->findBySequence($set, $sequence);
     } else {
-      $link = $this->findByTest($set, $testseq);
+      $link = $this->findByTest($set, $sequence);
     }
 
     // Throw Exception if We Don't Find the Link
     if (!isset($link)) {
-      if (is_integer($testseq)) {
-        throw new \Exception("There is no Test with Sequence #[$testseq] in the Test Set [{$set->getId()}].", 3);
+      if (is_integer($sequence)) {
+        throw new \Exception("There is no Test with Sequence #[$sequence] in the Test Set [{$set->getId()}].", 3);
       } else {
-        throw new \Exception("Test[{$testseq->getId()}] is not part of the Test Set [{$set->getId()}].", 3);
+        throw new \Exception("Test[{$sequence->getId()}] is not part of the Test Set [{$set->getId()}].", 3);
       }
     }
 
@@ -220,39 +220,6 @@ class TestSetLinkRepository
    * @param type $set
    * @return type
    */
-  public function listLinks($set) {
-    assert('isset($set) && is_object($set)');
-
-    return $this->findBy(array('testset' => $set), array('sequence' => 'ASC'));
-  }
-
-  /**
-   * 
-   * @param type $set
-   * @return type
-   */
-  public function countLinks($set) {
-    assert('isset($set) && is_object($set)');
-
-    // Build Query
-    $sql = 'SELECT count(e) ' .
-      " FROM {$this->getEntityName()} e  " .
-      ' WHERE e.testset = ?1';
-
-    $query = $this->getEntityManager()->createQuery($sql);
-
-    // Set Query Parameters
-    $query->setParameter(1, $set);
-
-    $count = $query->getScalarResult();
-    return (integer) $count[0][1];
-  }
-
-  /**
-   * 
-   * @param type $set
-   * @return type
-   */
   public function removeAllLinksTo($set) {
     assert('isset($set) && is_object($set)');
 
@@ -277,7 +244,7 @@ class TestSetLinkRepository
     assert('isset($set) && is_object($set)');
 
     // Create Filter Condition
-    $_filter = array('testset' => $set);
+    $_filter = array('set' => $set);
 
     // Find Results
     return $this->findBy($_filter, array('id' => 'ASC'));

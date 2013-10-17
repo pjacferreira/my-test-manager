@@ -15,10 +15,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ##
-# Organization Entity (Properties Metadata)
+# SetTest Entity (Properties Metadata)
 ##
-
-organization:
+settest:
   default: 
     inherit: default
     data-direction: both
@@ -26,57 +25,36 @@ organization:
     inherit: default:key
     data-direction: in
     label: ID
-    description: Unique Organization Identifier
+    description: Unique Entry Identifier
     value: 
       type: integer
       auto: true
-  name:
-    inherit: organization:default
-    key: true
-    label: Name
-    description: Unique Organization Name
-  description:
-    inherit: organization:default
-    label: Description
-    description: Organization Information
-    value: 
-      type: html
-  creator:
+  set:
     inherit: ':reference'
-    label: Creator
-    description: User that created this organization
-    value: 
-      auto: true
-      nullable: false
-    reference:
-      object: user
-      key: user:id
-    display:
-      field: 'user:name'
-  date_created:
-    inherit: user:default
-    label: Created
-    description: User Password
-    value: 
-      type: datetime
-      auto: true
-      nullable: false
-  last_modifier:
-    inherit: ':reference'
-    label: Last Modifier
-    description: User that last modified this organization
+    label: Set
+    description: Set Associated with Entry
     value: 
       auto: true
     reference:
-      object: user
-      key: user:id
+      object: set
+      key: set:id
     display:
-      field: 'user:name'
-  date_modified:
-    inherit: user:default
-    label: Last Modified
-    description: Last Modification Date
+      field: 'set:name'
+  sequence: 
+    inherit: settest:default
+    label: Sequence
+    description: Test Sequence Number in Set
     value: 
-      type: datetime
+      type: integer
+  test:
+    inherit: ':reference'
+    label: Test
+    description: Test Associated with Entry
+    value: 
       auto: true
+    reference:
+      object: test
+      key: test:id
+    display:
+      field: 'test:name'
     

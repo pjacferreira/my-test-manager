@@ -29,7 +29,7 @@ use Doctrine\ORM\Mapping as ORM;
  * 
  * @author Paulo Ferreira
  */
-class Run {
+class Run extends AbstractEntity {
 
   /**
    * @var integer $id
@@ -41,43 +41,30 @@ class Run {
   private $id;
 
   /**
-   * @var string $name
-   *
-   * @ORM\Column(name="name", type="string", length=60)
-   */
-  private $name;
-
-  /**
    * @ORM\ManyToOne(targetEntity="Project")
    * @ORM\JoinColumn(name="id_project", referencedColumnName="id")
    * */
   private $project;
 
   /**
-   * @ORM\ManyToOne(targetEntity="TestSet")
-   * @ORM\JoinColumn(name="id_testset", referencedColumnName="id")
+   * @ORM\ManyToOne(targetEntity="Set")
+   * @ORM\JoinColumn(name="id_set", referencedColumnName="id")
    * */
-  private $testset;
+  private $set;
 
   /**
-   * @ORM\ManyToOne(targetEntity="User")
-   * @ORM\JoinColumn(name="id_owner", referencedColumnName="id")
-   * */
-  private $user;
-
-  /**
-   * @var integer $state
+   * @var string $group
    *
-   * @ORM\Column(name="state", type="integer")
+   * @ORM\Column(name="run_group", type="string", length=60, nullable=true)
    */
-  private $state;
+  private $group;
 
   /**
-   * @var integer $sequence
+   * @var string $name
    *
-   * @ORM\Column(name="cur_sequence", type="integer")
+   * @ORM\Column(name="name", type="string", length=60)
    */
-  private $sequence;
+  private $name;
 
   /**
    * @var text $description
@@ -87,31 +74,355 @@ class Run {
   private $description;
 
   /**
+   * @var boolean $open
+   *
+   * @ORM\Column(name="open", type="boolean")
+   */
+  private $is_open;
+
+  /**
+   * @var integer $state
+   *
+   * @ORM\Column(name="state", type="integer")
+   */
+  private $state;
+
+  /**
+   * @var integer $state_code
+   *
+   * @ORM\Column(name="state_code", type="integer")
+   */
+  private $state_code;
+
+  /**
+   * @ORM\ManyToOne(targetEntity="PlayList")
+   * @ORM\JoinColumn(name="id_playlist_pos", referencedColumnName="id")
+   * */
+  private $playlist_position;
+
+  /**
+   * @ORM\ManyToOne(targetEntity="User")
+   * @ORM\JoinColumn(name="id_creator", referencedColumnName="id")
+   */
+  private $creator;
+
+  /**
+   * @var datetime $date_created
+   *
+   * @ORM\Column(name="dt_creation", type="datetime")
+   */
+  protected $date_created;
+
+  /**
+   * @ORM\ManyToOne(targetEntity="User")
+   * @ORM\JoinColumn(name="id_modifier", referencedColumnName="id", nullable=true)
+   */
+  private $last_modifier;
+
+  /**
+   * @var datetime $date_modified
+   *
+   * @ORM\Column(name="dt_modified", type="datetime", nullable=true)
+   */
+  protected $date_modified;
+
+  /**
+   * @ORM\ManyToOne(targetEntity="User")
+   * @ORM\JoinColumn(name="id_owner", referencedColumnName="id")
+   */
+  private $owner;
+
+  /**
    *
    */
   public function __construct() {
+    $this->is_open = true;
     $this->state = 0;
     $this->state_code = 0;
-    $this->sequence = -1;
+    $this->date_created = new \DateTime();
+  }
+
+  /**
+   * Get id
+   *
+   * @return integer 
+   */
+  public function getId() {
+    return $this->id;
+  }
+
+  /**
+   * Get project
+   *
+   * @return TestCenter\ModelBundle\Entity\Project 
+   */
+  public function getProject() {
+    return $this->project;
+  }
+
+  /**
+   * Set project
+   *
+   * @param TestCenter\ModelBundle\Entity\Project $project
+   */
+  public function setProject(\TestCenter\ModelBundle\Entity\Project $project) {
+    $this->project = $project;
+  }
+
+  /**
+   * Get testset
+   *
+   * @return TestCenter\ModelBundle\Entity\Set 
+   */
+  public function getSet() {
+    return $this->set;
+  }
+
+  /**
+   * Set testset
+   *
+   * @param TestCenter\ModelBundle\Entity\Set $set
+   */
+  public function setTestset(\TestCenter\ModelBundle\Entity\Set $set) {
+    $this->set = $set;
+  }
+
+  /**
+   * Get group
+   *
+   * @return string 
+   */
+  public function getGroup() {
+    return $this->group;
+  }
+
+  /**
+   * Set group
+   *
+   * @param string $group
+   */
+  public function setGroup($group) {
+    $this->group = $group;
+  }
+
+  /**
+   * Get name
+   *
+   * @return string 
+   */
+  public function getName() {
+    return $this->name;
+  }
+
+  /**
+   * Set name
+   *
+   * @param string $name
+   */
+  public function setName($name) {
+    $this->name = $name;
+  }
+
+  /**
+   * Set description
+   *
+   * @param text $description
+   */
+  public function setDescription($description) {
+    $this->description = $description;
+  }
+
+  /**
+   * Get description
+   *
+   * @return text 
+   */
+  public function getDescription() {
+    return $this->description;
+  }
+
+  /**
+   * Get is_open
+   *
+   * @return boolean 
+   */
+  public function getIsOpen() {
+    return $this->is_open;
+  }
+
+  /**
+   * Set is_open
+   *
+   * @param boolean $isOpen
+   */
+  public function setIsOpen($isOpen) {
+    $this->is_open = $isOpen;
+  }
+
+  /**
+   * Get state
+   *
+   * @return integer 
+   */
+  public function getState() {
+    return $this->state;
+  }
+
+  /**
+   * Set state
+   *
+   * @param integer $state
+   */
+  public function setState($state) {
+    $this->state = $state;
+  }
+
+  /**
+   * Get state_code
+   *
+   * @return integer 
+   */
+  public function getStateCode() {
+    return $this->state_code;
+  }
+
+  /**
+   * Set state_code
+   *
+   * @param integer $stateCode
+   */
+  public function setStateCode($stateCode) {
+    $this->state_code = $stateCode;
+  }
+
+  /**
+   * Get Current Play List Posi
+   * @return TestCenter\ModelBundle\Entity\PlayList 
+   */
+  public function getPlaylistPosition() {
+    return $this->playlist_position;
+  }
+
+  /**
+   * Set Current Play List Position
+   *
+   * @param TestCenter\ModelBundle\Entity\PlayList $position
+   */
+  public function setPlaylistPosition(\TestCenter\ModelBundle\Entity\User $position) {
+    $this->playlist_position = $position;
+  }
+
+  /**
+   * Get creator
+   *
+   * @return TestCenter\ModelBundle\Entity\User 
+   */
+  public function getCreator() {
+    return $this->creator;
+  }
+
+  /**
+   * Set creator
+   *
+   * @param TestCenter\ModelBundle\Entity\User $creator
+   */
+  public function setCreator(\TestCenter\ModelBundle\Entity\User $creator) {
+    $this->creator = $creator;
+  }
+
+  /**
+   * Get date_created
+   *
+   * @return datetime 
+   */
+  public function getDateCreated() {
+    return $this->date_created;
+  }
+
+  /**
+   * Set date_created
+   *
+   * @param datetime $dateCreated
+   */
+  public function setDateCreated($dateCreated) {
+    $this->date_created = $dateCreated;
+  }
+
+  /**
+   * Get last_modifier
+   *
+   * @return TestCenter\ModelBundle\Entity\User 
+   */
+  public function getLastModifier() {
+    return $this->last_modifier;
+  }
+
+  /**
+   * Set last_modifier
+   *
+   * @param TestCenter\ModelBundle\Entity\User $lastModifier
+   */
+  public function setLastModifier(\TestCenter\ModelBundle\Entity\User $lastModifier) {
+    $this->last_modifier = $lastModifier;
+  }
+
+  /**
+   * Get date_modified
+   *
+   * @return datetime 
+   */
+  public function getDateModified() {
+    return $this->date_modified;
+  }
+
+  /**
+   * Set date_modified
+   *
+   * @param datetime $dateModified
+   */
+  public function setDateModified($dateModified) {
+    $this->date_modified = $dateModified;
+  }
+
+  /**
+   * Get owner
+   *
+   * @return TestCenter\ModelBundle\Entity\User 
+   */
+  public function getOwner() {
+    return $this->owner;
+  }
+
+  /**
+   * Set owner
+   *
+   * @param TestCenter\ModelBundle\Entity\User $owner
+   */
+  public function setOwner(\TestCenter\ModelBundle\Entity\User $owner) {
+    $this->owner = $owner;
   }
 
   /**
    * @return array
    */
   public function toArray() {
-    $array = array(
-      'id' => $this->id,
-      'name' => $this->name,
-      'project' => $this->project->getID(),
-      'testset' => $this->testset->getID(),
-      'user' => $this->user->getID(),
-      'state' => $this->state,
-      'sequence' => $this->sequence
-    );
+    $array = parent::toArray();
 
-    if (isset($this->description)) { // If Description Set - Add it
-      $array['description'] = $this->description;
-    }
+    $array = $this->addProperty($array, 'id');
+    $array = $this->addReferencePropertyIfNotNull($array, 'project');
+    $array = $this->addReferencePropertyIfNotNull($array, 'set');
+    $array = $this->addPropertyIfNotNull($array, 'group');
+    $array = $this->addProperty($array, 'name');
+    $array = $this->addPropertyIfNotNull($array, 'description');
+    $array = $this->addProperty($array, 'is_open');
+    $array = $this->addProperty($array, 'state');
+    $array = $this->addProperty($array, 'state_code');
+    $array = $this->addReferencePropertyIfNotNull($array, 'playlist_position');
+    $array = $this->addReferencePropertyIfNotNull($array, 'creator');
+    $array = $this->addProperty($array, 'date_created');
+    $array = $this->addReferencePropertyIfNotNull($array, 'last_modifier');
+    $array = $this->addPropertyIfNotNull($array, 'date_modified');
+    $array = $this->addReferencePropertyIfNotNull($array, 'owner');
 
     return $array;
   }
@@ -123,154 +434,23 @@ class Run {
     return strval($this->id);
   }
 
+  /**
+   * 
+   * @return type
+   */
+  protected function entityName() {
+    $i = strlen(__NAMESPACE__);
+    return substr(__CLASS__, $i + 1);
+  }
+
 
     /**
-     * Get id
+     * Set set
      *
-     * @return integer 
+     * @param TestCenter\ModelBundle\Entity\Set $set
      */
-    public function getId()
+    public function setSet(\TestCenter\ModelBundle\Entity\Set $set)
     {
-        return $this->id;
-    }
-
-    /**
-     * Set name
-     *
-     * @param string $name
-     */
-    public function setName($name)
-    {
-        $this->name = $name;
-    }
-
-    /**
-     * Get name
-     *
-     * @return string 
-     */
-    public function getName()
-    {
-        return $this->name;
-    }
-
-    /**
-     * Set state
-     *
-     * @param integer $state
-     */
-    public function setState($state)
-    {
-        $this->state = $state;
-    }
-
-    /**
-     * Get state
-     *
-     * @return integer 
-     */
-    public function getState()
-    {
-        return $this->state;
-    }
-
-    /**
-     * Set sequence
-     *
-     * @param integer $sequence
-     */
-    public function setSequence($sequence)
-    {
-        $this->sequence = $sequence;
-    }
-
-    /**
-     * Get sequence
-     *
-     * @return integer 
-     */
-    public function getSequence()
-    {
-        return $this->sequence;
-    }
-
-    /**
-     * Set description
-     *
-     * @param text $description
-     */
-    public function setDescription($description)
-    {
-        $this->description = $description;
-    }
-
-    /**
-     * Get description
-     *
-     * @return text 
-     */
-    public function getDescription()
-    {
-        return $this->description;
-    }
-
-    /**
-     * Set project
-     *
-     * @param TestCenter\ModelBundle\Entity\Project $project
-     */
-    public function setProject(\TestCenter\ModelBundle\Entity\Project $project)
-    {
-        $this->project = $project;
-    }
-
-    /**
-     * Get project
-     *
-     * @return TestCenter\ModelBundle\Entity\Project 
-     */
-    public function getProject()
-    {
-        return $this->project;
-    }
-
-    /**
-     * Set testset
-     *
-     * @param TestCenter\ModelBundle\Entity\TestSet $testset
-     */
-    public function setTestset(\TestCenter\ModelBundle\Entity\TestSet $testset)
-    {
-        $this->testset = $testset;
-    }
-
-    /**
-     * Get testset
-     *
-     * @return TestCenter\ModelBundle\Entity\TestSet 
-     */
-    public function getTestset()
-    {
-        return $this->testset;
-    }
-
-    /**
-     * Set user
-     *
-     * @param TestCenter\ModelBundle\Entity\User $user
-     */
-    public function setUser(\TestCenter\ModelBundle\Entity\User $user)
-    {
-        $this->user = $user;
-    }
-
-    /**
-     * Get user
-     *
-     * @return TestCenter\ModelBundle\Entity\User 
-     */
-    public function getUser()
-    {
-        return $this->user;
+        $this->set = $set;
     }
 }

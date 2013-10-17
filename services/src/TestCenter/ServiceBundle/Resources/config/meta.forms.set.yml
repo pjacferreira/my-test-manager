@@ -1,0 +1,82 @@
+# Test Center - Compliance Testing Application
+# Copyright (C) 2012 - 2013 Paulo Ferreira <pf at sourcenotes.org>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+##
+# Test Set Entity Forms (Metadata Model)
+##
+set:
+  #
+  # Default Test Set FORM (Model)
+  #
+  default:
+    inherit: default
+    title: Test Set
+    fields: 
+      'Information': ['set:id']
+      'Grouping': ['set:group', 'set:name']
+      'Description': ['set:description']
+    services:
+      create: 'set:create'
+      read: 'set:read'
+      update: 'set:update'
+  #
+  # Create Test Set Form
+  #
+  create:
+    inherit: 'set:default'
+    title: Create Test Set
+  #
+  # Test Set Details Form
+  #
+  read:
+    inherit: 'set:default'
+    title: Test Set Details
+    services:
+      create: ~
+      update: ~
+  #
+  # Test Set Update Form
+  #
+  update:
+    inherit: 'set:default'
+    title: Modify Test Set
+    services:
+      create: ~
+  #
+  # Test Set Modify State
+  #
+  modify_state:
+    inherit: 'set:default'
+    title: Modify Test Set's State
+    fields: 
+      'Information': ['set:id']
+      'Grouping': ['set:group', 'set:name']
+      'State': ['set:state']
+    services:
+      update: 'set:modify_state'
+
+  #
+  # Test Set Modify Owner
+  #
+  modify_owner:
+    inherit: 'set:default'
+    title: Modify Test Set's Owner
+    fields: 
+      'Information': ['set:id']
+      'Grouping': ['set:group', 'set:name']
+      'Owner': ['user:id']
+    services:
+      update: 'set:modify_owner'

@@ -15,10 +15,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ##
-# Organization Entity (Properties Metadata)
+# Test Entity (Properties Metadata)
 ##
 
-organization:
+test:
   default: 
     inherit: default
     data-direction: both
@@ -26,25 +26,46 @@ organization:
     inherit: default:key
     data-direction: in
     label: ID
-    description: Unique Organization Identifier
+    description: Unique Test Identifier
     value: 
       type: integer
       auto: true
+  project:
+    inherit: ':reference'
+    label: Project
+    description: Project the Test Belongs To
+    value: 
+      auto: true
+    reference:
+      object: project
+      key: project:id
+    display:
+      field: 'project:name'
   name:
-    inherit: organization:default
+    inherit: test:default
     key: true
     label: Name
-    description: Unique Organization Name
+    description: Unique Test Name
+  group:
+    inherit: test:default
+    label: Group
+    description: Group the Test Belongs To
   description:
-    inherit: organization:default
+    inherit: project:default
     label: Description
-    description: Organization Information
+    description: Test Description
     value: 
       type: html
+  state: 
+    inherit: test:default
+    label: State
+    description: Current Test Readiness State
+    value: 
+      type: integer
   creator:
     inherit: ':reference'
     label: Creator
-    description: User that created this organization
+    description: User that created this Test
     value: 
       auto: true
       nullable: false
@@ -56,7 +77,7 @@ organization:
   date_created:
     inherit: user:default
     label: Created
-    description: User Password
+    description: Creation Date
     value: 
       type: datetime
       auto: true
@@ -64,7 +85,7 @@ organization:
   last_modifier:
     inherit: ':reference'
     label: Last Modifier
-    description: User that last modified this organization
+    description: User that last modified this Test
     value: 
       auto: true
     reference:
@@ -79,4 +100,15 @@ organization:
     value: 
       type: datetime
       auto: true
+  owner:
+    inherit: ':reference'
+    label: Owner
+    description: User the owns the Test
+    value: 
+      auto: true
+    reference:
+      object: user
+      key: user:id
+    display:
+      field: 'user:name'
     
