@@ -18,42 +18,34 @@
 # Test Step Entity (Properties Metadata)
 ##
 step:
-  default: 
-    inherit: default
-    data-direction: both
   id: 
-    inherit: default:key
+    inherit: ':key_sequence'
     data-direction: in
     label: ID
     description: Unique Step Identifier
-    value: 
-      type: integer
-      auto: true
   test:
     inherit: ':reference'
     label: Test
-    description: TEst the Step Belongs To
-    value: 
-      auto: true
+    description: Test the Step Belongs To
     reference:
       object: test
       key: test:id
     display:
       field: 'test:name'
   sequence: 
-    inherit: default:default
+    inherit: ':required'
     label: Sequence
     description: Step Sequence Number in Test
     value: 
       type: integer
   name:
-    inherit: step:default
+    inherit: ':required'
     label: Name
     description: Step Name
   description:
-    inherit: project:default
+    inherit: default
     label: Description
-    description: Project Information
+    description: Step Information
     value: 
       type: html
     

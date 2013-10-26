@@ -121,7 +121,7 @@ project:
   # URL : 
   # - session/org/projects/list[?field=value-tuplet[&...]]
   #
-  user_org_list: 
+  list_user_org: 
     inherit: 'project:list'
     service: 
       - session
@@ -132,10 +132,34 @@ project:
   # URL : 
   # - session/org/projects/count[?field=value-tuplet[&...]]
   #
-  user_org_count:
+  count_user_org:
     inherit: 'project:count'
     service: 
       - session
       - org
       - projects
+  #
+  # List Users for the Sepcified Project
+  # URL : 
+  # - manage/project/users/list[?field=value-tuplet[&...]]
+  #
+  list_users: 
+    inherit: 'project:list'
+    keys:
+      - 'project:id'
+    service: 
+      - manage
+      - project
+      - users
+    action: list
+    parameters: 
+      allow: ['virtual:filter','virtual:sort','virtual:limit']
+  #
+  # Count Users for the Sepcified Project
+  # URL : 
+  # - manage/project/users/count[?field=value-tuplet[&...]]
+  #
+  count_users:
+    inherit: 'project:list_users'
+    action: count
       

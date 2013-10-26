@@ -17,19 +17,12 @@
 ##
 # Set Entity (Properties Metadata)
 ##
-
 set:
-  default: 
-    inherit: default
-    data-direction: both
   id: 
-    inherit: default:key
+    inherit: ':key_sequence'
     data-direction: in
     label: ID
     description: Unique Test Set Identifier
-    value: 
-      type: integer
-      auto: true
   project:
     inherit: ':reference'
     label: Project
@@ -42,12 +35,11 @@ set:
     display:
       field: 'project:name'
   name:
-    inherit: set:default
-    key: true
+    inherit: ':key'
     label: Name
     description: Unique Test Set Name
   group:
-    inherit: set:default
+    inherit: default
     label: Group
     description: Group the Test Set Belongs To
   description:
@@ -57,7 +49,7 @@ set:
     value: 
       type: html
   state: 
-    inherit: set:default
+    inherit: ':required'
     label: State
     description: Current Set Readiness State
     value: 
@@ -75,7 +67,7 @@ set:
     display:
       field: 'user:name'
   date_created:
-    inherit: user:default
+    inherit: ':required'
     label: Created
     description: Creation Date
     value: 
@@ -94,7 +86,7 @@ set:
     display:
       field: 'user:name'
   date_modified:
-    inherit: user:default
+    inherit: default
     label: Last Modified
     description: Last Modification Date
     value: 

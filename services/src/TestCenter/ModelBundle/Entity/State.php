@@ -1,7 +1,7 @@
 <?php
 
 /* Test Center - Compliance Testing Application
- * Copyright (C) 2012 Paulo Ferreira <pf at sourcenotes.org>
+ * Copyright (C) 2013 Paulo Ferreira <pf at sourcenotes.org>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -24,12 +24,12 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * TestCenter\ModelBundle\Entity\Set
  *
- * @ORM\Table(name="t_sets")
- * @ORM\Entity(repositoryClass="TestCenter\ModelBundle\Repository\SetRepository")
+ * @ORM\Table(name="t_states")
+ * @ORM\Entity(repositoryClass="TestCenter\ModelBundle\Repository\StateRepository")
  * 
  * @author Paulo Ferreira
  */
-class Set extends AbstractEntity {
+class State extends AbstractEntity {
 
   /**
    * @var integer $id
@@ -41,38 +41,35 @@ class Set extends AbstractEntity {
   private $id;
 
   /**
-   * @ORM\ManyToOne(targetEntity="Project")
-   * @ORM\JoinColumn(name="id_project", referencedColumnName="id")
-   * */
-  private $project;
-
-  /**
-   * @var string $group
+   * @var integer $type
    *
-   * @ORM\Column(name="set_group", type="string", length=60, nullable=true)
+   * @ORM\Column(name="type", type="integer")
    */
-  private $group;
-
-  /**
-   * @var string $name
-   *
-   * @ORM\Column(name="name", type="string", length=60)
-   */
-  private $name;
-
-  /**
-   * @var text $description
-   *
-   * @ORM\Column(name="description", type="text", nullable=true)
-   */
-  private $description;
+  private $type;
 
   /**
    * @var integer $state
+   * 
+   * NOTE: state, must be unique, per type (i.e. a unique index is required to
+   * link the type and state)
    *
    * @ORM\Column(name="state", type="integer")
    */
   private $state;
+
+  /**
+   * @var text $s_description
+   *
+   * @ORM\Column(name="s_description", type="string", length=80)
+   */
+  protected $s_description;
+
+  /**
+   * @var text $l_description
+   *
+   * @ORM\Column(name="l_description", type="text", nullable=true)
+   */
+  protected $l_description;
 
   /**
    * @ORM\ManyToOne(targetEntity="User")
@@ -101,16 +98,6 @@ class Set extends AbstractEntity {
   protected $date_modified;
 
   /**
-   * @ORM\ManyToOne(targetEntity="User")
-   * @ORM\JoinColumn(name="id_owner", referencedColumnName="id")
-   */
-  private $owner;
-
-  public function __construct() {
-    $this->date_created = new \DateTime();
-  }
-
-  /**
    * Get id
    *
    * @return integer 
@@ -120,75 +107,21 @@ class Set extends AbstractEntity {
   }
 
   /**
-   * Get project
+   * Get type
    *
-   * @return TestCenter\ModelBundle\Entity\Project 
+   * @return integer 
    */
-  public function getProject() {
-    return $this->project;
+  public function getType() {
+    return $this->type;
   }
 
   /**
-   * Set project
+   * Set type
    *
-   * @param TestCenter\ModelBundle\Entity\Project $project
+   * @param integer $type
    */
-  public function setProject(\TestCenter\ModelBundle\Entity\Project $project) {
-    $this->project = $project;
-  }
-
-  /**
-   * Get group
-   *
-   * @return string 
-   */
-  public function getGroup() {
-    return $this->group;
-  }
-
-  /**
-   * Set group
-   *
-   * @param string $group
-   */
-  public function setGroup($group) {
-    $this->group = $group;
-  }
-
-  /**
-   * Get name
-   *
-   * @return string 
-   */
-  public function getName() {
-    return $this->name;
-  }
-
-  /**
-   * Set name
-   *
-   * @param string $name
-   */
-  public function setName($name) {
-    $this->name = $name;
-  }
-
-  /**
-   * Get description
-   *
-   * @return text 
-   */
-  public function getDescription() {
-    return $this->description;
-  }
-
-  /**
-   * Set description
-   *
-   * @param text $description
-   */
-  public function setDescription($description) {
-    $this->description = $description;
+  public function setType($type) {
+    $this->type = $type;
   }
 
   /**
@@ -207,6 +140,42 @@ class Set extends AbstractEntity {
    */
   public function setState($state) {
     $this->state = $state;
+  }
+
+  /**
+   * Get s_description
+   *
+   * @return string 
+   */
+  public function getSDescription() {
+    return $this->s_description;
+  }
+
+  /**
+   * Set s_description
+   *
+   * @param string $sDescription
+   */
+  public function setSDescription($sDescription) {
+    $this->s_description = $sDescription;
+  }
+
+  /**
+   * Get l_description
+   *
+   * @return text 
+   */
+  public function getLDescription() {
+    return $this->l_description;
+  }
+
+  /**
+   * Set l_description
+   *
+   * @param text $lDescription
+   */
+  public function setLDescription($lDescription) {
+    $this->l_description = $lDescription;
   }
 
   /**
@@ -282,40 +251,20 @@ class Set extends AbstractEntity {
   }
 
   /**
-   * Get owner
-   *
-   * @return TestCenter\ModelBundle\Entity\User 
-   */
-  public function getOwner() {
-    return $this->owner;
-  }
-
-  /**
-   * Set owner
-   *
-   * @param TestCenter\ModelBundle\Entity\User $owner
-   */
-  public function setOwner(\TestCenter\ModelBundle\Entity\User $owner) {
-    $this->owner = $owner;
-  }
-
-  /**
    * @return array
    */
   public function toArray() {
     $array = parent::toArray();
 
     $array = $this->addProperty($array, 'id');
-    $array = $this->addReferencePropertyIfNotNull($array, 'project');
-    $array = $this->addProperty($array, 'name');
-    $array = $this->addPropertyIfNotNull($array, 'group');
-    $array = $this->addPropertyIfNotNull($array, 'description');
+    $array = $this->addProperty($array, 'type');
     $array = $this->addProperty($array, 'state');
+    $array = $this->addProperty($array, 's_description');
+    $array = $this->addPropertyIfNotNull($array, 'l_description');
     $array = $this->addReferencePropertyIfNotNull($array, 'creator');
     $array = $this->addProperty($array, 'date_created');
     $array = $this->addReferencePropertyIfNotNull($array, 'last_modifier');
     $array = $this->addPropertyIfNotNull($array, 'date_modified');
-    $array = $this->addReferencePropertyIfNotNull($array, 'owner');
 
     return $array;
   }

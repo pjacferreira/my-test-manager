@@ -19,6 +19,19 @@
 ##
 sets:
   #
+  # List All Tests for a Specific Set
+  #
+  tests:
+    inherit: default
+    services:
+      list: 'set:list'
+      count: 'set:count'
+    key: 'set:id'
+    display: 'set:name'
+    fields:
+      - 'set:id'
+      - 'set:name'
+  #
   # List All Tests for Current Session Project
   #
   project:
@@ -39,3 +52,29 @@ sets:
     services:
       list: 'set:user_set_list'
       count: 'set:user_set_count'
+  #
+  # List All Possible States for a Set
+  #
+  states:
+    inherit: default
+    key: ['state:state']
+    services:
+      list: 'state:list_states{2}'
+      count: 'state:count_states{2}'
+    display: 'state:s_description'
+    fields:
+      - 'state:state'
+      - 'state:s_description'
+  #
+  # List All Tests for a Set
+  #
+  tests:
+    inherit: default
+    key: ['set:id']
+    services:
+      list: 'set:list_tests({set:id})'
+      count: 'set:count_tests({set:id})'
+    display: 'settest:test\test:name'
+    fields:
+      - 'settest:sequence'
+      - 'settest:test\test:name'

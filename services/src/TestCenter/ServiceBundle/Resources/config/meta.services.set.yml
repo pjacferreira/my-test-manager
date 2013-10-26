@@ -138,7 +138,7 @@ set:
   # URL : 
   # - testing/sets/user/list[?field=value-tuplet[&...]]
   #
-  user_set_list: 
+  list_project_owned: 
     inherit: 'set:list'
     service: 
       - testing
@@ -149,9 +149,25 @@ set:
   # URL : 
   # - testing/sets/user/count[?field=value-tuplet[&...]]
   #
-  user_set_count:
-    inherit: 'set:count'
+  count_project_owned: 
+    inherit: 'set:list_project_owned'
+    action: count
+  # URL : 
+  # - testing/sets/user/list[?field=value-tuplet[&...]]
+  #
+  list_tests: 
+    inherit: default
+    key: 'set:id'
     service: 
       - testing
+      - set
       - tests
-      - user
+    action: list
+  #
+  # Count Test Sets for Current Session Project, Owned by the Current Session User
+  # URL : 
+  # - testing/sets/user/count[?field=value-tuplet[&...]]
+  #
+  count_tests: 
+    inherit: 'set:list_tests'
+    action: count

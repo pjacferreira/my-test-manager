@@ -19,64 +19,120 @@
 ##
 set:
   #
-  # Default Test Set FORM (Model)
+  # Base Test Set Details Form
   #
-  default:
+  details:
     inherit: default
-    title: Test Set
-    fields: 
+    title: Set Details
+    layout: 
       'Information': ['set:id']
       'Grouping': ['set:group', 'set:name']
       'Description': ['set:description']
+  #
+  # Create Test Set Details Form
+  #
+  create_details:
+    inherit: 'set:details'
     services:
       create: 'set:create'
+  #
+  # Display Test Set Details Form
+  #
+  display_details:
+    inherit: 'set:details'
+    in: 'set:id'
+    services:
       read: 'set:read'
+  #
+  # Modify Test Set Details Form
+  #
+  modify_details:
+    inherit: 'set:display_details'
+    services:
       update: 'set:update'
+  #
+  # Modify the Tests in a Set
+  #
+  modify_tests:
+    inherit: ':twolists'
+    in: 
+      - 'set:id' : ~
+    title: Modify Tests
+    lists: 
+      source: 'list\test:project'
+      destination: 'list\sets:tests'
+    options:
+      sortable: true
+      onlyone: true
+    services:
+      update:
+        - 'set:clear({set:id})'    
+        - 'set:add_list({set:id})'    
+  #
+  # Display Set Tests Form
+  #
+  display_tests:
+    inherit: default
+    in: 'set:id'       
+    title: Set Tests
+    layout: 'list\sets:tests'
   #
   # Create Test Set Form
   #
   create:
-    inherit: 'set:default'
+    inherit: ':tabbed'
     title: Create Test Set
+    tabs: 
+      - 'set:create_details': Details
+      - 'set:modify_tests' : Tests
   #
-  # Test Set Details Form
+  # Display Test Set Form
   #
   read:
-    inherit: 'set:default'
-    title: Test Set Details
-    services:
-      create: ~
-      update: ~
+    inherit: ':tabbed'
+    in: 'set:id'       
+    title: Set Details
+    tabs: 
+      - 'set:display_details': Details
+      - 'set:display_tests' : Tests
   #
-  # Test Set Update Form
+  # Update Test Set Form
   #
   update:
-    inherit: 'set:default'
+    inherit: ':tabbed'
+    in: 'set:id'       
     title: Modify Test Set
-    services:
-      create: ~
+    tabs: 
+      - 'set:modify_details': Details
+      - 'set:modify_tests' : Tests
   #
   # Test Set Modify State
   #
   modify_state:
     inherit: 'set:default'
+    in: 'set:id'       
     title: Modify Test Set's State
-    fields: 
+    layout:
       'Information': ['set:id']
       'Grouping': ['set:group', 'set:name']
-      'State': ['set:state']
+      'State': 'list\sets:list_states'
     services:
       update: 'set:modify_state'
-
+    field_map:
+      'set:state': 'state:state'
   #
   # Test Set Modify Owner
   #
   modify_owner:
     inherit: 'set:default'
+    in: 'set:id'       
     title: Modify Test Set's Owner
-    fields: 
+    layout:
       'Information': ['set:id']
       'Grouping': ['set:group', 'set:name']
-      'Owner': ['user:id']
+      'Owner': 'list\project:list_users'
     services:
       update: 'set:modify_owner'
+    field_map:
+      'set:owner\user:id':        'user:id'
+      'set:project\project:id':  'project:id'

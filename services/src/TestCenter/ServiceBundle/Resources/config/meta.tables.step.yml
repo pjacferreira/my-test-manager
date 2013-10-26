@@ -1,0 +1,80 @@
+# Test Center - Compliance Testing Application
+# Copyright (C) 2012 - 2013 Paulo Ferreira <pf at sourcenotes.org>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+##
+# Step Table (Metadata Model)
+##
+step:
+  #
+  # Default Steps Table (Model)
+  #
+  default:
+    inherit: default
+    in: 'test:id'
+    title: Steps List
+    fields:
+      - 'teststep:id'
+      - 'teststep:sequence'
+      - 'teststep:name'
+      - 'teststep:description'
+    columns:
+      - 'teststep:name'
+    options:
+      sequence: true
+      inmemory: true
+    icons:
+      create: 'step_create.png'
+      read:   'step_read.png'
+      update: 'step_update.png'
+      delete: 'step_delete.png'
+    services:
+      load: 'steps:list'
+      pre_flush: 'steps:clear'
+      flush_record: 'steps:create'
+  #
+  # User Management Table (Model)
+  #
+  manage:
+    inherit: 'step:default'
+    title: Steps Management
+    actions:
+      create:
+        label: 'New Step'
+        shortcut: 'CTRL+N'
+        icon: 'step_create.png'
+        form: 'test:step_modify'
+      read:
+        label: 'Step Details'
+        shortcut: 'CTRL+I'
+        icon: 'step_delete.png'
+        form: 'test:step_detail'
+      update:
+        label: 'Modify Step'
+        shortcut: 'CTRL+E'
+        icon: 'step_update.png'
+        form: 'test:step_modify'
+      delete:
+        label: 'Delete Step'
+        shortcut: 'CTRL+D'
+        icon: 'step_delete.png'
+      move_up:
+        label: 'Step Up'
+        shortcut: 'CTRL+D'
+        icon: 'table_sequence_up.png'
+      move_down:
+        label: 'Step Down'
+        shortcut: 'CTRL+D'
+        icon: 'table_sequence_down.png'

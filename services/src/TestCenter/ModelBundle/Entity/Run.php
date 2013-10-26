@@ -88,14 +88,21 @@ class Run extends AbstractEntity {
   private $state;
 
   /**
-   * @var integer $state_code
+   * @var integer $code
    *
    * @ORM\Column(name="state_code", type="integer")
    */
-  private $state_code;
+  private $code;
 
   /**
-   * @ORM\ManyToOne(targetEntity="PlayList")
+   * @var text $comment
+   *
+   * @ORM\Column(name="comment", type="text", nullable=true)
+   */
+  private $comment;
+  
+  /**
+   * @ORM\ManyToOne(targetEntity="PlayEntry")
    * @ORM\JoinColumn(name="id_playlist_pos", referencedColumnName="id")
    * */
   private $playlist_position;
@@ -278,7 +285,7 @@ class Run extends AbstractEntity {
   }
 
   /**
-   * Get state_code
+   * Get State Code
    *
    * @return integer 
    */
@@ -287,16 +294,34 @@ class Run extends AbstractEntity {
   }
 
   /**
-   * Set state_code
+   * Set Statee Code
    *
-   * @param integer $stateCode
+   * @param integer $code
    */
-  public function setStateCode($stateCode) {
-    $this->state_code = $stateCode;
+  public function setStateCode($code) {
+    $this->state_code = $code;
   }
 
   /**
-   * Get Current Play List Posi
+   * Get comment
+   *
+   * @return text 
+   */
+  public function getComment() {
+    return $this->comment;
+  }
+
+  /**
+   * Set comment
+   *
+   * @param text $comment
+   */
+  public function setComment($comment) {
+    $this->comment = $comment;
+  }
+  
+  /**
+   * Get Current Play List Position
    * @return TestCenter\ModelBundle\Entity\PlayList 
    */
   public function getPlaylistPosition() {

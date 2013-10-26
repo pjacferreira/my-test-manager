@@ -17,7 +17,7 @@
 ##
 # Test Lists Definition
 ##
-Test:
+tests:
   #
   # List All Tests for Current Session Project
   #
@@ -39,3 +39,16 @@ Test:
     services:
       list: 'test:user_test_list'
       count: 'test:user_test_count'
+  #
+  # List All Possible States for a Test
+  #
+  states:
+    inherit: default
+    key: ['state:state']
+    services:
+      list: 'state:list_states{1}'
+      count: 'state:count_states{1}'
+    display: 'state:s_description'
+    fields:
+      - 'state:state'
+      - 'state:s_description'

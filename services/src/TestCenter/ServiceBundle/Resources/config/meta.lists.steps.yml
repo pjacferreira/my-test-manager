@@ -17,18 +17,43 @@
 ##
 # Step Lists Definition
 ##
-Steps:
+steps:
   #
-  # List Steps for a Specified Test
+  # List All Steps for a Set
   #
-  all:
+  test:
     inherit: default
+    key: ['test:id']
     services:
-      list: 'steps:list'
-      count: 'steps:count'
-    key: ['test:id', 'step:sequence']
-    display: 'step:name'
+      list: 'steps:list({test:id})'
+      count: 'steps:count({test:id})'
+    display: 'teststep:name'
     fields:
-      - 'test:id'
-      - 'step:sequence'
-      - 'step:name'
+      - 'teststep:sequence'
+      - 'teststep:name'
+  #
+  # List All Possible States for a Step
+  #
+  states:
+    inherit: default
+    key: 'state:state'
+    services:
+      list: 'state:list_states{1}'
+      count: 'state:count_states{1}'
+    display: 'state:s_description'
+    fields:
+      - 'state:state'
+      - 'state:s_description'
+  #
+  # List All Possible States Codes for a Step
+  #
+  codes:
+    inherit: default
+    key: 'statecode:code'
+    services:
+      list: 'state:list_state_codes{1,{statecode:state}}'
+      count: 'state:count_state:codes{1,{statecode:state}}'
+    display: 'state:s_description'
+    fields:
+      - 'statecode:code'
+      - 'statecode:s_description'

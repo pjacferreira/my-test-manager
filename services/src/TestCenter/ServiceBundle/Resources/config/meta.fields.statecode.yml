@@ -15,49 +15,49 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ##
-# Test Entity (Properties Metadata)
+# StateCode Entity (Properties Metadata)
 ##
-test:
+statecode:
   id: 
     inherit: ':key_sequence'
     data-direction: in
     label: ID
-    description: Unique Test Identifier
-  project:
+    description: Unique State Identifier
+  state:
     inherit: ':reference'
-    label: Project
-    description: Project the Test Belongs To
+    label: State
+    description: State Associated with this Code
     value: 
       auto: true
+      nullable: false
     reference:
-      object: project
-      key: project:id
+      object: state
+      key: state:id
     display:
-      field: 'project:name'
-  name:
-    inherit: ':key'
-    label: Name
-    description: Unique Test Name
-  group:
-    inherit: default
-    label: Group
-    description: Group the Test Belongs To
-  description:
-    inherit: default
-    label: Description
-    description: Test Description
-    value: 
-      type: html
-  state: 
-    inherit: ':requried'
-    label: State
-    description: Current Test Readiness State
+      field: 'state:s_description'
+  code: 
+    inherit: ':required'
+    label: State Code
+    description: State Code
     value: 
       type: integer
+      nullable: false
+  s_description:
+    inherit: ':required'
+    label: Short Description
+    description: Short State Description
+    value: 
+      nullable: false
+  l_description:
+    inherit: default
+    label: Long Description
+    description: Long State Description
+    value: 
+      type: html
   creator:
     inherit: ':reference'
     label: Creator
-    description: User that created this Test
+    description: User that created this Test Set
     value: 
       auto: true
       nullable: false
@@ -73,11 +73,10 @@ test:
     value: 
       type: datetime
       auto: true
-      nullable: false
   last_modifier:
     inherit: ':reference'
     label: Last Modifier
-    description: User that last modified this Test
+    description: User that last modified this Test Set
     value: 
       auto: true
     reference:
@@ -92,15 +91,3 @@ test:
     value: 
       type: datetime
       auto: true
-  owner:
-    inherit: ':reference'
-    label: Owner
-    description: User the owns the Test
-    value: 
-      auto: true
-    reference:
-      object: user
-      key: user:id
-    display:
-      field: 'user:name'
-    

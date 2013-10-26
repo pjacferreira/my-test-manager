@@ -35,7 +35,7 @@ organization:
   # List All Organization the User Currently Belongs To
   #
   user:
-    inherit: all
+    inherit: 'organization:all'
     services:
       list: 'organization:user_list'
       count: 'organization:user_count'

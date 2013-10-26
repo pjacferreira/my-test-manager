@@ -22,14 +22,14 @@ namespace TestCenter\ModelBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * TestCenter\ModelBundle\Entity\RunLink
+ * TestCenter\ModelBundle\Entity\PlayEntry
  *
- * @ORM\Table(name="t_run_playlists")
- * @ORM\Entity(repositoryClass="TestCenter\ModelBundle\Repository\RunLinkRepository")
+ * @ORM\Table(name="t_run_playentries")
+ * @ORM\Entity(repositoryClass="TestCenter\ModelBundle\Repository\PlayEntryRepository")
  * 
  * @author Paulo Ferreira
  */
-class PlayList extends AbstractEntity {
+class PlayEntry extends AbstractEntity {
 
   /**
    * @var integer $id
@@ -54,7 +54,7 @@ class PlayList extends AbstractEntity {
    * @ORM\Column(name="sequence", type="integer")
    */
   private $sequence;
-  
+
   /**
    * @var integer $test
    *
@@ -64,25 +64,26 @@ class PlayList extends AbstractEntity {
   private $test;
 
   /**
-   * @var integer $sequence
+   * @var integer $step
    *
-   * @ORM\Column(name="step", type="integer")
+   * @ORM\ManyToOne(targetEntity="TestStep")
+   * @ORM\JoinColumn(name="id_step", referencedColumnName="id")
    */
   private $step;
 
   /**
-   * @var integer $status
+   * @var integer $state
    *
-   * @ORM\Column(name="status", type="integer")
+   * @ORM\Column(name="state", type="integer")
    */
-  private $status;
+  private $state;
 
   /**
-   * @var integer $code
+   * @var integer $state_code
    *
-   * @ORM\Column(name="code", type="integer")
+   * @ORM\Column(name="state_code", type="integer")
    */
-  private $code;
+  private $state_code;
 
   /**
    * @var text $comment
@@ -139,24 +140,6 @@ class PlayList extends AbstractEntity {
   }
 
   /**
-   * Get test
-   *
-   * @return TestCenter\ModelBundle\Entity\Test 
-   */
-  public function getTest() {
-    return $this->test;
-  }
-
-  /**
-   * Set test
-   *
-   * @param TestCenter\ModelBundle\Entity\Test $test
-   */
-  public function setTest(\TestCenter\ModelBundle\Entity\Test $test) {
-    $this->test = $test;
-  }
-
-  /**
    * Get sequence
    *
    * @return integer 
@@ -175,21 +158,57 @@ class PlayList extends AbstractEntity {
   }
 
   /**
-   * Get status
+   * Get test
    *
-   * @return integer 
+   * @return TestCenter\ModelBundle\Entity\Test 
    */
-  public function getStatus() {
-    return $this->status;
+  public function getTest() {
+    return $this->test;
   }
 
   /**
-   * Set status
+   * Set test
    *
-   * @param integer $status
+   * @param TestCenter\ModelBundle\Entity\Test $test
    */
-  public function setStatus($status) {
-    $this->status = $status;
+  public function setTest(\TestCenter\ModelBundle\Entity\Test $test) {
+    $this->test = $test;
+  }
+
+  /**
+   * Get step
+   *
+   * @return TestCenter\ModelBundle\Entity\TestStep 
+   */
+  public function getStep() {
+    return $this->step;
+  }
+
+  /**
+   * Set step
+   *
+   * @param integer $step
+   */
+  public function setStep(\TestCenter\ModelBundle\Entity\TestStep $step) {
+    $this->step = $step;
+  }
+
+  /**
+   * Get state
+   *
+   * @return integer 
+   */
+  public function getState() {
+    return $this->state;
+  }
+
+  /**
+   * Set state
+   *
+   * @param integer $state
+   */
+  public function setState($state) {
+    $this->state = $state;
   }
 
   /**
@@ -197,8 +216,8 @@ class PlayList extends AbstractEntity {
    *
    * @return integer 
    */
-  public function getCode() {
-    return $this->code;
+  public function getStateCode() {
+    return $this->state_code;
   }
 
   /**
@@ -206,8 +225,8 @@ class PlayList extends AbstractEntity {
    *
    * @param integer $code
    */
-  public function setCode($code) {
-    $this->code = $code;
+  public function setStateCode($code) {
+    $this->state_code = $code;
   }
 
   /**
@@ -272,8 +291,9 @@ class PlayList extends AbstractEntity {
 
     $array = $this->addProperty($array, 'id');
     $array = $this->addReferencePropertyIfNotNull($array, 'run');
-    $array = $this->addReferencePropertyIfNotNull($array, 'testset');
     $array = $this->addProperty($array, 'sequence');
+    $array = $this->addReferencePropertyIfNotNull($array, 'test');
+    $array = $this->addReferencePropertyIfNotNull($array, 'step');
     $array = $this->addProperty($array, 'state');
     $array = $this->addProperty($array, 'state_code');
     $array = $this->addPropertyIfNotNull($array, 'comment');
@@ -299,24 +319,4 @@ class PlayList extends AbstractEntity {
     return substr(__CLASS__, $i + 1);
   }
 
-
-    /**
-     * Set step
-     *
-     * @param integer $step
-     */
-    public function setStep($step)
-    {
-        $this->step = $step;
-    }
-
-    /**
-     * Get step
-     *
-     * @return integer 
-     */
-    public function getStep()
-    {
-        return $this->step;
-    }
 }

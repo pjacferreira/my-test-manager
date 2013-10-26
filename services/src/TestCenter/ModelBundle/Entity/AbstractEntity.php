@@ -42,7 +42,7 @@ abstract class AbstractEntity {
    * @param type $property
    * @return type
    */
-  protected function addProperty($array, $property, $value) {
+  protected function addProperty($array, $property, $value = null) {
     // Get the Entity Name
     if (!isset($value)) {
       $value = isset($this->$property) ? $this->$property : null;
@@ -58,7 +58,7 @@ abstract class AbstractEntity {
    * @param type $property
    * @return type
    */
-  protected function addPropertyIfNotNull($array, $property, $value) {
+  protected function addPropertyIfNotNull($array, $property, $value = null) {
     // investigate get_called_class(); in order to create bas class function
     if (!isset($value)) {
       $value = isset($this->$property) ? $this->$property : null;
@@ -72,7 +72,7 @@ abstract class AbstractEntity {
    * @param type $property
    * @return type
    */
-  protected function addReferencePropertyIfNotNull($array, $property, $value) {
+  protected function addReferencePropertyIfNotNull($array, $property, $value = null) {
     if (!isset($value)) {
       if (isset($this->$property) && ($this->$property !== null)) {
         $value = $this->$property->toArray();

@@ -17,7 +17,6 @@
 ##
 # Organizaton Entity CRUD Forms (Metadata Model)
 ##
-
 organization:
   #
   # Default Organization FORM (Model)
@@ -26,34 +25,33 @@ organization:
     inherit: default
     title: Organization Information
     data-direction: both    
-    fields: 
+    layout: 
       'Information': ['organization:id', 'organization:name']
       'Description': ['organization:description']
     services:
-      create: 'organization:create'
       read: 'organization:read'
-      update: 'organization:update'
   #
   # Create Organization Form
   #
   create:
     inherit: 'organization:default'
     title: Create Organization
-
+    services:
+      create: 'organization:create'
+      update: 'organization:update'
   #
   # Organization Details Form
   #
   read:
     inherit: 'organization:default'
+    in: 'organization:id'
     title: Organization Details
-    services:
-      create: ~
-      update: ~
   #
   # Organization Update Form
   #
   update:
     inherit: 'organization:default'
+    in: 'organization:id'
     title: Modify Organization
     services:
-      create: ~
+      update: 'organization:update'

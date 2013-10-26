@@ -1,5 +1,5 @@
 # Test Center - Compliance Testing Application
-# Copyright (C) 2012 Paulo Ferreira <pf at sourcenotes.org>
+# Copyright (C) 2012 - 2013 Paulo Ferreira <pf at sourcenotes.org>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -28,6 +28,13 @@ forms:
       # Elements:
       # - TEXT: form_id
       inherit: ~
+      # Specifies the Type of Form
+      #
+      # (OPTIONAL)
+      #
+      # Elements:
+      # - TEXT: ONE OF(standard, tab)
+      type: standard
       # Title for the Form
       #
       # (REQUIRED)
@@ -86,4 +93,61 @@ forms:
       #            is validate
       #            (OPTIONAL: MAP: (field_id -> TEXT: transformation EL, ...)
       transformations: ~
-    
+    tabbed:
+      # Specifies the Parent Form, in the inheritance hierarchy, for this form
+      inherit: default
+      # Specifies the Type of Form
+      type: tab
+      # Specifies the Fields that will be used to build the Form (in the order
+      # and, optionally, grouping to be used)
+      #
+      # (REQUIRED)
+      #
+      # Elements: (One Of)
+      # - TEXT: form_id                     - A Tab, Containing the Specified Form (Using the Form Title as the Tab Title)
+      # - ARRAY(One Of
+      #   - TEXT: form_id                   - Form, using the Tab Tile as the Form Title
+      #   - MAP(form_id -> TEXT (Tab Name)) - Form, using the Text as the Tab Title
+      #   )
+      tabs: ~
+    twolists:
+      # Specifies the Parent Form, in the inheritance hierarchy, for this form
+      inherit: default
+      # Specifies the Type of Form
+      type: twolists
+      # Source and Destination Lists for Forms
+      #
+      # (REQUIRED: MAP)
+      #
+      # Elements: 
+      #   source      : (REQUIRED: TEXT) 
+      #   destination : (REQUIRED: TEXT)
+      lists:
+        # Source List Definition
+        #
+        # (REQUIRED: TEXT)
+        #
+        # Elements: 
+        #   list_id : ID for List Definition
+        source: ~
+        # Destination List Definition
+        #
+        # (REQUIRED: TEXT)
+        #
+        # Elements: 
+        #   list_id : ID for List Definition
+        destination: ~
+      # Options
+      #
+      # (OPTIONAL: MAP)
+      options:
+        # Entries are sequenced (have a specific order, that has to be maintained)
+        #
+        # (REQUIRED: BOOLEAN)
+        sequence: false
+        # Each Entry in the Destination can Correspond to Only One Entry in the
+        # the Source List
+        #
+        # (REQUIRED: BOOLEAN)
+        onlyone: true
+        

@@ -49,8 +49,8 @@ steps:
   #
   create:
     inherit: 'step:manage'
-    action: create
     key: 'test:id'
+    action: create
     parameters:
       exclude: ['test:id']
   #
@@ -82,6 +82,17 @@ steps:
   delete:
     inherit: 'step:manage'
     action: delete
+    parameters:
+      allow: ~
+  #
+  # Delete Test Record
+  # URL : 
+  # - testing/test/steps/delete/{project:id}   
+  #
+  clear:
+    inherit: 'step:manage'
+    key: 'test:id'
+    action: clear
     parameters:
       allow: ~
   #

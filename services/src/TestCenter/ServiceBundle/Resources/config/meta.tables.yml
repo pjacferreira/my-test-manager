@@ -105,3 +105,16 @@ tables:
       #   fields : Per Field transformations, which are to modify the Field Value Displayed
       #            (OPTIONAL: MAP: (field_id -> TEXT: transformation EL, ...)
       transformations: ~
+      # Options
+      #
+      # (OPTIONAL: MAP)
+      options:
+        # Records are sequenced (have a specific order, that has to be maintained)
+        #
+        # (REQUIRED: BOOLEAN)
+        sequence: false
+        # Manage records in memory (i.e. load records into memory, and only flush
+        # when all modifications are done)
+        #
+        # (REQUIRED: BOOLEAN)
+        inmemory: false

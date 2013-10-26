@@ -19,24 +19,17 @@
 ##
 
 project:
-  default: 
-    inherit: default
-    data-direction: both
   id: 
-    inherit: default:key
+    inherit: ':key'
     data-direction: in
     label: ID
     description: Unique Project Identifier
-    value: 
-      type: integer
-      auto: true
   name:
-    inherit: project:default
-    key: true
+    inherit: ':key_sequence'
     label: Name
     description: Unique Project Name
   description:
-    inherit: project:default
+    inherit: default
     label: Description
     description: Project Information
     value: 
@@ -63,7 +56,7 @@ project:
     display:
       field: 'user:name'
   date_created:
-    inherit: user:default
+    inherit: ':required'
     label: Created
     description: User Password
     value: 
@@ -82,7 +75,7 @@ project:
     display:
       field: 'user:name'
   date_modified:
-    inherit: user:default
+    inherit: default
     label: Last Modified
     description: Last Modification Date
     value: 

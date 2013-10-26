@@ -24,35 +24,97 @@ run:
   default:
     inherit: default
     title: Run
-    fields: 
+    layout: 
       'Information': ['run:id']
       'Grouping': ['run:group', 'run:name']
-      'Test Set': ['run:testset']
+      'Test Set': 'list\sets:project'
       'Description': ['run:description']
     services:
       create: 'run:create'
       read: 'run:read'
       update: 'run:update'
+    field_map:
+      - 'run:set\set:id': 'set:id'
+      
   #
   # Create Run Form
   #
   create:
     inherit: 'run:default'
     title: Create Run
+    services:
+      create: 'run:create'
+      update: 'run:update'
   #
   # Run Details Form
   #
   read:
     inherit: 'run:default'
+    in: 'run:id'
+    layout: 
+      'Test Set': 'run:set\set:name'
     title: Run Details
-    services:
-      create: ~
-      update: ~
+    field_map: ~
   #
   # Run Update Form
   #
   update:
     inherit: 'run:default'
+    in: 'run:id'
     title: Modify Run
     services:
-      create: ~
+      update: 'run:update'
+  #
+  # Open/Re-open a Run (Specific Run)
+  #
+  open:
+    inherit: default
+    in: 
+      - 'run:id': ~ 
+    title: Open Run
+    layout: 
+      'Run': 'list\runs:list_user'
+    services:
+      update: 'run:open'
+  #
+  # Close a Run (Specific Run)
+  #
+  close:
+    inherit: 'run:open'
+    title: Close Run
+    services:
+      update: 'run:close'
+  #
+  # Run State
+  #
+  state:
+    inherit: default
+    in: 
+      - 'run:id': ~ 
+    title: Step State
+    layout:
+      'Information': ['run:id', 'run:name']
+      'State': ['list\runs:states','list\runs:codes']
+      'Comment': ['run:comment']
+    field_map:
+      - 'run:state' : 'state:state'
+      - 'run:state_code' : 'statecode:code'
+    services:
+      read: 'run:get_state'
+      update: 'run:set_state'      
+  #
+  # Run Execution Form
+  #
+  execution:
+    inherit: ':tabbed'
+    title: Run Execution
+    tabs: 
+      - 'play:player': Play
+      - 'test:steps' : Steps
+      - 'test:read'  : Test
+      - 'run:read'   : Run
+    services:
+      read: 'play:current'
+    field_map:
+      'playentry:run\run:id':   'run:id'
+      'playentry:test\test:id': 'test:id'

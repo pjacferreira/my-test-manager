@@ -18,17 +18,11 @@
 # Run Entity (Properties Metadata)
 ##
 run:
-  default: 
-    inherit: default
-    data-direction: both
   id: 
-    inherit: default:key
+    inherit: ':key_sequence'
     data-direction: in
     label: ID
     description: Unique Run Identifier
-    value: 
-      type: integer
-      auto: true
   project:
     inherit: ':reference'
     label: Project
@@ -52,32 +46,37 @@ run:
     display:
       field: 'set:name'
   group:
-    inherit: run:default
+    inherit: default
     label: Group
     description: Group the Run Belongs To
   name:
-    inherit: run:default
-    key: true
+    inherit: ':key'
     label: Name
     description: Unique Run Name
   description:
-    inherit: run:default
+    inherit: default
     label: Description
     description: Run Description
     value: 
       type: html
   state: 
-    inherit: run:default
+    inherit: ':required'
     label: State
     description: Current Run State
     value: 
       type: integer
   state_code: 
-    inherit: run:default
+    inherit: ':required'
     label: Code
     description: Run Execution Code
     value: 
       type: integer
+  comment:
+    inherit: default
+    label: Comment
+    description: Comment for Entry
+    value: 
+      type: html
   playlist_position:
     inherit: ':reference'
     label: Current Position
@@ -103,7 +102,7 @@ run:
     display:
       field: 'user:name'
   date_created:
-    inherit: user:default
+    inherit: ':required'
     label: Created
     description: Creation Date
     value: 
@@ -122,7 +121,7 @@ run:
     display:
       field: 'user:name'
   date_modified:
-    inherit: user:default
+    inherit: default
     label: Last Modified
     description: Last Modification Date
     value: 

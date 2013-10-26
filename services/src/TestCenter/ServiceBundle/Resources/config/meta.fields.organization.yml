@@ -17,26 +17,18 @@
 ##
 # Organization Entity (Properties Metadata)
 ##
-
 organization:
-  default: 
-    inherit: default
-    data-direction: both
   id: 
-    inherit: default:key
+    inherit: ':key_sequence'
     data-direction: in
     label: ID
     description: Unique Organization Identifier
-    value: 
-      type: integer
-      auto: true
   name:
-    inherit: organization:default
-    key: true
+    inherit: ':key'
     label: Name
     description: Unique Organization Name
   description:
-    inherit: organization:default
+    inherit: default
     label: Description
     description: Organization Information
     value: 
@@ -54,7 +46,7 @@ organization:
     display:
       field: 'user:name'
   date_created:
-    inherit: user:default
+    inherit: ':required'
     label: Created
     description: User Password
     value: 
@@ -73,7 +65,7 @@ organization:
     display:
       field: 'user:name'
   date_modified:
-    inherit: user:default
+    inherit: default
     label: Last Modified
     description: Last Modification Date
     value: 

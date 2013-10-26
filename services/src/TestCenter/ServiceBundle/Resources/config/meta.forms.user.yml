@@ -17,7 +17,6 @@
 ##
 # User Entity CRUD Forms (Metadata Model)
 ##
-
 user:
   #
   # Default User FORM (Model)
@@ -25,22 +24,23 @@ user:
   default:
     inherit: default
     title: User Information
-    fields: 
+    layout: 
       'User Information': ['user:id', 'user:name']
       'Name': 'user:first_name, user:last_name'
       'Descriptions': ['user:s_description', 'user:l_description']
     services:
-      create: 'user:create'
       read: 'user:read'
-      update: 'user:update'
   #
   # Create User Form
   #
   create:
     inherit: 'user:default'
     title: Create User
-    fields: 
+    layout: 
       'Password': ['user:password', 'virtual:password-confirmation']
+    services:
+      create: 'user:create'
+      update: 'user:update'
     validations: 
       fields:
         'virtual:password-confirmation': '= {user:password}'    
@@ -49,31 +49,30 @@ user:
   #
   read:
     inherit: 'user:default'
+    in: 'user:id'
     title: User Details
-    services:
-      create: ~
-      update: ~
   #
   # User Update Form
   #
   update:
     inherit: 'user:default'
     title: Modify User
+    in: 'user:id'
     services:
-      create: ~
+      update: 'user:update'
   #
   # User Password Change
   #
   password:
     inherit: 'user:default'
+    in: 'user:id'
     title: Change Password
-    fields: 
+    layout: 
       'User Information': ['user:id', 'user:name']
       'Name': ~
       'Descriptions': ~
       'Password': ['user:password', 'virtual:password-confirmation']
     services:
-      create: ~
       update: 'user:update-password'
     validations: 
       fields:

@@ -95,7 +95,7 @@ fields:
         #   - 'text'      - Field value is a TEXT
         #   - 'html'      - Field value is a HTML text
         #   - 'reference' - Value is Refence to another Entity {Object}
-        # type: 'text' 
+        type: 'text' 
         # The fields value is auto-generated (assigned by the storage system)
         #
         # (OPTIONAL)
@@ -127,7 +127,7 @@ fields:
         # Elements:
         # - VAR : DEFAULT (null)
         default: ~
-        # The fields value is auto-generated (assigned by the storage system)
+        # Can field be set to NULL?
         #
         # (OPTIONAL)
         #
@@ -159,7 +159,7 @@ fields:
         # - TEXT : validation EL for a single field
         validation: ~
     # Default Settings for Physical Fields
-    key:
+    required:
       # Specifies the Parent Field, in the inheritance hierarchy, for this field
       #
       # (OPTIONAL)
@@ -168,74 +168,40 @@ fields:
       # - TEXT: field_id (pattern entity_id[:field_id] 
       #   if field_id missing, then default is assumed
       inherit: default
+      # Field Value Properties
+      value: 
+        # Can field be set to NULL?
+        nullable: false
+    # Default Settings for Physical Fields
+    key:
+      # Specifies the Parent Field, in the inheritance hierarchy, for this field
+      inherit: required
       # Specifies if the field is a key field (a key field is one, that can 
       # uniquely identify a record within the storage system)
-      #
-      # (REQUIRED: FOR A KEY FIELD)
-      #
-      # Elements:
-      # - BOOLEAN : TRUE
+      key: true
+    # Default Settings for an Auto Increment Key Sequence Field
+    key_sequence:
+      # Specifies the Parent Field, in the inheritance hierarchy, for this field
+      inherit: key
+      # Specifies if the field is a key field (a key field is one, that can 
+      # uniquely identify a record within the storage system)
       key: true
       # Field Value Properties
-      #
-      # (REQUIRED: MAP)
-      #
-      # Elements:
-      # - All Possible Elements are listed below 
       value: 
+        # Field Value Type
+        type: integer
         # The fields value is auto-generated (assigned by the storage system)
-        #
-        # (REQUIRED: FOR A KEY FIELD - CAN'T BE NULL)
-        #
-        # Elements:
-        # - BOOLEAN : FALSE (Key Fields Can't be NULL)
-        nullable: false
+        auto: true
     # Default Settings for Reference Fields
     reference:
       # Specifies the Parent Field, in the inheritance hierarchy, for this field
-      #
-      # (OPTIONAL)
-      #
-      # Elements:
-      # - TEXT: field_id (pattern entity_id[:field_id] 
-      #   if field_id missing, then default is assumed
       inherit: default
       # Field Value Properties
-      #
-      # (REQUIRED: MAP)
-      #
-      # Elements:
-      # - All Possible Elements are listed below 
       value: 
         # Field Value Type
-        # (We Can't Set this Value Here, eitherwise it will override the value
-        #  Retrieved from the ORM Metadata)
-        # 
-        # (REQUIRED)
-        #
-        # Elements:
-        # - TEXT: (One Of: DEFAULT 'text')
-        #   - 'integer'   - Field value is an INTEGER
-        #   - 'boolean'   - Field value is a BOOLEAN
-        #   - 'date'      - Field value is a DAE
-        #   - 'time'      - Field value is a TIME
-        #   - 'datetime'  - Field value is a DATE+TIME
-        #   - 'decimal'   - Field value is a DECIMAL
-        #   - 'text'      - Field value is a TEXT
-        #   - 'html'      - Field value is a HTML text
-        #   - 'reference' - Value is Refence to another Entity {Object}
-        # type: 'reference'
-        # Field Value Type
-        # 
-        # (REQUIRED)
-        #
-        # Elements:
-        # - STRING : field_id (entity:field) referred to
-        # link: ~
         type: reference
-        
         # 
-        # REMOVE PROPERTIES THAT DON'T APPLYMaxmimum (Display) Length for the Field
+        # REMOVE PROPERTIES THAT DON'T APPLY
         #
         length: ~
         precision: ~

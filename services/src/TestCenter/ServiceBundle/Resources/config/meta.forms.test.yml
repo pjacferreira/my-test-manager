@@ -19,64 +19,134 @@
 ##
 test:
   #
-  # Default Test FORM (Model)
+  # Base Test Set Details Form
   #
-  default:
+  details:
     inherit: default
-    title: Test
-    fields: 
+    title: Test Details
+    layout: 
       'Information': ['test:id']
       'Grouping': ['test:group', 'test:name']
       'Description': ['test:description']
     services:
       create: 'test:create'
+  #
+  # Create Test Details Form
+  #
+  create_details:
+    inherit: 'test:details'
+    services:
+      create: 'test:create'
+  #
+  # Display Test Set Details Form
+  #
+  display_details:
+    inherit: 'test:details'
+    in: 'test:id'
+    services:
       read: 'test:read'
+  #
+  # Modify Test Set Details Form
+  #
+  modify_details:
+    inherit: 'test:display_details'
+    services:
       update: 'test:update'
+  #
+  # Test Modify State
+  #
+  state_modify:
+    inherit: 'test:default'
+    title: Modify Test State
+    in: 'test:id'
+    layout: 
+      'Information': ['test:id']
+      'Grouping': ['test:group', 'test:name']
+      'State': 'list\tests:list_states'
+    services:
+      update: 'test:modify_state'
+    field_map:
+      'test:state': 'state:state'
+  #
+  # Test Modify Owner
+  #
+  owner_modify:
+    inherit: 'test:default'
+    title: Modify Test's Owner
+    in: 'test:id'
+    layout: 
+      'Information': ['test:id']
+      'Grouping': ['test:group', 'test:name']
+      'Owner': 'list\project:list_users'
+    services:
+      update: 'test:modify_owner'
+    field_map:
+      'test:owner\user:id':        'user:id'
+      'test:project\project:id':  'project:id'
+  #
+  # Modify Step Details
+  #
+  step_modify:
+    inherit: default
+    title: Modify Test's Owner
+    in: 'teststep'
+    layout: 
+      'Information': ['teststep:name']
+      'Description': ['teststep:description']
+  #
+  # Display Step Details
+  #
+  step_details:
+    inherit: default
+    title: Modify Test's Owner
+    in: 'teststep'
+    layout: 
+      'Key': ['teststep:id']
+      'Grouping': ['teststep:sequence', 'teststep:name']
+      'Description': ['teststep:description']
+  #
+  # Steps
+  #
+  steps_details:
+    inherit: default
+    in: 'test:id'
+    title: Display Steps
+    layout: 
+      'Steps': 'list\steps:test'
+  #
+  # Steps
+  #
+  steps_manage:
+    inherit: ':table'
+    title: Manage Steps
+    layout: 
+      'Steps': 'table\step:manage'
   #
   # Create Test Form
   #
   create:
-    inherit: 'test:default'
+    inherit: ':tabbed'
     title: Create Test
+    tabs: 
+      - 'test:create_details': Details
+      - 'test:steps_manage' : Steps
   #
-  # Test Details Form
+  # Display Test Form
   #
   read:
-    inherit: 'test:default'
+    inherit: ':tabbed'
+    in: 'test:id'       
     title: Test Details
-    services:
-      create: ~
-      update: ~
+    tabs: 
+      - 'test:display_details': Details
+      - 'test:steps_details' : Steps
   #
-  # Test Update Form
+  # Update Test Form
   #
   update:
-    inherit: 'test:default'
+    inherit: ':tabbed'
+    in: 'set:id'       
     title: Modify Test
-    services:
-      create: ~
-  #
-  # Test Modify State
-  #
-  modify_state:
-    inherit: 'test:default'
-    title: Modify Test State
-    fields: 
-      'Information': ['test:id']
-      'Grouping': ['test:group', 'test:name']
-      'State': ['test:state']
-    services:
-      update: 'test:modify_state'
-
-  #
-  # Test Modify Owner
-  #
-  modify_owner:
-    inherit: 'test:default'
-    title: Modify Test's Owner
-    fields: 
-      'Information': ['test:id']
-      'Grouping': ['test:group', 'test:name']
-      'Owner': ['user:id']
-    services:
-      update: 'test:modify_owner'
+    tabs: 
+      - 'test:modify_details': Details
+      - 'test:steps_manage' : Steps

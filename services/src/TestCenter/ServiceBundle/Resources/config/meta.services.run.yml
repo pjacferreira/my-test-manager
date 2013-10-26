@@ -21,7 +21,7 @@ run:
   #
   # Defaults for Run Management
   #
-  manage:
+  testing:
     inherit: default
     service: 
       - testing
@@ -32,14 +32,11 @@ run:
   #
   # Defaults for Playing a Run
   #
-  play:
+  testing:
     inherit: default
     service: 
       - testing
       - run
-      - play
-    parameters:
-      allow: ~
   #
   # Defaults for Run Listings
   #
@@ -97,25 +94,44 @@ run:
   #
   # Open a Run
   # URL : 
-  # - testing/run/play/open[/{run:id}]
+  # - testing/run/open[/{run:id}]
   #
-  play_open:
-    inherit: 'run:play'
+  open:
+    inherit: 'run:testing'
     action: open
-    keys: 
-      -
-      - 'run:id'     
+    key: 
+     - 'run:id': ~
   #
-  # Open a Run
+  # Close a Run
   # URL : 
-  # - testing/run/play/close/{run:state}[/{run:state_code}]
+  # - testing/run/close[/{run:id}]
   #
-  play_close:
-    inherit: 'run:play'
+  close:
+    inherit: 'run:testing'
     action: close
-    keys: 
-      - 'run:state'
-      - ['run:state', 'run:state:code']
+    key: 
+      - 'run:id': ~
+  #
+  # Gets the Run's State
+  # URL :
+  # - testing/run/state/get[/{run:id}]
+  #
+  get_state:
+    inherit: 'run:testing'
+    service: [ 'testing', 'run', 'state' ]
+    action: get
+  #
+  # Set the Run's State
+  # URL :
+  # - testing/run/state/set/{run:id}/{run:state}[/{run:state_code}]
+  #
+  set_state:
+    inherit: 'run:get_state'
+    action: set
+    key: 
+      - 'run:id' 
+      - 'run:state' 
+      - 'run:state_code' : 0
   #
   # List All Runs for Current Session Project
   # URL : 

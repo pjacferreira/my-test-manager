@@ -24,37 +24,37 @@ project:
   default:
     inherit: default
     title: Project
-    fields: 
+    layout: 
       'Information': ['project:id', 'project:name']
       'Description': ['project:description']
     services:
-      create: 'project:create'
       read: 'project:read'
-      update: 'project:update'
   #
   # Create Project Form
   #
   create:
     inherit: 'project:default'
     title: Create Project
-    fields: 
+    layout: 
       'Organization' : ['project:organization']
       'Information': ['project:id', 'project:name']
       'Description': ['project:description']
+    services:
+      create: 'project:create'
+      update: 'project:update'
   #
   # Project Details Form
   #
   read:
     inherit: 'project:default'
     title: Project Details
-    services:
-      create: ~
-      update: ~
+    in: 'project:id'
   #
   # Project Update Form
   #
   update:
     inherit: 'project:default'
     title: Modify Project
+    in: 'project:id'
     services:
-      create: ~
+      update: 'project:update'

@@ -17,31 +17,23 @@
 ##
 # PlayList Entity (Properties Metadata)
 ##
-playlist:
-  default: 
-    inherit: default
-    data-direction: both
+playentry:
   id: 
-    inherit: default:key
+    inherit: ':key_sequence'
     data-direction: in
     label: ID
     description: Unique Entry Identifier
-    value: 
-      type: integer
-      auto: true
   run:
     inherit: ':reference'
     label: Run
     description: Run Associated with Entry
-    value: 
-      auto: true
     reference:
       object: run
       key: run:id
     display:
       field: 'run:name'
   sequence: 
-    inherit: playlist:default
+    inherit: ':required'
     label: Sequence
     description: Play List Sequence Number
     value: 
@@ -50,30 +42,34 @@ playlist:
     inherit: ':reference'
     label: Test
     description: Test for Entry
-    value: 
-      auto: true
     reference:
       object: test
       key: test:id
     display:
       field: 'test:name'
-  step: 
-    inherit: step:sequence
+  step:
+    inherit: ':reference'
     label: Step
+    description: Test Step for Entry
+    reference:
+      object: step
+      key: step:id
+    display:
+      field: 'step:name'
   state: 
-    inherit: playlist:default
+    inherit: ':required'
     label: State
     description: Play List Entry Execution State
     value: 
       type: integer
   state_code: 
-    inherit: playlist:default
+    inherit: ':required'
     label: Code
     description: Play List Entry Execution State
     value: 
       type: integer
   comment:
-    inherit: playlist:default
+    inherit: default
     label: Comment
     description: Comment for Entry
     value: 
@@ -90,10 +86,10 @@ playlist:
     display:
       field: 'user:name'
   date_modified:
-    inherit: user:default
+    inherit: default
     label: Last Modified
     description: Last Modification Date
     value: 
       type: datetime
       auto: true
-    
+      

@@ -18,17 +18,11 @@
 # SetTest Entity (Properties Metadata)
 ##
 settest:
-  default: 
-    inherit: default
-    data-direction: both
   id: 
-    inherit: default:key
+    inherit: ':key_sequence'
     data-direction: in
     label: ID
     description: Unique Entry Identifier
-    value: 
-      type: integer
-      auto: true
   set:
     inherit: ':reference'
     label: Set
@@ -41,7 +35,7 @@ settest:
     display:
       field: 'set:name'
   sequence: 
-    inherit: settest:default
+    inherit: ':required'
     label: Sequence
     description: Test Sequence Number in Set
     value: 

@@ -19,11 +19,8 @@
 ##
 
 user:
-  default: 
-    inherit: default
-    data-direction: both
   id: 
-    inherit: default:key
+    inherit: ':key_sequence'
     data-direction: in
     label: User ID
     description: Unique User Identifier
@@ -31,7 +28,7 @@ user:
       type: integer
       auto: true
   name:
-    inherit: user:default
+    inherit: ':required'
     key: true
     label: User Name
     description: Unique User Identifier
@@ -40,11 +37,11 @@ user:
     label: First Name
     description: User\'s First Name
   last_name:
-    inherit: user:default
+    inherit: default
     label: Last Name
     description: User\'s Last Name
   s_description:
-    inherit: user:default
+    inherit: default
     label: Short Description
     description: Short User Description
   l_description:
@@ -54,7 +51,7 @@ user:
     value: 
       type: html
   password:
-    inherit: user:default
+    inherit: default
     label: Password
     description: User Password
     value: 
@@ -72,7 +69,7 @@ user:
     display:
       field: 'user:name'
   date_created:
-    inherit: user:default
+    inherit: default
     label: Created
     description: User Password
     value: 
@@ -91,7 +88,7 @@ user:
     display:
       field: 'user:name'
   date_modified:
-    inherit: user:default
+    inherit: default
     label: Last Modified
     description: Last Modification Date
     value: 
