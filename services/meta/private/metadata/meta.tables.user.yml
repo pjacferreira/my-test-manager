@@ -1,0 +1,91 @@
+# Test Center - Compliance Testing Application (Metadata Service)
+# Copyright (C) 2012-2014 Paulo Ferreira <pf at sourcenotes.org>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+##
+# User Table (Metadata Model)
+##
+user:
+  #
+  # Default User Table (Model)
+  #
+  default:
+    inherit: default
+    title: User List
+    services:
+      list: 'user:list'
+      count: 'user:count'
+    fields:
+      - 'user:id'
+      - 'user:name'
+      - 'user:first_name'
+      - 'user:last_name'
+      - 'user:s_description'
+      - 'virtual:filter'
+      - 'virtual:sort'
+      - 'virtual:limit'
+    columns:
+      - 'user:id'
+      - 'user:name'
+      - 'user:first_name'
+      - 'user:last_name'
+      - 'user:s_description'
+    hidden:
+        - 'user:id'
+    sort-on:
+      - 'user:id'
+      - 'user:name'
+      - 'user:first_name'
+      - 'user:last_name'
+    filter-on:
+      - 'user:id'
+      - 'user:name'
+      - 'user:first_name'
+      - 'user:last_name'        
+  #
+  # User Management Table (Model)
+  #
+  manage:
+    inherit: 'user:default'
+    title: User Management
+    actions:
+      create:
+        label: 'New User'
+        shortcut: 'CTRL+N'
+        icon: 'resource/tc/user_add.png'
+        form: 'user:create'
+      edit:
+        label: 'Modify User'
+        shortcut: 'CTRL+E'
+        icon: 'resource/tc/user_edit.png'
+        form: 'user:update'
+        parameters: 'user:id'
+      display:
+        label: 'User Information'
+        shortcut: 'CTRL+I'
+        icon: 'resource/tc/user.png'
+        form: 'user:read'
+        parameters: 'user:id'
+      delete:
+        label: 'Delete User'
+        shortcut: 'CTRL+D'
+        icon: 'resource/tc/user_delete.png'
+        service: 'user:delete'
+      change-password:
+        label: 'Change Password'
+        description: 'Change User Password'
+        shortcut: 'CTRL+P'
+        icon: 'resource/tc/lock_edit.png'
+        form: 'user:password'    

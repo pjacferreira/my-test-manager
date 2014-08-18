@@ -1,0 +1,98 @@
+# Test Center - Compliance Testing Application (Metadata Service)
+# Copyright (C) 2012-2014 Paulo Ferreira <pf at sourcenotes.org>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+##
+# Single User Services Definitions
+##
+user:
+  default:
+    inherit: default
+    service: user
+    parameters:
+      allow: 'user:*'
+    
+  #
+  # Create User Record
+  # URL : user/create/{user:name}[?field=value-tuplet[&...]]
+  #
+  create:
+    inherit: 'user:default'
+    action: create
+    key: 'user:name'
+    parameters:
+      exclude: ['user:id', 'user:name']
+  #
+  # Read User Record
+  # URL : 
+  # - user/read/{user:id}   or
+  # - user/read/{user:name}
+  #
+  read:    
+    inherit: 'user:default'
+    action: read
+    keys:
+      - 'user:id'
+      - 'user:name'
+    parameters:
+      require: false
+      allow: ~
+  #
+  # Update User Record
+  # URL : 
+  # - user/update/{user:id}?field=value-tuplet[&...]   or
+  # - user/update/{user:name}?field=value-tuplet[&...]
+  #
+  update:
+    inherit: 'user:default'
+    action: update
+    keys:
+      - 'user:id'
+      - 'user:name'
+    parameters:
+      require: true
+      allow: ~
+      exclude: ['user:id', 'user:password']
+  #
+  # Update User Password
+  # URL : 
+  # - user/update/{user:id}?password=value   or
+  # - user/update/{user:name}?password=value
+  #
+  update-password:
+    inherit: 'user:default'
+    action: update
+    keys:
+      - 'user:id'
+      - 'user:name'
+    parameters:
+      require: true
+      allow: 'user:password'
+      exclude: 'user:*'
+  #
+  # Delete User Record
+  # URL : 
+  # - user/delete/{user:id}   or
+  # - user/delete/{user:name}
+  #
+  delete:
+    inherit: 'user:default'
+    action: delete
+    keys:
+      - 'user:id'
+      - 'user:name'
+    parameters:
+      allow: none
+    

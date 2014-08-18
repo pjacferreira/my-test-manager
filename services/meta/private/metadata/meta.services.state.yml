@@ -1,0 +1,63 @@
+# Test Center - Compliance Testing Application (Metadata Service)
+# Copyright (C) 2012-2014 Paulo Ferreira <pf at sourcenotes.org>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+##
+# State and State Code Service Definitions
+##
+states:
+  #
+  # List of State Specific for a Given Type
+  # URL : 
+  # - testing/settings/states/codes/list/{state:type}
+  #
+  list_states: 
+    inherit: default
+    key: 'state:type'
+    service: 
+      - testing
+      - settings
+      - states
+    action: list
+  #
+  # Number of State Specific for a Given Type
+  # URL : 
+  # - testing/settings/states/codes/list/{state:type}
+  #
+  count_states:
+    inherit: 'states:list_states'
+    action: count
+  #
+  # List of State Codes for a Given Type and State
+  # URL : 
+  # - testing/settings/states/codes/list/{state:type}/{state:code}
+  #
+  list_codes: 
+    inherit: default
+    key: [ 'state:type', 'state:code' ]
+    service: 
+      - testing
+      - settings
+      - states
+      - codes
+    action: list
+  #
+  # Number of State Codes for a Given Type and State
+  # URL : 
+  # - testing/settings/states/codes/count/{state:type}/{state:code}
+  #
+  count_codes:
+    inherit: 'states:list_codes'
+    action: count

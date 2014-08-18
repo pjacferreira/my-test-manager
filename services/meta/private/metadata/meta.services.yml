@@ -1,0 +1,77 @@
+# Test Center - Compliance Testing Application (Metadata Service)
+# Copyright (C) 2012-2014 Paulo Ferreira <pf at sourcenotes.org>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+##
+# User Service Definitions
+##
+
+services:
+  default:
+    default:
+      # inherit: [(service):](service:action) to inherit value from
+      # [service] Required Parameter (NOT NULL)
+      # can have 2 Possible Values
+      # 1. (String) - a specific service name  ex: 'user'
+      # 2. (Array of Strings) - a service path ex: [ 'org', 'projects']
+      # service: ~
+      # [action] (String) Required Parameter (NOT NULL)
+      # Identifies the action to be executed on the service ex: 'create'
+      # action: ~
+      # [key] Optional Value 
+      # - Used when the Service/Action accepts only a single key
+      # - A Service/Action is not required to have a key (i.e. it's Optional)
+      # can have 2 Possible Values
+      # 1. (String) - a single field name, as the key            ex: 'user:id'
+      # 2. (Array of Strings) - a series of fields, form the key ex: 'user:id', 'organization:id']
+      #key: ~
+      # [keys] Optional Value 
+      # - Used when the Service/Action accepts multiple combination of fields
+      # as keys
+      # - A Service/Action is not required to have a key (i.e. it's Optional)
+      # The Value is an array of key (i.e. an Array, whose elements can be
+      # 1. a String, for a single field key, or
+      # 2. an Array of Strings, for multi field keys
+      # keys:
+      # - 'user:id' 
+      # - 'suer:name' (i.e both the user:id or user:name can be used as keys
+      #for the service, with preference to 'user:id'
+      #keys: ~
+      # [parameters] Define the parameters that can be passed to the service/action
+      # This is a Hash-Map of Options
+      parameters:
+        # [require] Defines if the parameters are required (DEFAULT: false, no parameters required)
+        # i.e. in an empty parameter list to the Service/Action).
+        require: false
+        # [allow] List of Fields that are allowd in the parameter list (DEFAULT: none)
+        # Possible Values:
+        # 1. 'none' : no fields are permitted in the parameters (i.e. parameter list has to be empty)
+        # 2. 'all'  : all fields are permitted in the parameters list
+        # 3. Fields List: 3 forms possible
+        # i) Complete Field Name (ex: 'user:id')
+        # ii) All Fields from an entity (ex: 'user:*', or just 'user')
+        # iii) An array, containing a combination of the above (ex: [ 'user:*', 'project:name' ])        
+        allow: none
+        # [exclude] List of Fields that are not allowed in the parameter list (DEFAULT: null - no field excluded)
+        # Possible Values:
+        # 1. NULL - no fields excluded
+        # 2. Complete Field Name (ex: 'user:id')
+        # 3. All Fields from an entity (ex: 'user:*', or just 'user')
+        # 4. An array, containing a combination of 2 and 3 above (ex: [ 'user:*', 'project:name' ])      
+        # In order to get the list of allowed fields, in the parameters, 1st the
+        # allow list is expanded, and then excluded list is used to remove fields
+        # from the allowed list
+        exclude: ~
+        

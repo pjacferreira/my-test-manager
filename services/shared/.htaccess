@@ -1,0 +1,2 @@
+# Deny All External Access to this Directory
+deny from all

@@ -1,0 +1,73 @@
+# Test Center - Compliance Testing Application (Metadata Service)
+# Copyright (C) 2012-2014 Paulo Ferreira <pf at sourcenotes.org>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+##
+# Default Lists (Metadata Model)
+##
+lists:
+  default:
+    default:
+      # Specifies the Parent List, in the inheritance hierarchy, for this list
+      #
+      # (OPTIONAL)
+      #
+      # Elements:
+      # - TEXT: list_id
+      inherit: ~
+      # Description for the List (To be used in Tooltip's, etc).
+      #
+      # (OPTIONAL)
+      #
+      # Elements:
+      # - TEXT
+      description: ~
+      # Services to be used to load the list data 
+      #
+      # (REQUIRED)
+      #
+      # Elements:
+      #   MAP: ( service_alias -> (SERVICE META) service_id)
+      #   Recognized Aliases: One of (list, count)
+      #   At the VERY MINIMUM a 'list'service has to be provided 
+      #   'count' is optional, and would allow for dynamic loading of lists
+      services: ~
+      # The field, whose value, is used as the result of list (i.e. it identifies
+      # the row(s) selected). The Result of the List, that can be passed on to
+      # other services as a result.
+      #
+      # (REQUIRED)
+      #
+      # Elements:
+      # - TEXT: field_id
+      key: ~
+      # The value to Display, if using a Combo Box or List Box, as the Value to 
+      # Display when an Item is Selected (IF NOT PROVIDED, the 'key' field will
+      # be used as the 'display' field).
+      #
+      # (OPTIONAL)
+      #
+      # Elements:
+      # - TEXT: field_id
+      display: ~
+      # Specifies all the field values, to display in the List Box or, if more
+      # than one field, in a list table.
+      #
+      # (REQUIRED)
+      #
+      # Elements: (One Of)
+      # - TEXT: field_id              - A Single Field List
+      # - ARRAY(TEXT: field_id, ....) - Normal Multi-field List Table
+      fields: ~

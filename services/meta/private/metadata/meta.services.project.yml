@@ -1,0 +1,165 @@
+# Test Center - Compliance Testing Application (Metadata Service)
+# Copyright (C) 2012-2014 Paulo Ferreira <pf at sourcenotes.org>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+##
+# Project Service Definitions
+##
+project:
+  #
+  # Defaults for Project Management
+  #
+  manage:
+    inherit: default
+    service: 
+      - manage
+      - project
+    parameters:
+      allow: 'project:*'
+  #
+  # Defaults for Project Listing
+  #
+  listing:
+    inherit: default
+    service: 
+      - manage
+      - projects
+    parameters: 
+      allow: ['virtual:filter','virtual:sort','virtual:limit']
+  #
+  # Create Project Within the Current Session Organization
+  # URL :
+  # - manage/org/project/create/{organization:id}/{project:name}[?field=value-tuplet[&...]]
+  #
+  create:
+    inherit: 'project:manage'
+    service: 
+      - manage
+      - org
+      - project
+    action: create
+    key:
+      - 'organization:id'
+      - 'project:name'
+    parameters:
+      exclude: ['project:id', 'project:name', 'organization:id']
+  #
+  # Read Project Record
+  # URL : 
+  # - manage/project/read/{project:id}   or
+  # - manage/project/read/{project:name}
+  #
+  read:    
+    inherit: 'project:manage'
+    action: read
+    keys:
+      - 'project:id'
+      - 'project:name'
+    parameters:
+      allow: ~
+  #
+  # Update Project Record
+  # URL : 
+  # - manage/project/update/{project:id}?field=value-tuplet[&...]   or
+  # - manage/project/update/{project:name}?field=value-tuplet[&...]
+  #
+  update:
+    inherit: 'project:manage'
+    action: update
+    keys:
+      - 'project:id'
+      - 'project:name'
+    parameters:
+      require: true
+      exclude: 'project:id'
+  #
+  # Delete Project Record
+  # URL : 
+  # - manage/project/delete/{project:id}   or
+  # - manage/project/delete/{project:name}
+  #
+  delete:
+    inherit: 'project:manage'
+    action: delete
+    keys:
+      - 'project:id'
+      - 'project:name'
+    parameters:
+      allow: ~
+  #
+  # List Project Records
+  # URL : 
+  # - manage/projects/list[?field=value-tuplet[&...]]
+  #
+  list: 
+    inherit: 'project:listing'
+    action: list
+  #
+  # Count Project Records
+  # URL : 
+  # - manage/projects/count[?field=value-tuplet[&...]]
+  #
+  count:
+    inherit: 'project:listing'
+    action: count
+    parameters:
+      allow: ['virtual:filter']
+  #
+  # List the Projects for the Current Session User / Organization
+  # URL : 
+  # - session/org/projects/list[?field=value-tuplet[&...]]
+  #
+  list_user_org: 
+    inherit: 'project:list'
+    service: 
+      - session
+      - org
+      - projects      
+  #
+  # Count the Projects for the Current Session User / Organization
+  # URL : 
+  # - session/org/projects/count[?field=value-tuplet[&...]]
+  #
+  count_user_org:
+    inherit: 'project:count'
+    service: 
+      - session
+      - org
+      - projects
+  #
+  # List Users for the Sepcified Project
+  # URL : 
+  # - manage/project/users/list[?field=value-tuplet[&...]]
+  #
+  list_users: 
+    inherit: 'project:list'
+    keys:
+      - 'project:id'
+    service: 
+      - manage
+      - project
+      - users
+    action: list
+    parameters: 
+      allow: ['virtual:filter','virtual:sort','virtual:limit']
+  #
+  # Count Users for the Sepcified Project
+  # URL : 
+  # - manage/project/users/count[?field=value-tuplet[&...]]
+  #
+  count_users:
+    inherit: 'project:list_users'
+    action: count
+      

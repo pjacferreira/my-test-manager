@@ -1,0 +1,109 @@
+{
+  "name"    : "meta",
+
+  "include" :
+  [
+    {
+      "path" : "${QOOXDOO_PATH}/tool/data/config/application.json"
+    }
+  ],
+
+  "export" :
+  [
+    "api",
+    "api-data",
+    "build",
+    "clean",
+    "distclean",
+    "fix",
+    "info",
+    "inspector",
+    "lint",
+    "migration",
+    "pretty",
+    "profiling",
+    "source",
+    "source-all",
+    "source-debug",
+    "source-hybrid",
+    "source-server",
+    "source-server-reload",
+    "source-httpd-config",
+    "simulation-build",
+    "simulation-run",
+    "test",
+    "test-source",
+    "translation",
+    "validate-config",
+    "validate-manifest",
+    "watch"
+  ],
+
+  "default-job" : "source-hybrid",
+
+  "let" :
+  {
+    "APPLICATION"  : "meta",
+    "QOOXDOO_PATH" : "../../../qooxdoo-current",
+    "QXTHEME"      : "meta.theme.Theme",
+    "API_EXCLUDE"  : ["qx.test.*", "${APPLICATION}.theme.*", "${APPLICATION}.test.*", "${APPLICATION}.simulation.*"],
+    "LOCALES"      : [ "en" ],
+    "CACHE"        : "${TMPDIR}/qx${QOOXDOO_VERSION}/cache",
+    "ROOT"         : "."
+  },
+
+  // You only need to edit the remainder of this file, if you want to customize
+  // specific jobs, or add own job definitions.
+
+  "jobs" :
+  {    
+    "libraries" :
+    {
+      "library" :
+      [
+        { // Utilities Library
+          "manifest" : "../shared/Manifest.json"
+        }
+      ]
+    },
+    // Pretty Printer Configuration
+    "pretty": {
+      "pretty-print" :
+      {
+        "general" :
+        {
+          "indent-string"        : "  "
+        },
+        "comments" :
+        {
+          "trailing" :
+          {
+            "keep-column"        : false,
+            "comment-cols"       : [50, 70, 90],
+            "padding"            : "  "
+          }
+        },
+        "blocks" :
+        {
+          "align-with-curlies"   : false,
+          "open-curly" :
+          {
+            "newline-before"     : "n",
+            "indent-before"      : false
+          }
+        }
+      }
+    },    
+    "source-debug" :
+    {
+      "desc" : "source version with 'qx.disposerDebugLevel' for destruct support",
+
+      "extend" : [ "source" ],
+
+      "environment" :
+      {
+         "qx.disposerDebugLevel" : "2"
+      }
+    }    
+  }
+}

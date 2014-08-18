@@ -1,0 +1,34 @@
+{
+  "info" : 
+  {
+    "name" : "Utilities Library",
+
+    "summary" : "Utilities Library",
+    "description" : "Utility Classes Library.",
+    
+    "homepage" : "http://some.homepage.url/",
+
+    "license" : "AGPL v3",
+    "authors" : 
+    [
+      {
+        "name" : "Paulo Ferreira",
+        "email" : "pf@sourcenotes.org"
+      }
+    ],
+    
+    "version" : "trunk",
+    "qooxdoo-versions": ["3.5"]
+  },
+  
+  "provides" : 
+  {
+    "namespace"   : "utility",
+    "encoding"    : "utf-8",
+    "class"       : "source/class",
+    "resource"    : "source/resource",
+    "translation" : "source/translation",
+    "type"        : "library"
+  }
+}
+
