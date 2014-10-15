@@ -1,0 +1,6 @@
+; configuration for php yaml module
+; priority=20
+zend_extension=xdebug.so
+
+xdebug.remote_enable=1
+xdebug.remote_host=<%= node[:xdebug][:remote_host] %>

@@ -1,0 +1,13 @@
+syntax: glob
+
+# Ignore Directories
+.vagrant/
+.archives/
+modules/
+cookbooks/apt/
+cookbooks/mysql/
+cookbooks/yum/
+cookbooks/yum-mysql-community/
+
+# Ignore Files
+*~

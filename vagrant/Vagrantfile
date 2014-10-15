@@ -1,0 +1,130 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
+VAGRANTFILE_API_VERSION = "2"
+
+# BASE Box for VMs
+BASE_BOX = "local-trusty64-20141001"
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+
+  # MySQL Server Configuration
+  config.vm.define :database do |database|
+    # Box for Container
+    database.vm.box = BASE_BOX
+
+    # Currently vagrant-lxc doesn't support Specifying the IP ADDRESS
+    #database.vm.network :private_network, ip: "10.193.0.210"
+    # Current Method Provider LXC for Setting IPv4 Address
+    database.vm.provider :lxc do |lxc|
+      lxc.customize 'network.ipv4', '10.193.0.10/24'
+    end
+
+    # If Plugin Present - Activate Cache
+    if Vagrant.has_plugin?("vagrant-cachier")
+      # Configure cached packages to be shared between instances of the same base box.
+      # More info on the "Usage" link above
+      database.cache.scope = :box
+    end
+
+    # Make sure we have the latest version of CHEF installed
+    database.omnibus.chef_version = :latest
+
+    #
+    # PROVISIONING
+    #
+
+    # Update APT
+    database.vm.provision :shell, :inline => "apt-get update"
+
+    # Porvision Database Server
+    database.vm.provision "chef_solo" do |chef|
+      chef.add_recipe "database"
+    end
+  end
+
+  # Web Server Configuration
+  config.vm.define :webserver do |webserver|
+    # Box for Container
+    webserver.vm.box = BASE_BOX
+
+    # Currently vagrant-lxc doesn't support Specifying the IP ADDRESS
+    #webserver.vm.network :private_network, ip: "10.193.0.211"
+    # Current Method Provider LXC for Setting IPv4 Address
+    webserver.vm.provider :lxc do |lxc|
+      lxc.customize 'network.ipv4', '10.193.0.20/24'
+    end
+
+    # If Plugin Present - Activate Cache
+    if Vagrant.has_plugin?("vagrant-cachier")
+      # Configure cached packages to be shared between instances of the same base box.
+      # More info on the "Usage" link above
+      webserver.cache.scope = :box
+    end
+
+    # Make sure we have the latest version of CHEF installed
+    webserver.omnibus.chef_version = :latest
+
+    #
+    # PROVISIONING
+    #
+
+    # Update APT
+    webserver.vm.provision :shell, :inline => "apt-get update"
+
+    # Provision Web Server
+    webserver.vm.provision "chef_solo" do |chef|
+      chef.add_recipe "webserver"
+    end
+
+    #
+    # Shared Folders
+    #
+
+    # WEB Services
+    webserver.vm.synced_folder "../services/shared", "/var/www/html/testcenter/services/shared"
+    webserver.vm.synced_folder "../services/meta", "/var/www/html/testcenter/services/meta"
+    webserver.vm.synced_folder "../services/web", "/var/www/html/testcenter/services/web"
+
+    # UI Client
+    webserver.vm.synced_folder "../../qooxdoo-current/framework/source", "/var/www/html/qooxdoo-current/framework/source"
+    webserver.vm.synced_folder "../client/shared/source", "/var/www/html/testcenter/client/shared/source"
+    webserver.vm.synced_folder "../client/meta/source", "/var/www/html/testcenter/client/meta/source"
+    webserver.vm.synced_folder "../client/ui/source", "/var/www/html/testcenter/client/ui/source"
+
+  end
+
+  # Phalcon Build Enviroment
+  config.vm.define :builder do |builder|
+    # Box for Container
+    builder.vm.box = BASE_BOX
+
+    # Currently vagrant-lxc doesn't support Specifying the IP ADDRESS
+    #webserver.vm.network :private_network, ip: "10.193.0.211"
+
+    # If Plugin Present - Activate Cache
+    if Vagrant.has_plugin?("vagrant-cachier")
+      # Configure cached packages to be shared between instances of the same base box.
+      # More info on the "Usage" link above
+      builder.cache.scope = :box
+    end
+
+    # Make sure we have the latest version of CHEF installed
+    builder.omnibus.chef_version = :latest
+
+    #
+    # PROVISIONING
+    #
+
+    # Update APT
+    builder.vm.provision :shell, :inline => "apt-get update"
+
+    # Provision Builder
+    builder.vm.provision "chef_solo" do |chef|
+      chef.add_recipe "builder"
+    end
+
+  end
+
+end
