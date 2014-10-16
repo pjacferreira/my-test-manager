@@ -14,7 +14,7 @@ Header("content-type: application/x-javascript");
   window.$$tc.config = {
     'default': {
       ssl: false,
-      server: '10.193.0.20',
+      server: '10.193.0.201',
       port: null,
       base_url: 'testcenter'
     },

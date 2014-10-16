@@ -16,9 +16,9 @@
         "email" : "pf@sourcenotes.org"
       }
     ],
-    
-    "version" : "trunk",
-    "qooxdoo-versions": ["3.5.0"]
+
+    "version" : "master",
+    "qooxdoo-versions": ["4.0.1"]
   },
   
   "provides" : 
