@@ -155,6 +155,44 @@ class MetadataController extends BaseServiceController {
   }
 
   /**
+   * Return a Single Dataset's Metadata.
+   * 
+   * @param string $id Dataset ID
+   * @return string HTTP Body Response
+   */
+  public function dataset($id) {
+    // Create Action Context
+    $context = new ActionContext('dataset');
+    // Set Parameters for Context and Call Action
+    return $this->doAction($context
+                            ->setIfNotNull('id', StringUtilities::nullOnEmpty($id)));
+  }
+
+  /**
+   * Return a Multiple Datasets' Metadata.
+   * 
+   * @param string $list OPTIONAL Comma Seperated List of Dataset IDs
+   * @return string HTTP Body Response
+   */
+  public function datasets($list = null) {
+    // Create Action Context
+    $context = new ActionContext('datasets');
+
+    // Is the 'list' parameter set?
+    $list = StringUtilities::nullOnEmpty($list);
+    if (!isset($list)) { // NO: Try to extract it from the request parameters
+      $list = $this->requestParameter('list');
+    }
+
+    if (isset($list)) { // If we have a Field List (expand it to an array)
+      $list = explode(',', $list);
+    }
+
+    return $this->doAction($context
+                            ->setIfNotNull('list', $list));
+  }
+  
+  /**
    * 
    * @param type $id
    * @return type
@@ -223,6 +261,14 @@ class MetadataController extends BaseServiceController {
         break;
       case 'Services':
         $type = 'service';
+        $list = $context->getParameter('list');
+        break;
+      case 'Dataset':
+        $type = 'dataset';
+        $list = $this->arrayOfString($context->getParameter('id'));
+        break;
+      case 'Datasets':
+        $type = 'dataset';
         $list = $context->getParameter('list');
         break;
       case 'Form':

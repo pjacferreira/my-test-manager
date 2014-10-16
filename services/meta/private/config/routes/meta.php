@@ -35,6 +35,8 @@ $routes->map('/form/{id}', 'form');
 $routes->map('/forms[/]?{list}', 'forms');
 $routes->map('/service/{id}', 'service');
 $routes->map('/services[/]?{list}', 'services');
+$routes->map('/dataset/{id}', 'dataset');
+$routes->map('/datasets[/]?{list}', 'datasets');
 
 // NOTE: Routes are matched in reverse order LIFO (so routes added later are processed 1st)
 // Add Route Collection to Application

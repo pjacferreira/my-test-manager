@@ -21,51 +21,60 @@ namespace tests;
 
 use api\TestFactory;
 
-// $SKIP = true; // Skip the File for Current Test
+//$SKIP = true; // Skip the File for Current Test
 
 $TESTS = array(
   // START: Project Tests
   TestFactory::marker('projects', 1, 'START: Projects Tests')->
-    after('organizations', 299),
+    after('user-org', 199),
   // CREATE ORGANIZATIONS
   TestFactory::marker('projects', 100, 'START: Create Projects')->
     after('projects', 1),
-  TestFactory::tcServiceTest('projects', 110, 'manage/org/project/create', array(1, 'project O1-1'))->
+  TestFactory::tcServiceTest('projects', 110, 'project/create', array(1, 'project O1-1'))->
     after('projects', 100),
-  TestFactory::tcServiceTest('projects', 120, 'manage/org/project/create', array(2, 'project O2-1'), array('description' => 'Organization 2 - Project 1'))->
+  TestFactory::tcServiceTest('projects', 120, 'project/create', array(2, 'project O2-1'), array('project:description' => 'Organization 2 - Project 1'))->
     after('projects', 110),
-  TestFactory::tcServiceTest('projects', 130, 'manage/org/project/create', array(3, 'project O3-1'))->
+  TestFactory::tcServiceTest('projects', 130, 'project/create', array(3, 'project O3-1'))->
     after('projects', 120),
-  TestFactory::tcServiceTest('projects', 140, 'manage/org/project/create', array(4, 'project O4-1'), array('description' => 'Organization 4 - Project 1'))->
+  TestFactory::tcServiceTest('projects', 140, 'project/create', array(4, 'project O4-1'), array('project:description' => 'Organization 4 - Project 1'))->
     after('projects', 130),
-  TestFactory::tcServiceTest('projects', 150, 'manage/org/project/create', array(5, 'project O5-1'), array('description' => 'Organization 5 - Project 1'))->
+  TestFactory::tcServiceTest('projects', 150, 'project/create', array(5, 'project O5-1'), array('project:description' => 'Organization 5 - Project 1'))->
     after('projects', 140),
   TestFactory::marker('projects', 199, 'END: Create Projects')->
-    after('projects', 150),
-  // PROJECT MODIFICATIONS
-  TestFactory::marker('projects', 200, 'START: Project Modifications')->
+    after('projects', 150)->before('session', 200),
+  // ORGANIZATION SESSION : Set Current Session Project
+  TestFactory::marker('projects', 200, 'START: Session Project')->
     after('projects', 199),
-  // Read/Update Projects
-  TestFactory::tcServiceTest('projects', 210, 'manage/project/update', 1, array('description' => 'Organization 1 - Project 1'))->
-    after('projects', 200),
-  TestFactory::tcServiceTest('projects', 211, 'manage/project/read', 1)->
-    after('projects', 210),
-  TestFactory::tcServiceTest('projects', 215, 'manage/project/update', 'project O3-1', array('description' => 'Organization 3 - Project 1'))->
+  TestFactory::tcServiceTest('projects', 210, 'session/set/project', 2)->
+          after('projects', 200),
+  TestFactory::tcServiceTest('projects', 211, 'session/get/project')->
+          after('projects', 210),
+  TestFactory::marker('projects', 299, 'END: Session Project')->
     after('projects', 211),
-  TestFactory::tcServiceTest('projects', 216, 'manage/project/read', 'project O3-1')->
-    after('projects', 215),
+  // PROJECT MODIFICATIONS
+  TestFactory::marker('projects', 300, 'START: Project Modifications')->
+    after('projects', 299),
+  // Read/Update Projects
+  TestFactory::tcServiceTest('projects', 310, 'project/update', 1, array('project:description' => 'Organization 1 - Project 1'))->
+    after('projects', 300),
+  TestFactory::tcServiceTest('projects', 311, 'project/read', 1)->
+    after('projects', 310),
+  TestFactory::tcServiceTest('projects', 315, 'project/update', 'project O3-1', array('project:description' => 'Organization 3 - Project 1'))->
+    after('projects', 311),
+  TestFactory::tcServiceTest('projects', 316, 'project/read', 'project O3-1')->
+    after('projects', 315),
   // List and Count All Projects
-  TestFactory::tcServiceTest('projects', 220, 'manage/projects/list')->
-    after('projects', 216),
-  TestFactory::tcServiceTest('projects', 221, 'manage/projects/count')->
-    after('projects', 220),
+  TestFactory::tcServiceTest('projects', 320, 'projects/list')->
+    after('projects', 316),
+  TestFactory::tcServiceTest('projects', 321, 'projects/count')->
+    after('projects', 320),
   // List and Count Projects for a Specific Organization
-  TestFactory::tcServiceTest('projects', 230, 'manage/org/projects/list', 1)->
-    after('projects', 221),
-  TestFactory::tcServiceTest('projects', 231, 'manage/org/projects/count', 1)->
-    after('projects', 230),
-  TestFactory::marker('projects', 299, 'END: Project Modifications')->
-    after('projects', 231)->before('session', 200),
+  TestFactory::tcServiceTest('projects', 330, 'org/projects/list', 1)->
+    after('projects', 321),
+  TestFactory::tcServiceTest('projects', 331, 'org/projects/count', 1)->
+    after('projects', 330),
+  TestFactory::marker('projects', 399, 'END: Project Modifications')->
+    after('projects', 331)->before('session', 200),
   // PROJECT CLEANUP
   TestFactory::marker('projects', 900, 'START: Project Cleanup')->
     after('projects', 299)->after('session', 899),
@@ -80,13 +89,13 @@ $TESTS = array(
     after('projects', 912),
   TestFactory::tcServiceTest('projects', 914, 'project/delete', 5)->
     after('projects', 913),
-  TestFactory::tcServiceTest('projects', 920, 'manage/projects/list')->
+  TestFactory::tcServiceTest('projects', 920, 'projects/list')->
     after('projects', 914),
-  TestFactory::tcServiceTest('projects', 921, 'manage/projects/count')->
+  TestFactory::tcServiceTest('projects', 921, 'projects/count')->
     after('projects', 920),
-  TestFactory::tcServiceTest('projects', 930, 'manage/org/projects/list', 1)->
+  TestFactory::tcServiceTest('projects', 930, 'org/projects/list', 1)->
     after('projects', 921),
-  TestFactory::tcServiceTest('projects', 931, 'manage/org/projects/count', 1)->
+  TestFactory::tcServiceTest('projects', 931, 'org/projects/count', 1)->
     after('projects', 930),
   TestFactory::marker('projects', 949, 'END: Project Cleanup')->
     after('projects', 931)->before('organizations', 900),

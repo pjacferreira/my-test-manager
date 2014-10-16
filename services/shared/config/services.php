@@ -50,5 +50,5 @@ $di->setShared('session', function() {
  * SHARED Session Manager
  */
 $di->setShared('sessionManager', array(
-    'className' => 'shared\session\Manager'
+    'className' => '\shared\session\Manager'
 ));

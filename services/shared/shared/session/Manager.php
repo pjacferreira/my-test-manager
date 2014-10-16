@@ -210,7 +210,7 @@ class Manager extends \Phalcon\DI\Injectable {
    * @param mixed $value New Value for the Variable
    * @return mixed Existing Value for Variable, or null, if not set
    */
-  public static function setVariable($variable, $value) {
+  public function setVariable($variable, $value) {
     if ($this->isLoggedIn()) {
       $variable = StringUtilities::nullOnEmpty($variable);
 
@@ -289,9 +289,8 @@ class Manager extends \Phalcon\DI\Injectable {
    * @param string $variable Variable Name
    * @return integer Existing Organization Identifier, or null, if not set
    */
-  public static function getOrganization() {
+  public function getOrganization() {
     return $this->getVariable('__tc_organization');
-    ;
   }
 
   /**
@@ -303,7 +302,7 @@ class Manager extends \Phalcon\DI\Injectable {
    * @param integer $container_id Container Identifier
    * @return integer Previous Organization Identifier, or null, if not set
    */
-  public static function setOrganization($org_id, $project_id = null, $container_id = null) {
+  public function setOrganization($org_id, $project_id = null, $container_id = null) {
     // Verify Required Parameters
     assert('isset($org_id) && is_integer($org_id)');
 
@@ -327,7 +326,7 @@ class Manager extends \Phalcon\DI\Injectable {
    * 
    * @return integer Previous Organization Identifier, or null, if not set
    */
-  public static function clearOrganization() {
+  public function clearOrganization() {
     // Save the Current Organization ID and then Set it to the New Value
     $old_org = $this->getOrganization();
     $this->clearVariable('__tc_organization');
@@ -353,7 +352,7 @@ class Manager extends \Phalcon\DI\Injectable {
    * @param string $variable Variable Name
    * @return integer Existing Project Identifier, or null, if not set
    */
-  public static function getProject() {
+  public function getProject() {
     return $this->getVariable('__tc_project');
   }
 
@@ -364,7 +363,7 @@ class Manager extends \Phalcon\DI\Injectable {
    * @param integer $container_id Container Identifier
    * @return integer Previous Project Identifier, or null, if not set
    */
-  public static function setProject($project_id, $container_id = null) {
+  public function setProject($project_id, $container_id = null) {
     // Verify Required Parameters
     assert('isset($project_id) && is_integer($project_id)');
 
@@ -388,7 +387,7 @@ class Manager extends \Phalcon\DI\Injectable {
    * 
    * @return integer Previous Project Identifier, or null, if not set
    */
-  public static function clearProject() {
+  public function clearProject() {
     // Save the Current Project ID and then Set it to the New Value
     $old_project = $this->getProject();
     $this->clearVariable('__tc_project');
@@ -413,7 +412,7 @@ class Manager extends \Phalcon\DI\Injectable {
    * 
    * @return integer Existing Container Identifier, or null, if not set
    */
-  public static function getContainer() {
+  public function getContainer() {
     return $this->getVariable('__tc_container');
   }
 
@@ -423,7 +422,7 @@ class Manager extends \Phalcon\DI\Injectable {
    * @param integer $container_id Container Identifier
    * @return integer Previous Container Identifier, or null, if not set
    */
-  public static function setContainer($container_id) {
+  public function setContainer($container_id) {
     // Verify Required Parameters
     assert('isset($container_id) && is_integer($container_id)');
 
@@ -439,12 +438,87 @@ class Manager extends \Phalcon\DI\Injectable {
    * 
    * @return integer Previous Container Identifier, or null, if not set
    */
-  public static function clearContainer() {
+  public function clearContainer() {
     // Save the Current Container ID and then Set it to the New Value
     $old_container = $this->getContainer();
     $this->clearVariable('__tc_container');
 
     return $old_container;
+  }
+
+  /* ---------------------------------------------------------------------------
+   * UTILITY FUNCTIONS: Checks
+   * ---------------------------------------------------------------------------
+   */
+
+  /**
+   * Has a Session been Started?
+   * 
+   * @return bool 'TRUE' If Session Started, Exception otherwise
+   * @throws \Exception If no Active Session
+   */
+  public function checkInSession() {
+    if (!$this->isActive()) {
+      throw new \Exception('No Active Session.', 1);
+    }
+
+    return true;
+  }
+
+  /**
+   * Has a Session User been Logged in?
+   * 
+   * @return bool 'TRUE' If User Logged In, Exception otherwise
+   * @throws \Exception If no User Logged In
+   */
+  public function checkLoggedIn() {
+    if (!$this->isLoggedIn()) {
+      throw new \Exception('No Active Session.', 2);
+    }
+
+    return true;
+  }
+
+  /**
+   * Has a Session Organization been Set?
+   * 
+   * @return bool 'TRUE' If Session Organization set, Exception otherwise
+   * @throws \Exception If no Session Organization Set
+   */
+  public function checkOrganization() {
+    if (!$this->getOrganization()) {
+      throw new \Exception('No Organization has been set for the Session.', 3);
+    }
+
+    return true;
+  }
+
+  /**
+   * Has a Session Project been Set?
+   * 
+   * @return bool 'TRUE' If Session Project set, Exception otherwise
+   * @throws \Exception If no Session Project Set
+   */
+  public function checkProject() {
+    if (!$this->getProject()) {
+      throw new \Exception('No Project has been set for the Session.', 4);
+    }
+
+    return true;
+  }
+
+  /**
+   * Has a Session Container been Set?
+   * 
+   * @return bool 'TRUE' If Session Container set, Exception otherwise
+   * @throws \Exception If no Session Container Set
+   */
+  public function checkContainer() {
+    if (!$this->getContainer()) {
+      throw new \Exception('No Container has been set for the Session.', 5);
+    }
+
+    return true;
   }
 
 }

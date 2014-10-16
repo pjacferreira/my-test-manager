@@ -63,7 +63,6 @@ user:
       - 'user:name'
     parameters:
       require: true
-      allow: ~
       exclude: ['user:id', 'user:password']
   #
   # Update User Password
@@ -94,5 +93,70 @@ user:
       - 'user:id'
       - 'user:name'
     parameters:
-      allow: none
+      require: false
+      allow: ~
+      
+  #
+  # Base for User<-->Organization Actions
+  #
+  organizations:
+    inherit: default
+    service: 
+      - user
+      - orgs
+    key: 'user:id'
+    key-required: false
     
+  #
+  # List the Organizations a User or Current Session User Belongs to
+  # URL : 
+  # - user/orgs/list[/{user:id}][?field=value-tuplet[&...]]
+  #
+  orgs_list: 
+    inherit: 'user:organizations'
+    action: list
+    parameters: 
+      allow: ['virtual:filter','virtual:sort','virtual:limit']
+  #
+  # Count the Organizations a User or the Current Session User Belongs to
+  # URL : 
+  # - user/orgs/count[/{user:id}][?field=value-tuplet[&...]]
+  #
+  orgs_count:
+    inherit: 'user:organizations'
+    action: count
+    parameters:
+      allow: ['virtual:filter']
+
+  #
+  # Base for User<-->Project Actions
+  #
+  projects:
+    inherit: default
+    service: 
+      - user
+      - projects      
+    key: 'user:id'
+    key-required: false
+
+  #
+  # List Projects for the Specified User / Session User
+  # URL : 
+  # - user/projects/list[/{user:id}][?field=value-tuplet[&...]]
+  #
+  projects_list: 
+    inherit: 'user:projects'
+    action: list
+    parameters: 
+      allow: ['virtual:filter','virtual:sort','virtual:limit']
+  #
+  # Count Projects for the Specified User / Session User
+  # URL : 
+  # - user/projects/count[/{user:id}][?field=value-tuplet[&...]]
+  #
+  projects_count:
+    inherit: 'user:projects'
+    action: count
+    parameters:
+      allow: ['virtual:filter']
+ 

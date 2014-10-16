@@ -129,13 +129,15 @@ class TestFactory {
    */
   protected static function explodeRoute($route) {
     if (isset($route)) {
-      if (is_string($route)) {
+      if (is_array($route)) {
+        // TODO use array_map to atleast mark empty strings as null
+        return $route;
+      } else if (is_string($route)) {
         $route = string_onEmpty($route);
         if (isset($route)) {
           return explode('/', $route);
         }
-      } else if (is_array($route)) {
-        // TODO use array_map to atleast mark empty strings as null
+      } else if (is_integer($route)) {
         return $route;
       }
     }

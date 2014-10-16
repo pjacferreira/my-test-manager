@@ -559,7 +559,7 @@ class BaseController extends Controller {
     if (!$required) {
       if (isset($actions)) {
         $process = array_search($action, $actions) !== FALSE;
-      } else { // If BOTH, $actions AND $reqActions (NULL) - Assume we are Procssing for All Actions (Otherwise - Only Specifica Actions)
+      } else { // If BOTH, $actions AND $reqActions (NULL) - Assume we are Processing for All Actions (Otherwise - Only Specifica Actions)
         $process = !isset($reqActions);
       }
     }

@@ -20,12 +20,12 @@
 
 project:
   id: 
-    inherit: ':key'
+    inherit: ':key_sequence'
     data-direction: in
     label: ID
     description: Unique Project Identifier
   name:
-    inherit: ':key_sequence'
+    inherit: ':required'
     label: Name
     description: Unique Project Name
   description:

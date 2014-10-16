@@ -45,8 +45,8 @@ project:
     inherit: 'project:default'
     title: Create Project
     layout: 
-      - organization
       - information
+      - organization
       - description
     services:
       create: 'project:create'
@@ -55,7 +55,18 @@ project:
       organization:
         type: group
         label: Organization
-        layout: ['project:organization']
+        layout: ['orglist']
+      orglist:
+        type: list
+        label: Organization
+        dataset: 'user:organizations'
+        display: 'organization:name'
+        input:
+          - 'project:organization'
+        output:
+          - 'project:organization'
+        map:
+          'project:organization' : 'organization:id'
   #
   # Project Details Form
   #

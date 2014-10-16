@@ -21,62 +21,47 @@ project:
   #
   # Defaults for Project Management
   #
-  manage:
+  default:
     inherit: default
-    service: 
-      - manage
-      - project
+    service: project
     parameters:
       allow: 'project:*'
   #
-  # Defaults for Project Listing
-  #
-  listing:
-    inherit: default
-    service: 
-      - manage
-      - projects
-    parameters: 
-      allow: ['virtual:filter','virtual:sort','virtual:limit']
-  #
   # Create Project Within the Current Session Organization
   # URL :
-  # - manage/org/project/create/{organization:id}/{project:name}[?field=value-tuplet[&...]]
+  # - project/create/{organization:id}/{project:name}[?field=value-tuplet[&...]]
   #
   create:
-    inherit: 'project:manage'
-    service: 
-      - manage
-      - org
-      - project
+    inherit: 'project:default'
     action: create
     key:
-      - 'organization:id'
+      - 'project:organization'
       - 'project:name'
     parameters:
-      exclude: ['project:id', 'project:name', 'organization:id']
+      exclude: ['project:id', 'project:name', 'project:organization']
   #
   # Read Project Record
   # URL : 
-  # - manage/project/read/{project:id}   or
-  # - manage/project/read/{project:name}
+  # - project/read/{project:id}   or
+  # - project/read/{project:name}
   #
   read:    
-    inherit: 'project:manage'
+    inherit: 'project:default'
     action: read
     keys:
       - 'project:id'
       - 'project:name'
     parameters:
+      require: false
       allow: ~
   #
   # Update Project Record
   # URL : 
-  # - manage/project/update/{project:id}?field=value-tuplet[&...]   or
-  # - manage/project/update/{project:name}?field=value-tuplet[&...]
+  # - project/update/{project:id}?field=value-tuplet[&...]   or
+  # - project/update/{project:name}?field=value-tuplet[&...]
   #
   update:
-    inherit: 'project:manage'
+    inherit: 'project:default'
     action: update
     keys:
       - 'project:id'
@@ -87,79 +72,47 @@ project:
   #
   # Delete Project Record
   # URL : 
-  # - manage/project/delete/{project:id}   or
-  # - manage/project/delete/{project:name}
+  # - project/delete/{project:id}   or
+  # - project/delete/{project:name}
   #
   delete:
-    inherit: 'project:manage'
+    inherit: 'project:default'
     action: delete
     keys:
       - 'project:id'
       - 'project:name'
     parameters:
+      require: false
       allow: ~
+
   #
-  # List Project Records
-  # URL : 
-  # - manage/projects/list[?field=value-tuplet[&...]]
+  # Base for Project<-->User Actions
   #
-  list: 
-    inherit: 'project:listing'
-    action: list
-  #
-  # Count Project Records
-  # URL : 
-  # - manage/projects/count[?field=value-tuplet[&...]]
-  #
-  count:
-    inherit: 'project:listing'
-    action: count
-    parameters:
-      allow: ['virtual:filter']
-  #
-  # List the Projects for the Current Session User / Organization
-  # URL : 
-  # - session/org/projects/list[?field=value-tuplet[&...]]
-  #
-  list_user_org: 
-    inherit: 'project:list'
+  users:
+    inherit: default
     service: 
-      - session
-      - org
-      - projects      
-  #
-  # Count the Projects for the Current Session User / Organization
-  # URL : 
-  # - session/org/projects/count[?field=value-tuplet[&...]]
-  #
-  count_user_org:
-    inherit: 'project:count'
-    service: 
-      - session
-      - org
-      - projects
-  #
-  # List Users for the Sepcified Project
-  # URL : 
-  # - manage/project/users/list[?field=value-tuplet[&...]]
-  #
-  list_users: 
-    inherit: 'project:list'
-    keys:
-      - 'project:id'
-    service: 
-      - manage
       - project
       - users
+    key: 'project:id'
+    key-required: false
+
+  #
+  # List Users for the Specified Project / Session Project
+  # URL : 
+  # - project/users/list[/{project:id}][?field=value-tuplet[&...]]
+  #
+  user_list: 
+    inherit: 'project:users'
     action: list
     parameters: 
       allow: ['virtual:filter','virtual:sort','virtual:limit']
   #
-  # Count Users for the Sepcified Project
+  # Count Users for the Specified Project / Session Project
   # URL : 
-  # - manage/project/users/count[?field=value-tuplet[&...]]
+  # - project/users/count[/{project:id}][?field=value-tuplet[&...]]
   #
-  count_users:
-    inherit: 'project:list_users'
+  user_count:
+    inherit: 'project:users'
     action: count
-      
+    parameters:
+      allow: ['virtual:filter']

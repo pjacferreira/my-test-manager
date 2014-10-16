@@ -21,7 +21,7 @@ namespace tests;
 
 use api\TestFactory;
 
-//$SKIP = true; // Skip the File for Current Test
+$SKIP = true; // Skip the File for Current Test
 
 $TESTS = array(
     // START: Normal User Session Tests 

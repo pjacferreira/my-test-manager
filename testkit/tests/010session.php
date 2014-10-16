@@ -31,7 +31,7 @@ $TESTS = array(
             after('session', 1),
     TestFactory::tcServiceTest('session', 110, 'session/login', 'admin/admin')->
             after('session', 100),
-    TestFactory::tcServiceTest('session', 111, 'session/user/whoami')->
+    TestFactory::tcServiceTest('session', 111, 'session/whoami')->
             after('session', 110),
     TestFactory::marker('session', 199, 'POST Admin Login')->
             after('session', 111),

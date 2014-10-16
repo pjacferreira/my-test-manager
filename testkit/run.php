@@ -115,8 +115,8 @@ function runTests($testSet, $client, &$cookiejar) {
         echo "{$message}\n";
         break;
       case Test::STANDARD: // Service Test
-        if (isset($SIMULATE) && $SIMULATE) {
-          echo "SIMULATE [{$test->getKey()}]";
+        if ($SIMULATE) {
+          echo "SIMULATE [{$test->getKey()} - {$DOCROOT}/{$test->toUrl()}]\n";
         } else {
           // Get Renderer and Validator for the Test
           $validator = $test->getValidator();
@@ -132,12 +132,12 @@ function runTests($testSet, $client, &$cookiejar) {
             // Create Request
             $tstart = microtime(true);
             $url = $test->toUrl();
-            if (($TESTS_RUN == 1) && isset($XDEBUG)) {
+            if (isset($XDEBUG)) {
               // Activate XDEBUG for the Tests (XDEBUG Will be run against the request, and not locally)
               if (stripos($url, '?') === FALSE) {
                 $url .= "?XDEBUG_SESSION_START=$XDEBUG";
               } else {
-                $url -= "&XDEBUG_SESSION_START=$XDEBUG";
+                $url .= "&XDEBUG_SESSION_START=$XDEBUG";
               }
             }
             $request = $client->get("$DOCROOT/$url");

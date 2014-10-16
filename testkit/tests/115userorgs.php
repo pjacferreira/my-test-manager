@@ -21,73 +21,81 @@ namespace tests;
 
 use api\TestFactory;
 
-// $SKIP = true; // Skip the File for Current Test
+//$SKIP = true; // Skip the File for Current Test
 
 $TESTS = array(
   // START: Organization<-->Session Tests
   TestFactory::marker('user-org', 1, 'START: User<-->Organization Tests')->
-    after('users', 299)->after('organizations',299),
+    after('organizations',199),
   // CREATE ASSOCIATION BETWEEN USER AND ORGANIZATIONS
   TestFactory::marker('user-org', 100, 'START: User<-->Organization Permissions')->
     after('user-org', 1),
-  TestFactory::tcServiceTest('user-org', 110, 'manage/user/permissions/org/set', array(2, 1, "p2-1"))
+  TestFactory::tcServiceTest('user-org', 110, 'user/org/permissions/set', array(2, 1, 'p2-1'))
     ->after('user-org', 100), // User 2 <--> Organization 1
-  TestFactory::tcServiceTest('user-org', 111, 'manage/user/permissions/org/set', array(2, 2, "p2-2"))
+  TestFactory::tcServiceTest('user-org', 111, 'user/org/permissions/set', array(2, 2, 'p2-2'))
     ->after('user-org', 110), // User 2 <--> Organization 2
-  TestFactory::tcServiceTest('user-org', 120, 'manage/user/permissions/org/set', array(3, 1, "p3-1"))
+  TestFactory::tcServiceTest('user-org', 120, 'user/org/permissions/set', array(3, 1, 'p3-1'))
     ->after('user-org', 111), // User 3 <--> Organization 1
-  TestFactory::tcServiceTest('user-org', 121, 'manage/user/permissions/org/set', array(3, 3, "p3-3"))
+  TestFactory::tcServiceTest('user-org', 121, 'user/org/permissions/set', array(3, 3, 'p3-3'))
     ->after('user-org', 120), // User 3 <--> Organization 3
-  TestFactory::tcServiceTest('user-org', 130, 'manage/user/permissions/org/set', array(4, 1, "p4-1"))
+  TestFactory::tcServiceTest('user-org', 130, 'user/org/permissions/set', array(4, 1, 'p4-1'))
     ->after('user-org', 121), // User 4 <--> Organization 1
-  TestFactory::tcServiceTest('user-org', 131, 'manage/user/permissions/org/set', array(4, 3, "p4-3"))
+  TestFactory::tcServiceTest('user-org', 131, 'user/org/permissions/set', array(4, 3, 'p4-3'))
     ->after('user-org', 130), // User 4 <--> Organization 4
-  TestFactory::tcServiceTest('user-org', 132, 'manage/user/permissions/org/set', array(4, 4, "p4-4"))
+  TestFactory::tcServiceTest('user-org', 132, 'user/org/permissions/set', array(4, 4, 'p4-4'))
     ->after('user-org', 131), // User 4 <--> Organization 4
-  TestFactory::tcServiceTest('user-org', 140, 'manage/user/permissions/org/set', array(5, 4, "p5-1"))
+  TestFactory::tcServiceTest('user-org', 140, 'user/org/permissions/set', array(5, 4, 'p5-1'))
     ->after('user-org', 132), // User 5 <--> Organization 1
-  TestFactory::tcServiceTest('user-org', 141, 'manage/user/permissions/org/set', array(5, 4, "p5-4"))
+  TestFactory::tcServiceTest('user-org', 141, 'user/org/permissions/set', array(5, 4, 'p5-4'))
     ->after('user-org', 140), // User 5 <--> Organization 4
-  TestFactory::tcServiceTest('user-org', 142, 'manage/user/permissions/org/set', array(5, 5, "p5-5"))
+  TestFactory::tcServiceTest('user-org', 142, 'user/org/permissions/set', array(5, 5, 'p5-5'))
     ->after('user-org', 141), // User 5 <--> Organization 4
   TestFactory::marker('user-org', 199, 'END: User<-->Organization Permissions')->
-    after('user-org', 142),
+    after('user-org', 142)->before('session', 200),
   // USER <--> ORGANIZATION PERMISSIONS LISTINGS
   TestFactory::marker('user-org', 200, 'START: User<-->Organization Permissions Lists')->
-    after('user-org', 199),
-  TestFactory::tcServiceTest('user-org', 210, 'manage/user/orgs/list', 4)
-    ->after('user-org', 200), // Organizations User 4 Belongs to
-  TestFactory::tcServiceTest('user-org', 211, 'manage/user/orgs/count', 4)
-    ->after('user-org', 210), // Organizations User 4 Belongs to
-  TestFactory::tcServiceTest('user-org', 220, 'manage/org/users/list', 4)
-    ->after('user-org', 211), // Users in Organization 4
-  TestFactory::tcServiceTest('user-org', 221, 'manage/org/users/count', 4)
-    ->after('user-org', 220), // Users in Organization 4
-  TestFactory::tcServiceTest('user-org', 230, 'manage/user/permissions/orgs/list', 4)
-    ->after('user-org', 221), // Permission, per Organization, for User 4
-  TestFactory::tcServiceTest('user-org', 231, 'manage/user/permissions/orgs/count', 4)
-    ->after('user-org', 230), // Permission, per Organization, for User 4
+    after('user-org', 199)->after('organizations',299),
+  TestFactory::tcServiceTest('user-org', 210, 'user/orgs/list')
+    ->after('user-org', 200), // Organizations User 'admin' Belongs to
+  TestFactory::tcServiceTest('user-org', 211, 'user/orgs/count')
+    ->after('user-org', 210), // Organizations User 'admin' Belongs to
+  TestFactory::tcServiceTest('user-org', 220, 'user/orgs/list', 4)
+    ->after('user-org', 211), // Organizations User 4 Belongs to
+  TestFactory::tcServiceTest('user-org', 221, 'user/orgs/count', 4)
+    ->after('user-org', 220), // Organizations User 4 Belongs to
+  TestFactory::tcServiceTest('user-org', 230, 'org/users/list')
+    ->after('user-org', 221), // Users in Session Organization (Should be 5)
+  TestFactory::tcServiceTest('user-org', 231, 'org/users/count')
+    ->after('user-org', 230), // Users in Session Organization (Should be 5)
+  TestFactory::tcServiceTest('user-org', 240, 'org/users/list', 4)
+    ->after('user-org', 231), // Users in Organization 4
+  TestFactory::tcServiceTest('user-org', 241, 'org/users/count', 4)
+    ->after('user-org', 240), // Users in Organization 4
+  TestFactory::tcServiceTest('user-org', 250, 'user/orgs/permissions/list', 4)
+    ->after('user-org', 241), // Permission, per Organization, for User 4
+  TestFactory::tcServiceTest('user-org', 251, 'user/orgs/permissions/count', 4)
+    ->after('user-org', 250), // Permission, per Organization, for User 4
   TestFactory::marker('user-org', 299, 'END: User<-->Organization Permissions Lists')->
-    after('user-org', 231),
+    after('user-org', 251),
   // USER <--> ORGANIZATION READ/DELETE
   TestFactory::marker('user-org', 300, 'START: User<-->Organization Modifications')->
     after('user-org', 299),
-  TestFactory::tcServiceTest('user-org', 310, 'manage/user/permissions/org/get', array(4, 3))
+  TestFactory::tcServiceTest('user-org', 310, 'user/org/permissions/get', array(4, 3))
     ->after('user-org', 300), // User 4 <--> Organization 3
-  TestFactory::tcServiceTest('user-org', 311, 'manage/user/permissions/org/clear', array(4, 3))
+  TestFactory::tcServiceTest('user-org', 311, 'user/org/permissions/clear', array(4, 3))
     ->after('user-org', 310), // User 4 <--> Organization 3
-  TestFactory::tcServiceTest('user-org', 312, 'manage/user/orgs/list', 4)
+  TestFactory::tcServiceTest('user-org', 312, 'user/orgs/list', 4)
     ->after('user-org', 311), // Organizations's User 4 Belongs to
-  TestFactory::tcServiceTest('user-org', 313, 'manage/user/orgs/count', 4)
+  TestFactory::tcServiceTest('user-org', 313, 'user/orgs/count', 4)
     ->after('user-org', 312), // Organizations User 4 Belongs to
-  TestFactory::tcServiceTest('user-org', 314, 'manage/org/users/list', 3)
+  TestFactory::tcServiceTest('user-org', 314, 'org/users/list', 3)
     ->after('user-org', 313), // Users in Organization 3
-  TestFactory::tcServiceTest('user-org', 315, 'manage/org/users/count', 3)
+  TestFactory::tcServiceTest('user-org', 315, 'org/users/count', 3)
     ->after('user-org', 314), // Users in Organization 3
   TestFactory::marker('user-org', 399, 'END: User<-->Organization Modifications')->
-    after('user-org', 315)->before('session', 200),
+    after('user-org', 315),
   // END: Organization<-->User Tests
   TestFactory::marker('user-org', 999, 'END: User<-->Organization Tests')->
-    after('user-org', 399)->before('users', 900)->before('organizations', 900),
+    after('user-org', 399)->before('organizations', 900),
 );
 ?>

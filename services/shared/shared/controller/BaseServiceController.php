@@ -21,7 +21,6 @@ namespace shared\controller;
 
 use shared\utility\StringUtilities;
 
-
 /**
  * Base Controller for Web Service (Small modifications to the working of the
  * Base Controller, to make it easier to develope web services).
@@ -101,8 +100,12 @@ class BaseServiceController extends BaseController {
    * @throws \Exception On any type of failure condition
    */
   protected function do_call($context) {
-    // Call the Function
-    $return = $this->callMethod($method, $defaultMethod, $context);
+    // Parameter Validation
+    assert('isset($context) && is_object($context)');
+
+    $action = $context->getAction();
+    assert('isset($action)');
+
     /* Function: privilegeChecks{action} (Default: privilegeChecks)
      * Perform zero or more checks, to validate the Privileges/Permissions
      * -- Definition function {name} ($context) {
@@ -138,7 +141,7 @@ class BaseServiceController extends BaseController {
      */
     $defaultMethod = 'contextChecks';
     $method = $defaultMethod . ucfirst($action);
-    
+
     // Call the Parents Class
     return parent::do_call(isset($return) ? $return : $context);
   }
@@ -148,6 +151,30 @@ class BaseServiceController extends BaseController {
    * ---------------------------------------------------------------------------
    */
 
+  /**
+   * @return bool
+   * @throws \Exception
+   */
+  public function checkInSession() {
+    if (!$this->sessionManager->isActive()) {
+      throw new \Exception('No Active Session.', 2);
+    }
+
+    return true;
+  }
+
+  /**
+   * @return bool
+   * @throws \Exception
+   */
+  public function checkLoggedIn() {
+    if (!$this->sessionManager->isLoggedIn()) {
+      throw new \Exception('No Active Session.', 3);
+    }
+
+    return true;
+  }
+  
   /**
    * @param $options
    * @return array
@@ -187,29 +214,25 @@ class BaseServiceController extends BaseController {
 
     return $return;
   }
-
+  
   /**
-   * @return bool
-   * @throws \Exception
+   * Extract the Entity Header Information and Put it in the destination array
+   * 
+   * @param array $source Entity to Extract the Information From
+   * @param array $destination Destiantion Array for Entity Information
    */
-  public function checkInSession() {
-    if (!$this->sessionManager->isActive()) {
-      throw new \Exception('No Active Session.', 2);
-    }
+  protected function moveEntityHeader(&$source, &$destination) {
+    // Copy Header to Destionation
+    $destination['__type'] = $source['__type'];
+    $destination['__entity'] = $source['__entity'];
+    $destination['__key'] = $source['__key'];
+    $destination['__fields'] = $source['__fields'];
 
-    return true;
+    // Remove Header
+    unset($source['__type']);
+    unset($source['__entity']);
+    unset($source['__key']);
+    unset($source['__fields']);
   }
-
-  /**
-   * @return bool
-   * @throws \Exception
-   */
-  public function checkLoggedIn() {
-    if (!$this->sessionManager->isLoggedIn()) {
-      throw new \Exception('No Active Session.', 3);
-    }
-
-    return true;
-  }
-
+  
 }

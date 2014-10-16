@@ -15,28 +15,34 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ##
-# User Service Definitions
+# Base Service Definitions
 ##
 
 services:
   default:
     default:
-      # inherit: [(service):](service:action) to inherit value from
+      # Specifies the Parent Service, in the inheritance hierarchy, for this service
+      #
+      # (OPTIONAL)
+      #
+      # Elements:
+      # - TEXT: service_id
+      inherit: ~
       # [service] Required Parameter (NOT NULL)
       # can have 2 Possible Values
       # 1. (String) - a specific service name  ex: 'user'
       # 2. (Array of Strings) - a service path ex: [ 'org', 'projects']
-      # service: ~
+      service: ~      
       # [action] (String) Required Parameter (NOT NULL)
       # Identifies the action to be executed on the service ex: 'create'
-      # action: ~
+      action: ~
       # [key] Optional Value 
       # - Used when the Service/Action accepts only a single key
       # - A Service/Action is not required to have a key (i.e. it's Optional)
       # can have 2 Possible Values
       # 1. (String) - a single field name, as the key            ex: 'user:id'
       # 2. (Array of Strings) - a series of fields, form the key ex: 'user:id', 'organization:id']
-      #key: ~
+      key: ~
       # [keys] Optional Value 
       # - Used when the Service/Action accepts multiple combination of fields
       # as keys
@@ -49,6 +55,8 @@ services:
       # - 'suer:name' (i.e both the user:id or user:name can be used as keys
       #for the service, with preference to 'user:id'
       #keys: ~
+      # [key-required] (Boolean) If a key is defined, is it required? (DEFAULT: true, key is required)
+      key-required: true
       # [parameters] Define the parameters that can be passed to the service/action
       # This is a Hash-Map of Options
       parameters:

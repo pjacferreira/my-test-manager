@@ -79,3 +79,67 @@ organization:
     parameters:
       allow: none
     
+  #
+  # Base for Organization<-->User Actions
+  #
+  users:
+    inherit: default
+    service: 
+      - org
+      - users
+    key: 'organization:id'
+    key-required: false
+
+  #
+  # List Users for the Specified Project / Session Project
+  # URL : 
+  # - org/users/list[/{organization:id}][?field=value-tuplet[&...]]
+  #
+  user_list: 
+    inherit: 'organization:users'
+    action: list
+    parameters: 
+      allow: ['virtual:filter','virtual:sort','virtual:limit']
+  #
+  # Count Users for the Specified Project / Session Project
+  # URL : 
+  # - org/users/count[/{organization:id}][?field=value-tuplet[&...]]
+  #
+  user_count:
+    inherit: 'organization:users'
+    action: count
+    parameters:
+      allow: ['virtual:filter']
+    
+  #
+  # Base for Organization<-->Project Actions
+  #
+  projects:
+    inherit: default
+    service: 
+      - org
+      - projects      
+    key: 'organization:id'
+    key-required: false
+
+  #
+  # List Projects for the Specified User / Session User
+  # URL : 
+  # - org/projects/list[/{organization:id}][?field=value-tuplet[&...]]
+  #
+  projects_list: 
+    inherit: 'organization:projects'
+    action: list
+    parameters: 
+      allow: ['virtual:filter','virtual:sort','virtual:limit']
+  #
+  # Count Projects for the Specified User / Session User
+  # URL : 
+  # - org/projects/count[/{organization:id}][?field=value-tuplet[&...]]
+  #
+  projects_count:
+    inherit: 'organization:projects'
+    action: count
+    parameters:
+      allow: ['virtual:filter']
+    
