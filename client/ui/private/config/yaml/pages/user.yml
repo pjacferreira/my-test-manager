@@ -1,0 +1,189 @@
+# Test Center - Compliance Testing Application (Client UI)
+# Copyright (C) 2015 Paulo Ferreira <pf at sourcenotes.org>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# 
+# @license http://opensource.org/licenses/AGPL-3.0 Affero GNU Public License v3.0
+# @copyright 2014 Paulo Ferreira
+# @author Paulo Ferreira <pf at sourcenotes.org>
+
+##
+# User Pages Definition
+##
+user:
+  ##
+  # Default Page Settings
+  ##
+  default:
+    inherit: 'default:standard'
+    group: user
+    template: true
+    page: 'page.php'
+    includes:
+      head: 'head.php'
+      body: 'no-menu.php'
+      header:
+        file: 'user/partials/header.php'
+        required: ['semantic-dropdown', 'jquery-jsrender']
+        js:
+          files: 'common/op_dropdowns.js'
+      footer: 'user/partials/footer.php'
+    css:
+      styles:
+        body: 
+          background-color: '#F6E1D30'
+    requirements:
+      session: 
+        start: true       
+        
+  ##
+  # Default Settings for Logged In Pages
+  ##
+  menu:
+    inherit: user
+    template: true
+    includes:
+      body: 'left-sidebar.php'
+      lsidebar: 
+        file: 'user/menus/main.php'
+        required: ['site-js', 'semantic-sidebar', 'jquery-utils', 'services-js']
+        js:
+          files: 'common/menu.js'
+    js:
+      files: 'user/menus/main.js'
+      scripts:
+        on-ready: |
+          initialize_menu('sb_menu','btn_menu');
+    requirements:
+      session: 
+        logged_in: true
+#      user:
+#        not_suspended: true
+
+  ##
+  # Default Settings for Logged In Pages
+  ##
+  mini-menu:
+    inherit: user
+    template: true
+    includes:
+      body: 'left-sidebar.php'
+      lsidebar: 
+        file: 'user/menus/main-minimal.php'
+        required: ['site-js', 'semantic-sidebar', 'jquery-utils', 'services-js']
+        js:
+          files: 'common/menu.js'
+    js:
+      files: 'user/menus/main.js'
+      scripts:
+        on-load: |
+          initialize_menu('sb_menu','btn_menu');
+  
+  ##
+  # User Home Page
+  ##
+  home:
+    inherit: 'user:menu'
+    template: false
+    title: 'PAGE:TITLE:USER:HOME'
+    includes:
+      body: 'dual-sidebar.php'
+      rsidebar: 
+        file: 'user/menus/context-home.php'
+      content: 'user/home.php'
+    js:
+      files: ['common/session.js', 'user/home.js', 'user/menus/context-home.js']
+      scripts:
+        on-load: |
+          initialize();
+
+  ##
+  # User Tests Management Page
+  ##
+  tests:
+    inherit: 'user:menu'
+    template: false
+    title: 'PAGE:TITLE:USER:TESTS'
+    includes:
+      content: 'user/tests.php'
+    required: ['jquery-jstree']
+    js:
+      files: ['common/session.js', 'common/forms.js', 'user/tests.js']
+      scripts:
+        on-load: |
+          initialize();
+
+  ##
+  # User Test Sets Management Page
+  ##
+  sets:
+    inherit: 'user:menu'
+    template: false
+    title: 'PAGE:TITLE:USER:SETS'
+    includes:
+      content: 'user/sets.php'
+    required: ['jquery-jstree']
+    js:
+      files: ['common/session.js', 'common/forms.js', 'user/sets.js']
+      scripts:
+        on-load: |
+          initialize();
+
+  ##
+  # User Runs Management Page
+  ##
+  runs:
+    inherit: 'user:menu'
+    template: false
+    title: 'PAGE:TITLE:USER:RUNS'
+    includes:
+      content: 'user/runs.php'
+    required: ['jquery-jstree']
+    js:
+      files: ['common/session.js', 'common/forms.js', 'user/runs.js']
+      scripts:
+        on-load: |
+          initialize();
+
+  ##
+  # User Profile Page
+  ##
+  profile:
+    inherit: 'user:menu'
+    template: false
+    title: 'PAGE:TITLE:USER:PROFILE'
+    includes:
+      content: 'user/profile.php'
+    required: ['site-js', 'semantic-checkbox', 'semantic-dropdown', 'jquery-utils', 'jquery-picker-date', 'services-js']
+    js:
+      files: ['common/session.js', 'common/forms.js', 'user/profile.js']
+      scripts:
+        on-load: |
+          initialize();
+
+  ##
+  # User Account Password Recovery Page
+  ##
+  recover:
+    inherit: user
+    template: false
+    title: 'PAGE:TITLE:USER:RECOVER'
+    includes:
+      content: 'user/recover.php'
+    required: ['site-js', 'semantic-js', 'crypto-js', 'jquery-utils']
+    js:
+      files: '../js/recover.js'
+      scripts:
+        on-load: |
+          init_recovery();

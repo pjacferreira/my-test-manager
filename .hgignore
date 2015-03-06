@@ -1,4 +1,12 @@
 syntax: glob
+# Ignore Directories
 
-syntax: regexp
-.~$
+# Ignore Special Files
+phpinfo.php
+*.phar
+*~
+*-
+*.bak
+*.mo
+documents/sql/schema-load.sql
+documents/sql/model.mwb

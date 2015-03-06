@@ -1,0 +1,31 @@
+AddDefaultCharset UTF-8
+
+# Disable DirectoryIndex
+# This prevents Apache from attaching /index.html to a default / url
+<IfModule mod_dir.c>
+  DirectoryIndex disabled
+</IfModule>
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    #
+    # RULE 1: Send DirectoryIndex to page/landing:home
+    #
+#    RewriteRule ^$ dev.php?_url=/page/landing:home [QSA,L]
+    RewriteRule ^$ dev.php?_url=/page/ [QSA,L]
+
+    #
+    # RULE 2: Re-direct URI that Don't Point to Existing Files
+    # 
+    # NOTES
+    # 1. RewriteCond preceeds rule it applies to
+    # 2. RewriteCond is only checked if the rule matches
+    # 3. Multiple RewriteCond (before a rule) means that all conditions must apply (logical and)
+    # 4. A RewriteRule ends the scope of the RewriteCond (i.e. starts the next rule)
+    RewriteCond %{REQUEST_FILENAME} !-f
+    # In Development
+    RewriteRule ^(.*)$ dev.php?_url=/$1 [QSA,L]
+    # In Production
+    #RewriteRule ^(.*)$ index.php?_url=/$1 [QSA,L]
+</IfModule>

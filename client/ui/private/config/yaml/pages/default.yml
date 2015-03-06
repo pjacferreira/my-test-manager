@@ -1,0 +1,203 @@
+# Test Center - Compliance Testing Application (Client UI)
+# Copyright (C) 2015 Paulo Ferreira <pf at sourcenotes.org>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# 
+# @license http://opensource.org/licenses/AGPL-3.0 Affero GNU Public License v3.0
+# @copyright 2014 Paulo Ferreira
+# @author Paulo Ferreira <pf at sourcenotes.org>
+
+##
+# Defaults for Page Temnplates Definitions
+##
+default:
+  
+  ##
+  # Global Page Defaults
+  ##
+  default:
+    # Specifies the Parent ID, in the inheritance hierarchy
+    #
+    # (OPTIONAL)
+    #
+    # Elements:
+    # - TEXT: page_id
+    inherit: ~
+    # Is this Definition for a Template or a Page?
+    # Only Page Definitions can be Rendered
+    # 
+    # (REQUIRED - even in pages that use inheritance)
+    # NOTE: During Page Rendering this field is tested, BEFORE inheritance
+    # processing, therefore. If this value is not defined, this can lead to
+    # problems in the way the page is handled.
+    # In the case this value is missing, a DEFAULT of 'true' is assumed.
+    #
+    # Elements:
+    # - BOOLEAN: 'true' is a template, 'false' is a page
+    template: true
+    # Specifies the Parent ID, in the inheritance hierarchy
+    #
+    # (OPTIONAL)
+    #
+    # Elements:
+    # - MAP: option used during processing of the template
+    options: ~
+    # Title for Page
+    #
+    # (REQUIRED)
+    #
+    # Elements:
+    # - TEXT : Title used for <title> tag
+    title: 'PAGE:TITLE:MISSING'
+    # Specifies the Main Page for the Template
+    #
+    # (REQUIRED)
+    #
+    # Elements:
+    # - TEXT: php page file
+    page: ~
+    # Other Template Files that can be used in the production of the page and
+    # their requirement.
+    #
+    # (OPTIONAL)
+    #
+    # Elements:
+    # - MAP: 
+    #   (alias <--> php page file) or
+    #   (alias <--> MAP of include properties)a
+    includes: ~
+    # Library Definitions.
+    # Used to define create an association between a library, it's css and js
+    # requirements and other dependencies
+    #
+    # (OPTIONAL)
+    #
+    # Elements:
+    # - MAP: option used during processing of the template
+    libraries: ~
+    # List of required libraries for the page
+    #
+    # (OPTIONAL)
+    #
+    # Elements:
+    # - TEXT: library name, or
+    #   TEXT[]: array of library names
+    required: ~
+    # Specific CSS Requiments of the Page
+    #
+    # (OPTIONAL)
+    #
+    # Elements:
+    # - MAP: option used during processing of the template
+    css: ~
+    # Specific JAVASCRIPT Requirements of the page
+    #
+    # (OPTIONAL)
+    #
+    # Elements:
+    # - MAP: option used during processing of the template
+    js: ~
+    # Specific Content to be used in the template (creates a single point
+    # for storing this content, so that it can be re-used in the templates)
+    #
+    # (OPTIONAL)
+    #
+    # Elements:
+    # - MAP: (alias <--> value)
+    content: ~
+    # Specific Page Requirements (Example - user logged in, admin user, etc)
+    #
+    # (OPTIONAL)
+    #
+    # Elements:
+    # - MAP: (key <--> value)
+    requirements: ~
+    
+  ##
+  # Standard Page Defaults
+  ##
+  standard:
+    inherit: default
+    template: true
+    options:    
+      cache: true
+      i18n: true
+    libraries:
+      site-js:
+        js: 'site.js.php'
+      services-js:
+        js: 'services.js.php'
+        required: 'jquery-utils'
+      semantic-css:
+        css: '/semantic/semantic.css'
+      semantic-js:
+        js: '/semantic/semantic.js'        
+        required: ['semantic-css', 'jquery']
+      semantic-sidebar:
+        js:
+          scripts:
+            on-ready: |
+              // Initialize Side-bar
+              $('.ui.sidebar').sidebar({
+                transition: 'overlay'
+              });
+        required: 'semantic-js'
+      semantic-checkbox:
+        js:
+          scripts:
+            on-ready: |
+              // Initialize Check Box
+              $('.ui.checkbox').checkbox();
+        required: 'semantic-js'
+      semantic-dropdown:
+        js:
+          scripts:
+            on-ready: |
+              // Have to Initialize Dropdown in Your Own Code
+              // $('.ui.dropdown').dropdown();
+        required: 'semantic-js'
+      jquery: 
+        js: 'http://code.jquery.com/jquery-2.1.1.js'
+#        js: 'http://code.jquery.com/jquery-2.1.1.min.js'
+      jquery-transform: 
+        js: 'vendor/jquery.transform2d.js'
+        required: 'jquery'
+      jquery-timer: 
+        js: 'vendor/jquery.timer.js'
+        required: 'jquery'
+      jquery-toaster:
+        css: 'vendor/jquery.cftoaster.1.0.1.css'
+        js: 'vendor/jquery.cftoaster.1.0.1.js'
+        required: 'jquery'        
+      jquery-utils: 
+        js: 'jquery.utils.js'
+        required: 'jquery'
+      modernizr:
+        js: 'vendor/modernizr-2.6.2.min.js'
+      crypto-js:
+        js: ['vendor/core-min.js','vendor/md5-min.js','vendor/sha256-min.js']
+      jquery-picker-date:
+        css: [ 'vendor/default.css', 'vendor/default.date.css']
+        js: [ 'vendor/picker.js', 'vendor/picker.date.js' ]
+        required: 'jquery'        
+      jquery-jsrender:
+        js: [ 'vendor/jsrender.js']
+        required: 'jquery'        
+      jquery-jstree:
+        css: 'vendor/jstree/style.css'
+        js: [ 'vendor/jstree.js']
+        required: 'jquery'        
+    content:
+      copyright: 'Copyright &copy; 2012-2015 TESTCENTER All Rights Reserved'
+    
