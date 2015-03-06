@@ -1,8 +1,7 @@
 <?php
-
 /**
  * Test Center - Compliance Testing Application (Web Services)
- * Copyright (C) 2014 Paulo Ferreira <pf at sourcenotes.org>
+ * Copyright (C) 2012 - 2015 Paulo Ferreira <pf at sourcenotes.org>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -16,33 +15,53 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ */
+
+/*
  * @license http://opensource.org/licenses/AGPL-3.0 Affero GNU Public License v3.0
- * @copyright 2014 Paulo Ferreira
+ * @copyright 2015 Paulo Ferreira
  * @author Paulo Ferreira <pf at sourcenotes.org>
  */
 use Phalcon\Mvc\Url as UrlResolver;
 use Phalcon\Db\Adapter\Pdo\Mysql as DbAdapter;
+use Phalcon\DI\FactoryDefault as DI;
 
-$di = new \Phalcon\DI\FactoryDefault();
+//use Phalcon\DI as DI;
+
+$di = new DI();
+
+
+/*
+ * PHALCON: BASIC REQUIRED SERVICES
+ */
+/*
+  $di->setShared('router', 'Phalcon\Mvc\Router', true);
+  $di->setShared('response', 'Phalcon\Http\Response');
+  $di->setShared('request', 'Phalcon\Http\Request');
+ */
 
 /**
- * Use Simple View to Render
+ * Register View Renderers
+ * .phtml - Use PHP Renderer
+ * .volt  - Use VOLT Compiler
  */
 $di['view'] = function () use ($config) {
   $view = new \Phalcon\Mvc\View\Simple();
+  $view->registerEngines(
+          array(
+              ".phtml" => "Phalcon\Mvc\View\Engine\Php",
+              ".volt" => function($view, $di) use ($config) {
+                $volt = new \Phalcon\Mvc\View\Engine\Volt($view, $di);
+                $volt->setOptions(array("compiledPath" => $config->application->cacheDir));
+
+                // Add Gettext Filter to VOLT
+                $compile = $volt->getCompiler()->addFilter('_', '_');
+
+                return $volt;
+              }
+          ));
   $view->setViewsDir($config->application->viewsDir);
 
-  $view->registerEngines(array(
-      ".phtml" => function($view, $di) use ($config) {
-$volt = new \Phalcon\Mvc\View\Engine\Volt($view, $di);
-$volt->setOptions(array(
-    "compiledPath" => $config->application->cacheDir
-));
-
-return $volt;
-}
-  ));
   return $view;
 };
 
@@ -70,7 +89,7 @@ $di['db'] = function () use ($config) {
   // The Options are required or PDO Converts Fields Fetched as Strings
   $adapter->getInternalHandler()->setAttribute(\PDO::ATTR_EMULATE_PREPARES, false);
   $adapter->getInternalHandler()->setAttribute(\PDO::ATTR_STRINGIFY_FETCHES, false);
-  
+
   return $adapter;
 };
 
@@ -90,3 +109,9 @@ $di['metadata'] = function() use ($config) {
  * Included Shared Services
  */
 include __DIR__ . '/../../../shared/config/services.php';
+
+/*
+ *  MUST BE THE LAST LINE IN THE FILE
+ */
+return $di;
+        

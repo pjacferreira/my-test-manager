@@ -1,0 +1,21 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: testcenter-services\n"
+"POT-Creation-Date: 2015-02-03 12:28+0100\n"
+"PO-Revision-Date: 2015-03-03 12:04+0100\n"
+"Last-Translator: Paulo Ferreira <pf@sourcenotes.org>\n"
+"Language-Team: TESTCENTER <test>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.5.4\n"
+"X-Poedit-KeywordsList: _;gettext;gettext_noop\n"
+"X-Poedit-Basepath: .\n"
+"Language: pt_PT\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+
+#
+# BASIC SERVICE RESPONSES
+#
+msgid "GENERAL:RESPONSE:OK"
+msgstr "Ok!"

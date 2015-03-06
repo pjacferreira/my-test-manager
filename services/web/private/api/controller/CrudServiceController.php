@@ -1,8 +1,7 @@
 <?php
-
-/*
+/**
  * Test Center - Compliance Testing Application (Web Services)
- * Copyright (C) 2012-2014 Paulo Ferreira <pf at sourcenotes.org>
+ * Copyright (C) 2012-2015 Paulo Ferreira <pf at sourcenotes.org>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -17,11 +16,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 namespace api\controller;
 
 use api\utility\ParserQueryFilter;
-use \shared\utility\StringUtilities;
+use \common\utility\Strings;
 
 /**
  * Class that provides Basic Structure for a CRUD(LC) Controller.
@@ -33,7 +31,7 @@ use \shared\utility\StringUtilities;
  * C(ount)
  *
  * @license http://opensource.org/licenses/AGPL-3.0 Affero GNU Public License v3.0
- * @copyright 2012-2014 Paulo Ferreira
+ * @copyright 2015 Paulo Ferreira
  * @author Paulo Ferreira <pf at sourcenotes.org>
  */
 abstract class CrudServiceController extends EntityServiceController {
@@ -46,7 +44,7 @@ abstract class CrudServiceController extends EntityServiceController {
   /**
    * Initializes Transaction Management for Actions that Require it
    * 
-   * @param \shared\controller\ActionContext $context Context for Action
+   * @param \api\controller\ActionContext $context Context for Action
    * @return boolean 'true' to show that the transaction management started
    * @throws \Exception On failure to initiate the transaction (for any reason)
    */
@@ -81,7 +79,7 @@ abstract class CrudServiceController extends EntityServiceController {
   /**
    * Handles Success when Performing an Action that Requires Transaction Management
    * 
-   * @param \shared\controller\ActionContext $context Context for Action
+   * @param \api\controller\ActionContext $context Context for Action
    * @return boolean 'true' to show that the action passed
    * @throws \Exception On failure to commit the transaction (for any reason)
    */
@@ -102,7 +100,7 @@ abstract class CrudServiceController extends EntityServiceController {
   /**
    * Handles Failure to Perform an Action that Requires Transaction Management
    * 
-   * @param \shared\controller\ActionContext $context Context for Action
+   * @param \api\controller\ActionContext $context Context for Action
    * @return boolean 'false' to show that the action failed
    * @throws \Exception On failure to rollback the transaction (for any reason)
    */
@@ -129,7 +127,7 @@ abstract class CrudServiceController extends EntityServiceController {
   /**
    * Create a new Entity Based on the Action Context
    * 
-   * @param \shared\controller\ActionContext $context Context for Action
+   * @param \api\controller\ActionContext $context Context for Action
    * @return \api\model\AbstractEntity Newly Created Entity
    * @throws \Exception On failure to create the entity (for any reason)
    */
@@ -159,7 +157,7 @@ abstract class CrudServiceController extends EntityServiceController {
   /**
    * Retrieve the Entity that Matches the Action Context
    * 
-   * @param \shared\controller\ActionContext $context Context for Action
+   * @param \api\controller\ActionContext $context Context for Action
    * @return \api\model\AbstractEntity Retrieved Entity
    * @throws \Exception On failure to retrieve the entity (for any reason)
    */
@@ -180,7 +178,7 @@ abstract class CrudServiceController extends EntityServiceController {
   /**
    * Perform an Update for the Context Entity
    * 
-   * @param \shared\controller\ActionContext $context Context for Action
+   * @param \api\controller\ActionContext $context Context for Action
    * @return \api\model\AbstractEntity Modified Entity
    * @throws \Exception On failure to perform the action
    */
@@ -207,7 +205,7 @@ abstract class CrudServiceController extends EntityServiceController {
   /**
    * Delete the Context Entity from the Database
    * 
-   * @param \shared\controller\ActionContext $context Context for Action
+   * @param \api\controller\ActionContext $context Context for Action
    * @return boolean 'true' if Entity Deleted, 'false' otherwise
    * @throws \Exception On failure to perform the action
    */
@@ -228,7 +226,7 @@ abstract class CrudServiceController extends EntityServiceController {
   /**
    * List Entities in the Database based on the Action Context
    * 
-   * @param \shared\controller\ActionContext $context Context for Action
+   * @param \api\controller\ActionContext $context Context for Action
    * @return  Phalcon\Mvc\Model\Resultset\Simple Result Set containing List of Entities
    * @throws \Exception On failure to perform the action
    */
@@ -260,7 +258,7 @@ abstract class CrudServiceController extends EntityServiceController {
   /**
    * Count Entities in the Database based on the Action Context
    * 
-   * @param \shared\controller\ActionContext $context Context for Action
+   * @param \api\controller\ActionContext $context Context for Action
    * @return integer Number of Entities Matching the Action Context
    * @throws \Exception On failure to perform the action
    */
@@ -627,7 +625,7 @@ abstract class CrudServiceController extends EntityServiceController {
       $ascending = true;
 
       // Do we have anything to work with?
-      $entry = StringUtilities::nullOnEmpty($entry);
+      $entry = Strings::nullOnEmpty($entry);
       if (!isset($entry)) { // NO: Skip it
         continue;
       }

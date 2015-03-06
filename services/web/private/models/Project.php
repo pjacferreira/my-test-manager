@@ -2,7 +2,7 @@
 
 /*
  * Test Center - Compliance Testing Application (Web Services)
- * Copyright (C) 2012-2014 Paulo Ferreira <pf at sourcenotes.org>
+ * Copyright (C) 2012-2015 Paulo Ferreira <pf at sourcenotes.org>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -17,16 +17,17 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+namespace models;
 
 /**
  * Project Entity (Encompasses the Concept of a Business Project undergoing
  * Testing)
  *
  * @license http://opensource.org/licenses/AGPL-3.0 Affero GNU Public License v3.0
- * @copyright 2012-2014 Paulo Ferreira
+ * @copyright 2015 Paulo Ferreira
  * @author Paulo Ferreira <pf at sourcenotes.org>
  */
-class Project extends api\model\AbstractEntity {
+class Project extends \api\model\AbstractEntity {
 
   /**
    * @var integer Project Identifier (Unique)
@@ -133,7 +134,7 @@ class Project extends api\model\AbstractEntity {
     $this->creator = (integer) $this->creator;
     $this->modifier = isset($this->modifier) ? (integer) $this->modifier : null;
   }
-  
+
   /*
    * ---------------------------------------------------------------------------
    * AbstractEntity: Overrides
@@ -166,6 +167,7 @@ class Project extends api\model\AbstractEntity {
 
     $array = $this->addKeyProperty($array, 'id', $header);
     $array = $this->addProperty($array, 'name', null, $header);
+    $array = $this->setDisplayField($array, 'name', $header);
     $array = $this->addPropertyIfNotNull($array, 'description', null, $header);
     $array = $this->addReferencePropertyIfNotNull($array, 'organization', null, $header);
     $array = $this->addReferencePropertyIfNotNull($array, 'creator', null, $header);

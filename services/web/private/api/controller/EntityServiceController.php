@@ -1,8 +1,7 @@
 <?php
-
-/*
+/**
  * Test Center - Compliance Testing Application (Web Services)
- * Copyright (C) 2012-2014 Paulo Ferreira <pf at sourcenotes.org>
+ * Copyright (C) 2012-2015 Paulo Ferreira <pf at sourcenotes.org>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -17,18 +16,16 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 namespace api\controller;
 
-use \shared\utility\StringUtilities;
-use \shared\controller\BaseServiceController;
+use \common\utility\Strings;
 
 /**
  * Controller that Provides Basic Functionality for Controller's that Manage 
  * Database Entities.
  *
  * @license http://opensource.org/licenses/AGPL-3.0 Affero GNU Public License v3.0
- * @copyright 2012-2014 Paulo Ferreira
+ * @copyright 2015 Paulo Ferreira
  * @author Paulo Ferreira <pf at sourcenotes.org>
  */
 abstract class EntityServiceController extends BaseServiceController {
@@ -215,7 +212,7 @@ abstract class EntityServiceController extends BaseServiceController {
    * @return mixed Field's Outgoing Value
    */
   protected function transformFieldValue($field, $value) {
-    return isset($value) && is_string($value) ? StringUtilities::nullOnEmpty($value) : $value;
+    return isset($value) && is_string($value) ? Strings::nullOnEmpty($value) : $value;
   }
 
   /**

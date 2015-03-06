@@ -1,8 +1,7 @@
 <?php
-
 /**
  * Test Center - Compliance Testing Application (Web Services)
- * Copyright (C) 2014 Paulo Ferreira <pf at sourcenotes.org>
+ * Copyright (C) 2012 - 2015 Paulo Ferreira <pf at sourcenotes.org>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -16,9 +15,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ */
+
+/*
  * @license http://opensource.org/licenses/AGPL-3.0 Affero GNU Public License v3.0
- * @copyright 2014 Paulo Ferreira
+ * @copyright 2015 Paulo Ferreira
  * @author Paulo Ferreira <pf at sourcenotes.org>
  */
 // PHP Console Library to be used with PHP Console Chromium Extension
@@ -30,23 +31,38 @@ if (PhpConsole\Connector::getInstance()->isActiveClient()) {
 
 error_reporting(E_ALL);
 
+// Define Shared Globals (to be used in include files)
+$config = $di = $app = NULL;
+
+function include_with_dev($file) {
+  global $config, $di, $app;
+
+  // Include the Normal Configuration File
+  $result = include __DIR__ . "/../private/config/{$file}.php";
+
+  // If a Development File Exists - Include it as well
+  file_exists(__DIR__ . "/../private/config/{$file}_dev.php") && include __DIR__ . "/../private/config/{$file}_dev.php";
+
+  return $result;
+}
+
 try {
 
   /**
    * Read the configuration
    */
-  $config = include __DIR__ . "/../private/config/config.php";
+  $config = include_with_dev('config');
 
   /**
    * Include Services
    */
-  include __DIR__ . '/../private/config/services.php';
-  include __DIR__ . '/../private/config/services_dev.php';
+  $di = include_with_dev('services');
 
   /**
    * Include Autoloader
    */
-  include __DIR__ . '/../private/config/loader_dev.php';
+  include_with_dev('loader');
+
 
   /**
    * Starting the application
@@ -66,10 +82,23 @@ try {
   /*
    * Include Specific Application Specific Routes
    */
-  include __DIR__ . '/../private/config/routes.php';
-  include __DIR__ . '/../private/config/routes_dev.php';
+  include_with_dev('routes');
 
-
+  /* TEST ROUTES
+  $router = $app->getRouter();
+  $router->handle('/session/hello');
+  if ($router->wasMatched()) {
+    $handler = $app->getHandlers();
+    $route = $router->getMatchedRoute();
+    echo 'Namespace: ', $router->getNamespaceName(), '<br>';
+    echo 'Controller: ', $router->getControllerName(), '<br>';
+    echo 'Action: ', $router->getActionName(), '<br>';
+  } else {
+    echo 'The route wasn\'t matched by any route<br>';
+  }
+  echo '<br>';
+  /* */
+  
   /**
    * Handle the request
    */

@@ -1,7 +1,7 @@
 <?php
 
 /* Test Center - Compliance Testing Application (Web Services)
- * Copyright (C) 2012-2014 Paulo Ferreira <pf at sourcenotes.org>
+ * Copyright (C) 2012-2015 Paulo Ferreira <pf at sourcenotes.org>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -16,18 +16,19 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+namespace models;
 
-use shared\utility\StringUtilities;
+use \common\utility\Strings;
 
 /**
  * User Organization Entity (Links a User with an Organization and Sets the 
  * permissions for that link).
  *
  * @license http://opensource.org/licenses/AGPL-3.0 Affero GNU Public License v3.0
- * @copyright 2012-2014 Paulo Ferreira
+ * @copyright 2015 Paulo Ferreira
  * @author Paulo Ferreira <pf at sourcenotes.org>
  */
-class UserOrganization extends api\model\AbstractEntity {
+class UserOrganization extends \api\model\AbstractEntity {
 
   /**
    *
@@ -196,7 +197,7 @@ class UserOrganization extends api\model\AbstractEntity {
    */
   public static function addRelation($user, $org, $permissions = null) {
     // Cleanup Permissions
-    $permissions = StringUtilities::nullOnEmpty($permissions);
+    $permissions = Strings::nullOnEmpty($permissions);
     // Are Permissions Set?
     if (!isset($permissions)) { // NO: Default to Read-Only
       $permissions = 'r';

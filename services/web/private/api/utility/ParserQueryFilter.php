@@ -1,8 +1,7 @@
 <?php
-
 /*
  * Test Center - Compliance Testing Application (Web Services)
- * Copyright (C) 2012-2014 Paulo Ferreira <pf at sourcenotes.org>
+ * Copyright (C) 2012-2015 Paulo Ferreira <pf at sourcenotes.org>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -17,16 +16,15 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 namespace api\utility;
 
-use \shared\utility\StringUtilities;
+use \common\utility\Strings;
 
 /**
  * Parser for Request Filter Strings
  *
  * @license http://opensource.org/licenses/AGPL-3.0 Affero GNU Public License v3.0
- * @copyright 2012-2014 Paulo Ferreira
+ * @copyright 2015 Paulo Ferreira
  * @author Paulo Ferreira <pf at sourcenotes.org>
  */
 class ParserQueryFilter {
@@ -64,7 +62,7 @@ class ParserQueryFilter {
    */
   public static function parse($string) {
     // Clean up Filter String
-    $string = StringUtilities::nullOnEmpty($string);
+    $string = Strings::nullOnEmpty($string);
 
     // Parse the String
     list($ast_queryfilter, $remainder) = self::parseQueryFilter($string);
@@ -256,7 +254,7 @@ class ParserQueryFilter {
     $token_value = null;
     $remainder = null;
 
-    $string = StringUtilities::nullOnEmpty($string);
+    $string = Strings::nullOnEmpty($string);
 
     if (isset($string) && strlen($string)) {
       $consume = 1;

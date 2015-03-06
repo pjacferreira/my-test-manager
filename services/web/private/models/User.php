@@ -1,7 +1,7 @@
 <?php
 
 /* Test Center - Compliance Testing Application (Web Services)
- * Copyright (C) 2012-2014 Paulo Ferreira <pf at sourcenotes.org>
+ * Copyright (C) 2012-2015 Paulo Ferreira <pf at sourcenotes.org>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -16,16 +16,17 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+namespace models;
 
 /**
  * User Entity (Encompasses Properties Required to Manage and Authenticate
  * Users).
  *
  * @license http://opensource.org/licenses/AGPL-3.0 Affero GNU Public License v3.0
- * @copyright 2012-2014 Paulo Ferreira
+ * @copyright 2015 Paulo Ferreira
  * @author Paulo Ferreira <pf at sourcenotes.org>
  */
-class User extends api\model\AbstractEntity {
+class User extends \api\model\AbstractEntity {
 
   /**
    * @var string User Identifier (UNIQUE)
@@ -84,6 +85,12 @@ class User extends api\model\AbstractEntity {
    */
   public $date_modified;
 
+  /**
+   *
+   * @var boolean User Suspended?
+   */
+  public $suspended;
+  
   /*
    * ---------------------------------------------------------------------------
    * PHALCON Model Overrides
@@ -132,7 +139,8 @@ class User extends api\model\AbstractEntity {
         'id_creator' => 'creator',
         'dt_creation' => 'date_created',
         'id_modifier' => 'modifier',
-        'dt_modified' => 'date_modified'
+        'dt_modified' => 'date_modified',
+        'suspended' => 'suspended'
     );
   }
 
@@ -178,6 +186,7 @@ class User extends api\model\AbstractEntity {
 
     $array = $this->addKeyProperty($array, 'id', $header);
     $array = $this->addProperty($array, 'name', null, $header);
+    $array = $this->setDisplayField($array, 'name', $header);
     $array = $this->addPropertyIfNotNull($array, 'first_name', null, $header);
     $array = $this->addPropertyIfNotNull($array, 'last_name', null, $header);
     $array = $this->addPropertyIfNotNull($array, 's_description', null, $header);
@@ -186,6 +195,7 @@ class User extends api\model\AbstractEntity {
     $array = $this->addProperty($array, 'date_created', null, $header);
     $array = $this->addReferencePropertyIfNotNull($array, 'modifier', null, $header);
     $array = $this->addPropertyIfNotNull($array, 'date_modified', null, $header);
+    $array = $this->addPropertyIfNotNull($array, 'suspended', false, $header);
     return $array;
   }
 

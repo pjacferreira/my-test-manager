@@ -1,8 +1,7 @@
 <?php
-
 /**
  * Test Center - Compliance Testing Application (Web Services)
- * Copyright (C) 2014 Paulo Ferreira <pf at sourcenotes.org>
+ * Copyright (C) 2012 - 2015 Paulo Ferreira <pf at sourcenotes.org>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -16,9 +15,11 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ */
+
+/*
  * @license http://opensource.org/licenses/AGPL-3.0 Affero GNU Public License v3.0
- * @copyright 2014 Paulo Ferreira
+ * @copyright 2015 Paulo Ferreira
  * @author Paulo Ferreira <pf at sourcenotes.org>
  */
 use Phalcon\Mvc\Micro\Collection as MicroCollection;
@@ -31,7 +32,7 @@ use Phalcon\Mvc\Micro\Collection as MicroCollection;
 $routes = new MicroCollection();
 
 // Associate a Controller with Routes
-$routes->setHandler(new ProjectsController());
+$routes->setHandler(new controllers\usermode\ProjectsController());
 
 // Base Route Prefix
 $routes->setPrefix('/project');
@@ -60,7 +61,7 @@ $app->mount($routes);
 $routes = new MicroCollection();
 
 // Associate a Controller with Routes
-$routes->setHandler(new UserProjectController());
+$routes->setHandler(new controllers\usermode\UserProjectController());
 
 // Base Route Prefix
 $routes->setPrefix('/project/users');
@@ -81,7 +82,7 @@ $app->mount($routes);
 $routes = new MicroCollection();
 
 // Associate a Controller with Routes
-$routes->setHandler(new ProjectsController());
+$routes->setHandler(new controllers\usermode\ProjectsController());
 
 // Base Route Prefix
 $routes->setPrefix('/projects');

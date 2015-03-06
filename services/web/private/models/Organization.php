@@ -2,7 +2,7 @@
 
 /*
  * Test Center - Compliance Testing Application (Web Services)
- * Copyright (C) 2012-2014 Paulo Ferreira <pf at sourcenotes.org>
+ * Copyright (C) 2012-2015 Paulo Ferreira <pf at sourcenotes.org>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -17,15 +17,16 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+namespace models;
 
 /**
  * Organization Entity (Encompasses the Concept of a Business Entity/Organization)
  *
  * @license http://opensource.org/licenses/AGPL-3.0 Affero GNU Public License v3.0
- * @copyright 2012-2014 Paulo Ferreira
+ * @copyright 2015 Paulo Ferreira
  * @author Paulo Ferreira <pf at sourcenotes.org>
  */
-class Organization extends api\model\AbstractEntity {
+class Organization extends \api\model\AbstractEntity {
 
   /**
    * @var integer Organization Identifier (Unique)
@@ -154,6 +155,7 @@ class Organization extends api\model\AbstractEntity {
 
     $array = $this->addKeyProperty($array, 'id', $header);
     $array = $this->addProperty($array, 'name', null, $header);
+    $array = $this->setDisplayField($array, 'name', $header);
     $array = $this->addPropertyIfNotNull($array, 'description', null, $header);
     $array = $this->addReferencePropertyIfNotNull($array, 'creator', null, $header);
     $array = $this->addProperty($array, 'date_created', null, $header);

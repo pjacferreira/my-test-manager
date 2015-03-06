@@ -1,8 +1,7 @@
 <?php
-
 /*
  * Test Center - Compliance Testing Application (Web Services)
- * Copyright (C) 2012-2014 Paulo Ferreira <pf at sourcenotes.org>
+ * Copyright (C) 2012-2015 Paulo Ferreira <pf at sourcenotes.org>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -17,14 +16,13 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 namespace api\model;
 
 /**
  * Base class used to provide some common functions to PHALCON Model Entities.
  *
  * @license http://opensource.org/licenses/AGPL-3.0 Affero GNU Public License v3.0
- * @copyright 2012-2014 Paulo Ferreira
+ * @copyright 2015 Paulo Ferreira
  * @author Paulo Ferreira <pf at sourcenotes.org>
  */
 abstract class AbstractEntity extends \Phalcon\Mvc\Model {
@@ -54,6 +52,7 @@ abstract class AbstractEntity extends \Phalcon\Mvc\Model {
         '__type' => 'entity',
         '__entity' => strtolower($this->entityName()),
         '__key' => null,
+        '__display' => null,
         '__fields' => array()
             ) :
             array();
@@ -66,6 +65,22 @@ abstract class AbstractEntity extends \Phalcon\Mvc\Model {
    */
 
   /**
+   * Set Default Display Field for the Entity.
+   * 
+   * @param array $array Map to insert property into
+   * @param string $property Entity Field Name
+   * @param boolean $header (DEFAULT = true) Add Entity Header Information?
+   * @return array Modified Array
+   */
+  protected function setDisplayField($array, $property, $header = true) {
+    // Add Header Information?
+    if ($header) { // YES
+      $array['__display'] = $property;
+    }
+    return $array;
+  }
+
+  /**
    * Add an Entity Key Field<-->Value tuplet to the Map.
    * 
    * @param array $array Map to insert property into
@@ -76,7 +91,7 @@ abstract class AbstractEntity extends \Phalcon\Mvc\Model {
   protected function addKeyProperty($array, $property, $header = true) {
     // Add Header Information?
     if ($header) { // YES
-      $array['__key'] = "{$array['__entity']}:{$property}";
+      $array['__key'] = $property;
     }
     return $this->addProperty($array, $property, null, $header);
   }
@@ -94,7 +109,7 @@ abstract class AbstractEntity extends \Phalcon\Mvc\Model {
     // Add Header Information?
     if ($header) { // YES
       // Add Field to List of Fields
-      $array['__fields'][] = "{$array['__entity']}:{$property}";
+      $array['__fields'][] = $property;
     }
 
     // Get the Entity Name
@@ -102,7 +117,7 @@ abstract class AbstractEntity extends \Phalcon\Mvc\Model {
       $value = isset($this->$property) ? $this->$property : null;
     }
     $entity = strtolower($this->entityName());
-    $array["{$entity}:{$property}"] = $value;
+    $array[$property] = $value;
     return $array;
   }
 
@@ -128,7 +143,7 @@ abstract class AbstractEntity extends \Phalcon\Mvc\Model {
       // Add Header Information?
       if ($header) { // YES
         // Add Field to List of Fields
-        $array['__fields'][] = "{$array['__entity']}:{$property}";
+        $array['__fields'][] = $property;
       }
     }
     return $array;
@@ -161,7 +176,7 @@ abstract class AbstractEntity extends \Phalcon\Mvc\Model {
       // Add Header Information?
       if ($header) { // YES
         // Add Field to List of Fields
-        $array['__fields'][] = "{$array['__entity']}:{$property}";
+        $array['__fields'][] = $property;
       }
     }
     return $array;
