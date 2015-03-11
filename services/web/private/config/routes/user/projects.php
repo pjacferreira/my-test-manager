@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Test Center - Compliance Testing Application (Web Services)
  * Copyright (C) 2012 - 2015 Paulo Ferreira <pf at sourcenotes.org>
@@ -16,8 +17,9 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 /*
+ * USER MODE: Project Services
+ * 
  * @license http://opensource.org/licenses/AGPL-3.0 Affero GNU Public License v3.0
  * @copyright 2015 Paulo Ferreira
  * @author Paulo Ferreira <pf at sourcenotes.org>
@@ -25,24 +27,20 @@
 use Phalcon\Mvc\Micro\Collection as MicroCollection;
 
 /*
- * Create Routes for Meta Controller (Displays Phalcon Entity Metadata)
- * NOTE:
- * - This is not the same as the Metadata used by Meta!!!!
- * - Only for Debug/Development Purposes
+ * Organization Services
  */
+$controller = new controllers\user\ProjectsController();
 
-// Create a Collection of Routes
-$routes = new MicroCollection();
+$prefix = '/project';
+/*
+ * RETRIEVE the PROFILE for any PROJECT the SESSION USER has Access To
+ */
+$app->map($prefix . '/profile/{name}', array($controller, 'readByName'));
+$app->map($prefix . '/profile/{id:[0-9]+}', array($controller, 'read'));
 
-// Associate a Controller with Routes
-$routes->setHandler(new controllers\usermode\MetadataController());
-
-// Base Route Prefix
-$routes->setPrefix('/phalcon');
-
-// Associate Routes with Controller Functions
-$routes->map('/entity/{name}', 'entity');
-
-// NOTE: Routes are matched in reverse order LIFO (so routes added later are processed 1st)
-// Add Route Collection to Application
-$app->mount($routes);
+$prefix = '/projects';
+/*
+ * LIST and COUNT all the Projects the SESSION USER has Access To
+ */
+$app->map($prefix . '/list', array($controller, 'listProjects'));
+$app->map($prefix . '/count', array($controller, 'countProjects'));

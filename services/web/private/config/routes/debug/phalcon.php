@@ -25,46 +25,24 @@
 use Phalcon\Mvc\Micro\Collection as MicroCollection;
 
 /*
- * Create Routes for Session Controller
+ * Create Routes for Meta Controller (Displays Phalcon Entity Metadata)
+ * NOTE:
+ * - This is not the same as the Metadata used by Meta!!!!
+ * - Only for Debug/Development Purposes
  */
 
 // Create a Collection of Routes
 $routes = new MicroCollection();
 
 // Associate a Controller with Routes
-$routes->setHandler(new controllers\usermode\SessionController());
+$routes->setHandler(new controllers\user\MetadataController());
 
 // Base Route Prefix
-$routes->setPrefix('/session');
+$routes->setPrefix('/phalcon');
 
-// Session Service Routes
-$routes->get('/', 'whoami');
-$routes->get('/hello', 'hello');
-$routes->map('/login/{name}[/]?{password}', 'login');
-$routes->map('/logout', 'logout');
-$routes->map('/sudo/{name}[/]?{password}', 'sudo');
-$routes->map('/sudo/exit', 'sudoExit');
-$routes->map('/whoami', 'whoami');
+// Associate Routes with Controller Functions
+$routes->map('/entity/{name}', 'entity');
 
-// Get/Set/Clear/Test Variable
-$routes->map('/get/{variable}', 'getVariable');
-$routes->map('/set/{variable}/{value}', 'setVariable');
-$routes->map('/isset/{variable}', 'isVariableSet');
-$routes->map('/clear/{variable}', 'clearVariable');
-
-// Get/Set/Clear/Test Organization
-$routes->map('/get/org', 'getOrganization');
-$routes->map('/set/org/{id}', 'setOrganization');
-$routes->map('/isset/org', 'isOrganizationSet');
-$routes->map('/clear/org', 'clearOrganization');
-
-// Get/Set/Clear/Test Project
-$routes->map('/get/project', 'getProject');
-$routes->map('/set/project/{id}', 'setProject');
-$routes->map('/isset/project', 'isProjectSet');
-$routes->map('/clear/project', 'clearProject');
-
-// Routes WITH LIMITS (Have to be Last)
 // NOTE: Routes are matched in reverse order LIFO (so routes added later are processed 1st)
 // Add Route Collection to Application
 $app->mount($routes);

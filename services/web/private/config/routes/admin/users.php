@@ -32,10 +32,10 @@ use Phalcon\Mvc\Micro\Collection as MicroCollection;
 $routes = new MicroCollection();
 
 // Associate a Controller with Routes
-$routes->setHandler(new controllers\usermode\UsersController());
+$routes->setHandler(new controllers\admin\UsersController());
 
 // Base Route Prefix
-$routes->setPrefix('/user');
+$routes->setPrefix('/admin/user');
 
 // Associate Routes with Controller Functions
 $routes->map('/create/{name}', 'create');
@@ -60,10 +60,10 @@ $app->mount($routes);
 $routes = new MicroCollection();
 
 // Associate a Controller with Routes
-$routes->setHandler(new controllers\usermode\UserOrganizationController());
+$routes->setHandler(new controllers\admin\UserOrganizationController());
 
 // Base Route Prefix
-$routes->setPrefix('/user/org/permissions');
+$routes->setPrefix('/admin/user/org/permissions');
 
 // Associate Routes with Controller Functions
 $routes->map('/set/{user_id}/{org_id}/{permissions}', 'link');
@@ -78,10 +78,10 @@ $app->mount($routes);
 $routes = new MicroCollection();
 
 // Associate a Controller with Routes
-$routes->setHandler(new controllers\usermode\UserOrganizationController());
+$routes->setHandler(new controllers\admin\UserOrganizationController());
 
 // Base Route Prefix
-$routes->setPrefix('/user/orgs');
+$routes->setPrefix('/admin/user/orgs');
 
 // Associate Routes with Controller Functions
 $routes->map('/list[/]?{user_id}', 'listOrganizations');
@@ -101,10 +101,10 @@ $app->mount($routes);
 $routes = new MicroCollection();
 
 // Associate a Controller with Routes
-$routes->setHandler(new controllers\usermode\UserProjectController());
+$routes->setHandler(new controllers\admin\UserProjectController());
 
 // Base Route Prefix
-$routes->setPrefix('/user/project/permissions');
+$routes->setPrefix('/admin/user/project/permissions');
 
 // Associate Routes with Controller Functions
 $routes->map('/set/{user_id}/{project_id}/{permissions}', 'link');
@@ -119,10 +119,10 @@ $app->mount($routes);
 $routes = new MicroCollection();
 
 // Associate a Controller with Routes
-$routes->setHandler(new controllers\usermode\UserProjectController());
+$routes->setHandler(new controllers\admin\UserProjectController());
 
 // Base Route Prefix
-$routes->setPrefix('/user/projects');
+$routes->setPrefix('/admin/user/projects');
 
 // Associate Routes with Controller Functions
 $routes->map('/list[/]?{user_id}', 'listProjects');
@@ -142,10 +142,10 @@ $app->mount($routes);
 $routes = new MicroCollection();
 
 // Associate a Controller with Routes
-$routes->setHandler(new controllers\usermode\UsersController());
+$routes->setHandler(new controllers\admin\UsersController());
 
 // Base Route Prefix
-$routes->setPrefix('/users');
+$routes->setPrefix('/admin/users');
 
 // Associate Routes with Controller Functions
 $routes->map('/list', 'listUsers');

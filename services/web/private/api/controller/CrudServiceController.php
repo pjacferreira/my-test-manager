@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Test Center - Compliance Testing Application (Web Services)
  * Copyright (C) 2012-2015 Paulo Ferreira <pf at sourcenotes.org>
@@ -16,6 +17,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 namespace api\controller;
 
 use api\utility\ParserQueryFilter;
@@ -304,7 +306,7 @@ abstract class CrudServiceController extends EntityServiceController {
       // Does this Entity Object Have a Creator Property?
       if (property_exists($entity, 'creator')) { // YES
         // Set Modifier
-        $entity->creator = \User::extractUserID($user);
+        $entity->creator = \models\User::extractUserID($user);
 
         // Set the Modification Date and Time
         $now = new \DateTime();
@@ -329,7 +331,7 @@ abstract class CrudServiceController extends EntityServiceController {
       // Does this Entity Object Have a Modifier Property?
       if (property_exists($entity, 'modifier')) { // YES
         // Set Modifier
-        $entity->modifier = \User::extractUserID($user);
+        $entity->modifier = \models\User::extractUserID($user);
 
         // Set the Modification Date and Time
         $now = new \DateTime();
@@ -713,13 +715,13 @@ abstract class CrudServiceController extends EntityServiceController {
    */
   protected function _persist($entity) {
     // Were we able to save the Entity?
-    if ($entity->save() == false) { // NO
-      $exception = '';
+    if ($entity->save() == false) { // NO      
+      $messages = [];
       foreach ($entity->getMessages() as $message) {
-        $exception+= $message->getMessage() . "\n";
+        $messages[]= $message->getMessage().'.';
       }
 
-      throw new \Exception($exception, 1);
+      throw new \Exception(implode('\n', $messages), 1);
     }
   }
 

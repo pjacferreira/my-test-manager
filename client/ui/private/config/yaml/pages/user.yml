@@ -37,7 +37,7 @@ user:
         file: 'user/partials/header.php'
         required: ['semantic-dropdown', 'jquery-jsrender']
         js:
-          files: 'common/op_dropdowns.js'
+          files: 'user/op_dropdowns.js'
       footer: 'user/partials/footer.php'
     css:
       styles:
@@ -119,7 +119,7 @@ user:
       content: 'user/tests.php'
     required: ['jquery-jstree']
     js:
-      files: ['common/session.js', 'common/forms.js', 'user/tests.js']
+      files: ['common/session.js', 'user/tests.js']
       scripts:
         on-load: |
           initialize();

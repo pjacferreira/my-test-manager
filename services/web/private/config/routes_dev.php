@@ -25,4 +25,4 @@
 use Phalcon\Mvc\Micro\Collection as MicroCollection;
 
 // NOTE: Routes are matched in reverse order LIFO (so routes added later are processed 1st)
-include __DIR__ . '/routes/phalcon.php';
+include __DIR__ . '/routes/debug/phalcon.php';

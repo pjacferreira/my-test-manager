@@ -8,11 +8,12 @@
       <h2 class="ui header">LOGO</h2>
     </div>
     <div class="fourteen wide right aligned teal column">
+      <div id="choose" class="ui pointing right label"><?php echo _("LABEL:USER:CHOOSE") ?></div>
       <select id="orgs_list" class="ui search selection dropdown">
-        <option value="">Organization</option>
+        <option value=""><?php echo _("PLACEHOLDER:ORGANIZATION") ?></option>
       </select>
       <select id="projects_list" class="ui search selection dropdown disabled">
-        <option value="">Project</option>
+        <option value=""><?php echo _("PLACEHOLDER:PROJECT") ?></option>
       </select>
     </div>
   </div>

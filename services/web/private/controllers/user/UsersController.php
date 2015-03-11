@@ -17,20 +17,20 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-namespace controllers\usermode;
+namespace controllers\user;
 
 use api\controller\ActionContext;
-use \common\utility\Strings;
+use common\utility\Strings;
 use api\controller\CrudServiceController;
 
 /**
- * Controller used to Manage Organization Entities
+ * Controller used to Manage User Entities
  *
  * @license http://opensource.org/licenses/AGPL-3.0 Affero GNU Public License v3.0
  * @copyright 2015 Paulo Ferreira
  * @author Paulo Ferreira <pf at sourcenotes.org>
  */
-class OrganizationsController extends CrudServiceController {
+class UsersController extends CrudServiceController {
   /*
    * ---------------------------------------------------------------------------
    *  CONTROLLER: Action Entry Points
@@ -38,111 +38,111 @@ class OrganizationsController extends CrudServiceController {
    */
 
   /**
-   * Create an Organization (if it doesn't already exist) with the Given Name.
+   * Create a User (if it doesn't already exist) with the Given Name.
    * If more HTTP Request Parameters are given, then use those, otherwise use
    * default values for the remaining fields.
    * 
-   * @param string $name Organization name
+   * @param string $name User name
    * @return string HTTP Body Response
    */
   public function create($name) {
     // Create Action Context
     $context = new ActionContext('create');
     // Call Action
-    return $this->doAction($context->setIfNotNull('organization:name', Strings::nullOnEmpty($name)));
+    return $this->doAction($context->setIfNotNull('user:name', Strings::nullOnEmpty($name)));
   }
 
   /**
-   * Retrieve the Organization with the Given ID.
+   * Retrieve the User with the Given ID.
    * 
-   * @param integer $id Organization's Unique Identifier
+   * @param string $id User's Unique Identifier
    * @return string HTTP Body Response
    */
   public function read($id) {
     // Create Action Context
     $context = new ActionContext('read');
     // Call Action
-    return $this->doAction($context->setParameter('organization:id', (integer) $id));
+    return $this->doAction($context->setParameter('user:id', (integer) $id));
   }
 
   /**
-   * Retrieve the Organization with the Given Name.
+   * Retrieve the User with the Given Name.
    * 
-   * @param string $name Organization's Unique Name
+   * @param string $name User's Unique Name
    * @return string HTTP Body Response
    */
   public function readByName($name) {
     // Create Action Context
     $context = new ActionContext('read');
     // Call Action
-    return $this->doAction($context->setIfNotNull('organization:name', Strings::nullOnEmpty($name)));
+    return $this->doAction($context->setIfNotNull('user:name', Strings::nullOnEmpty($name)));
   }
 
   /**
-   * Update the Organization, with the Given ID, information.
+   * Update the User, with the Given ID, information.
    * 
-   * @param integer $id Organization's Unique Identifier
+   * @param $id User's Unique Identifier
    * @return string HTTP Body Response
    */
   public function update($id) {
     // Create Action Context
     $context = new ActionContext('update');
     // Call Action
-    return $this->doAction($context->setParameter('organization:id', (integer) $id));
+    return $this->doAction($context->setParameter('user:id', (integer) $id));
   }
 
   /**
-   * Update the Organization, with the Given Name, information.
+   * Update the User, with the Given Name, information.
    * 
-   * @param string $name Organization's Unique Name
+   * @param string $name User's Unique Name
    * @return string HTTP Body Response
    */
   public function updateByName($name) {
     // Create Action Context
     $context = new ActionContext('update');
     // Call Action
-    return $this->doAction($context->setIfNotNull('organization:name', Strings::nullOnEmpty($name)));
+    return $this->doAction($context->setIfNotNull('user:name', Strings::nullOnEmpty($name)));
   }
 
   /**
-   * Delete the Organization with the Given ID.
+   * Delete the User with the Given ID.
    * 
-   * @param integer $id Organization's Unique Identifier
+   * @param $id User's Unique Identifier
    * @return string HTTP Body Response
    */
   public function delete($id) {
     // Create Action Context
     $context = new ActionContext('delete');
     // Call Action
-    return $this->doAction($context->setParameter('organization:id', (integer) $id));
+    return $this->doAction($context->setParameter('user:id', (integer) $id));
   }
 
   /**
-   * Delete the Organization with the Given Name.
+   * Delete the User with the Given Name.
    * 
-   * @param string $name Organization's Unique Name
+   * @param string $name User's Unique Name
    * @return string HTTP Body Response
    */
   public function deleteByName($name) {
     // Create Action Context
     $context = new ActionContext('delete');
     // Call Action
-    return $this->doAction($context->setIfNotNull('organization:name', Strings::nullOnEmpty($name)));
+    return $this->doAction($context->setIfNotNull('user:name', Strings::nullOnEmpty($name)));
   }
 
   /**
-   * List Organization Entities in the Database.
+   * List User Entities in the Database.
    * 
    * Note: We can pass in request parameter to limit and organize the list returned.
    * 
    * Request Parameter:
-   * __filter - Used to filter the list of Organizations
+   * __filter - Used to filter the list of users
    * __sort - Used to organize the sort order of the list
    * __limit - Limit the number of entities return in the list
    * 
    * @return string HTTP Body Response
    */
-  public function listOrganizations() {
+  public function listUsers() {
     // Create Action Context
     $context = new ActionContext('list');
 
@@ -150,16 +150,16 @@ class OrganizationsController extends CrudServiceController {
   }
 
   /**
-   * Count the Number of Organization Entities in the Database.
+   * Count the Number of User Entities in the Database.
    * 
    * Note: We can pass in request parameter to limit the entities being considered.
    * 
    * Request Parameter:
-   * __filter - Used to filter the list of Organizations
+   * __filter - Used to filter the list of users
    * 
-   * @return integer Number of Organizations
+   * @return integer Number of Users
    */
-  public function countOrganizations() {
+  public function countUsers() {
     // Create Action Context
     $context = new ActionContext('count');
 
@@ -207,32 +207,13 @@ class OrganizationsController extends CrudServiceController {
     // Call the General Handler 1st (to Setup Context)
     $context = $this->preAction($context);
 
-    /* Implementation Notes:
-     * Deleting the Organization, requires that we delete all references to the organization, before we can continue
-     * Therefor, there are 2 options available:
-     * 1. Delete all Projects, All Users Links, before we delete the Organization
-     * 2. Don't allow delete of the Organization, until all projects in the Organization have been deleted.
-     * 3. Don't delete anything, just mark as delete (and maybe introduce a backup/purge functions, so as we can extract
-     *    these deleted entities)
-     *
-     * Even though we could have implemented Option 1, Option 2 is safer, as it implies a manual confirmation
-     * that you really want to delete the organization, by forcing the user to delete all the projects
-     * before he can delete the organization. Also, this also makes the code easier to manage, and less like to have bugs.
-     * Option 3, is probably the better solution, but will have to be analyzed.
-     */
+    // Get User Being Managed
+    $user = $context->getParameter('entity');
 
-    $organization = $context->getParameter('entity');
+    // Unlink ALL Users from all Projects/Organizations
+    \models\UserProject::deleteRelationsUser($user);
+    \models\UserOrganization::deleteRelationsUser($user);
 
-    // Do we have any Projects Associated with the Organization?
-    $count = \models\Project::countInOrganization($organization);
-    if ($count > 0) { // YES
-      throw new \Exception("Organization [{$organization->name}] has [$count] Projects associated. Delete all Projects, before deleting Organization.", 4);
-    }
-
-    // Unlink ALL Users from the Organization
-    \models\UserOrganization::deleteRelationsOrganization($organization);
-
-    // TODO Remove Organization Container
     return $context;
   }
 
@@ -247,48 +228,63 @@ class OrganizationsController extends CrudServiceController {
     // Parameter Validation
     assert('isset($context) && is_object($context)');
 
-    // Process 'name' Parameter (if it exists)
-    $context = $this->onParameterDo($context, 'organization:name', function($controller, $context, $action, $value) {
-      // Try to Find the Organization by Name
-      $org = \models\Organization::findFirstByName($value);
+    // Process 'user:name' Parameter (if it exists)
+    $context = $this->onParameterDo($context, 'user:name', function($controller, $context, $action, $value) {
+      // Try to Find the User by Name
+      $user = \models\User::findFirstByName($value);
 
-      // Are we trying to 'create' a new organization?
+      // Are we trying to 'create' a new user?
       if ($action === 'Create') { // YES
-        // Did we find an existing organization with the same name?
-        if ($org !== FALSE) { // YES
-          throw new \Exception("Organization [$value] already exists.", 1);
+        // Did we find an existing user with the same name?
+        if ($user !== FALSE) { // YES
+          throw new \Exception("User [$value] already exists.", 1);
         }
       } else { // NO: Some other action
-        // Did we find an existing organization?
-        if ($org === FALSE) { // NO
-          throw new \Exception("Organization [$value] not found", 2);
+        // Did we find an existing user?
+        if ($user === FALSE) { // NO
+          throw new \Exception("User [$value] not found", 2);
         }
 
-        // Save the Organization for the Action
-        $context->setParameter('entity', $org)
-                ->setParameter('organization', $org);
+        $context->setParameter('entity', $user);
+        $context->setParameter('user', $user);
       }
 
       return $context;
     }, array('Read', 'Update', 'Delete'), 'Create');
 
-    // Process 'id' Parameter (if it exists)
+    // Process 'user:id' Parameter (if it exists)
     if (!$context->hasParameter('entity')) {
-      $context = $this->onParameterDo($context, 'organization:id', function($controller, $context, $action, $value) {
+      $context = $this->onParameterDo($context, 'user:id', function($controller, $context, $action, $value) {
 
-        // Does the Organization with the given ID exist?
-        $org = \models\Organization::findFirst($value);
-        if ($org === FALSE) { // NO
-          throw new \Exception("Organization [$value] not found", 3);
+        // Does the User with the given ID exist?
+        $user = \models\User::findFirst($value);
+        if ($user === FALSE) { // NO
+          throw new \Exception("User [$value] not found", 3);
         }
 
-        // Save the Organization for the Action
-        $context->setParameter('entity', $org)
-                ->setParameter('organization', $org);
+        // Save the User for the Action
+        $context->setParameter('entity', $user);
+        $context->setParameter('user', $user);
 
         return $context;
       }, null, array('Read', 'Update', 'Delete'));
     }
+
+    // Process 'user:password' Parameter (if it exists)
+    $context = $this->onParameterDo($context, 'user:password', function($controller, $context, $action, $value) {
+      // Extract Trimmed Password
+      $password = Strings::nullOnEmpty($value);
+
+      // Has a Password been Defined?
+      if (!isset($password)) { // NO: Use Null Password
+        $password = '';
+      }
+
+      return $context->setParameter('user:password', $password);
+    }, 'Update', 'Create', function($controller, $context, $action) {
+      // FOR CREATE: We set the password to EMPTY PASSWORD
+      return '';
+    });
 
     // Get the User for the Active Session
     $id = $this->sessionManager->getUser();
@@ -299,49 +295,8 @@ class OrganizationsController extends CrudServiceController {
       throw new \Exception("User [$id] not found", 4);
     }
 
-    // Save the User in the Context
-    return $context->setParameter('user', $user)
-                    ->setParameter('cm_user', $user);
-  }
-
-  /**
-   * Perform cleanup, after the Action Handler is Called.
-   * 
-   * @param \api\controller\ActionContext $context Incoming Context for Action
-   * @return \api\controller\ActionContext Outgoing Context for Action
-   * @throws \Exception On any type of failure condition
-   */
-  protected function postActionCreate($context) {
-    // Parameter Validation
-    assert('isset($context) && is_object($context)');
-
-    // Get the Organization that was Previously Created
-    $organization = $context->getActionResult();
-    assert('isset($organization)');
-
-    // Save the Organization for the Action
-    $context->setParameter('entity', $organization);
-    $context->setParameter('organization', $organization);
-
-    /* TODO    
-      // Create the Container for the Organization
-      $container = \Container::createContainer("ROOT ORG[{$organization->id}]", $organization);
-      $container->setSingleLevel(1);
-      if ($container->save() === FALSE) {
-      throw new \Exception("Failed to Create Container for Organization [{$organization->name}].", 1);
-      }
-      $organization->container = $container;
-     */
-
-    // Get the User to Associate with the Organization
-    $user = $context->getParameter('user');
-    assert('isset($user)');
-
-    // Link the New Organization to the Current User (READ-ONLY)
-    \models\UserOrganization::addRelation($user, $organization);
-
-    // No change to the context
-    return $context;
+    // Save the Creator / Modification User in the Context
+    return $context->setParameter('cm_user', $user);
   }
 
   /**
@@ -363,10 +318,6 @@ class OrganizationsController extends CrudServiceController {
     $action = $context->getAction();
     assert('isset($action)');
     switch ($action) {
-      case 'UserAdd':
-      case 'UserRemove':
-      case 'UserGet':
-      case 'UserSet':
       case 'Create':
       case 'Read':
       case 'Update':
@@ -377,8 +328,8 @@ class OrganizationsController extends CrudServiceController {
         $return = [];
         $entities = [];
         $header = true;
-        foreach ($results as $organization) {
-          $entities[] = $organization->toArray($header);
+        foreach ($results as $user) {
+          $entities[] = $user->toArray($header);
           $header = false;
         }
 
@@ -388,15 +339,6 @@ class OrganizationsController extends CrudServiceController {
           $this->moveEntityHeader($entities[0], $return);
           $return['__type'] = 'entity-set';
           $return['entities'] = $entities;
-        }
-        break;
-      case 'UsersList':
-        $return = array();
-        foreach ($results as $uo) {
-          $user = $uo->getUser();
-          $id = $user->getId();
-          $return[$id] = $user->toArray();
-          unset($return[$id]['id']);
         }
         break;
       default:
@@ -423,9 +365,16 @@ class OrganizationsController extends CrudServiceController {
     // Call Base Class to Apply Initial Transforms
     $value = parent::transformFieldValue($field, $value);
 
-    // Are we trying to set the description?
-    if ($field === 'description') { // YES
-      $value = Strings::nullOnEmpty($value);
+    switch ($field) {
+      case 'password' : // Encode Password with MD5
+        $value = Strings::nullOnEmpty($value);
+        $value = md5(isset($value) ? $value : '');
+        break;
+      case 'first_name':
+      case 'last_name':
+      case 's_description':
+      case 'l_description':
+        $value = Strings::nullOnEmpty($value);
     }
 
     return $value;
@@ -434,10 +383,10 @@ class OrganizationsController extends CrudServiceController {
   /**
    * Creates an instance of the Entity Managed by the Controller
    * 
-   * @return \models\Organization An instance of a Organization Entity, managed by this controller
+   * @return \models\User An instance of a User Entity, managed by this controller
    */
   protected function createEntity() {
-    return new \models\Organization();
+    return new \models\User();
   }
 
 }

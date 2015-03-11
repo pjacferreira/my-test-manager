@@ -80,11 +80,11 @@ class Organization extends \api\model\AbstractEntity {
   public function initialize() {
     // Define Relations
     // A Single User can Be the Creator for Many Other Users
-    $this->hasMany("creator", "User", "id");
+    $this->hasMany("creator", "models\User", "id");
     // A Single User can Be the Modifier for Many Other Users
-    $this->hasMany("modifier", "User", "id");
+    $this->hasMany("modifier", "models\User", "id");
     // Relation Between User and Organizations
-    $this->hasMany("id", "UserOrganization", "organization");
+    $this->hasMany("id", "models\UserOrganization", "organization");
   }
 
   /**

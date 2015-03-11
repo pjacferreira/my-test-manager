@@ -16,12 +16,13 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 namespace models;
 
 use \common\utility\Strings;
 
 /**
- * User Project Entity (Links a User with an Project and Sets the 
+ * User Project Entity (Links a User with an Project and Sets the
  * permissions for that link).
  *
  * @license http://opensource.org/licenses/AGPL-3.0 Affero GNU Public License v3.0
@@ -66,13 +67,13 @@ class UserProject extends \api\model\AbstractEntity {
   public function initialize() {
     // Define Relations
     // A Single User can Only Have a Single Set of Permissions with an Project
-    $this->belongsTo("user", "User", "id");
-    $this->belongsTo("project", "Project", "id");
+    $this->belongsTo("user", "models\User", "id");
+    $this->belongsTo("project", "models\Project", "id");
   }
 
   /**
    * Define alternate table name for user project
-   * 
+   *
    * @return string User Project Table Name
    */
   public function getSource() {
@@ -81,15 +82,15 @@ class UserProject extends \api\model\AbstractEntity {
 
   /**
    * Independent Column Mapping.
-   * 
-   * @return array Mapping of Table Column Name to Entity Field Name 
+   *
+   * @return array Mapping of Table Column Name to Entity Field Name
    */
   public function columnMap() {
     return array(
-        'id' => 'id',
-        'id_user' => 'user',
-        'id_project' => 'project',
-        'permissions' => 'permissions'
+      'id' => 'id',
+      'id_user' => 'user',
+      'id_project' => 'project',
+      'permissions' => 'permissions',
     );
   }
 
@@ -110,7 +111,7 @@ class UserProject extends \api\model\AbstractEntity {
 
   /**
    * Retrieve the name used to reference the entity in Metadata
-   * 
+   *
    * @return string Name
    */
   public function entityName() {
@@ -125,7 +126,7 @@ class UserProject extends \api\model\AbstractEntity {
 
   /**
    * Retrieves a Map representation of the Entities Field Values
-   * 
+   *
    * @param boolean $header (DEFAULT = true) Add Entity Header Information?
    * @return array Map of field <--> value tuplets
    */
@@ -141,7 +142,7 @@ class UserProject extends \api\model\AbstractEntity {
 
   /**
    * String Representation of Entity
-   * 
+   *
    * @return string Entity Identifier String
    */
   public function __toString() {
@@ -156,7 +157,7 @@ class UserProject extends \api\model\AbstractEntity {
 
   /**
    * Find the Relation between the User and Project
-   * 
+   *
    * @param mixed $user User ID or User Entity
    * @param mixed $project Project ID or Project Entity
    * @return mixed Returns Relation or 'null' if none found
@@ -164,35 +165,35 @@ class UserProject extends \api\model\AbstractEntity {
    */
   public static function findRelation($user, $project) {
     // Are we able to extract the User ID from the Parameter?
-    $user_id = \User::extractUserID($user);
+    $user_id = User::extractUserID($user);
     if (!isset($user_id)) { // NO
       throw new \Exception("User Parameter is invalid.", 1);
     }
 
     // Are we able to extract the Project ID from the Parameter?
-    $project_id = \Project::extractProjectID($project);
+    $project_id = Project::extractProjectID($project);
     if (!isset($project_id)) { // NO
       throw new \Exception("Project Parameter is invalid.", 2);
     }
 
     $link = self::findFirst(array(
-                'conditions' => array(
-                    array(
-                        'user = :user_id: AND project = :project_id:',
-                        array('user_id' => $user_id, 'project_id' => $project_id)
-                    )))
+        'conditions' => array(
+          array(
+            'user = :user_id: AND project = :project_id:',
+            array('user_id' => $user_id, 'project_id' => $project_id),
+          )))
     );
     return $link !== FALSE ? $link : null;
   }
 
   /**
    * Create/Update the Relation between the User and Organization
-   * 
+   *
    * @param mixed $user User ID or User Entity
    * @param mixed $project Project ID or Project Entity
    * @param string $permissions OPTIONAL Permission for Relation (if not SPECIFIED
    *   default to READ-ONLY)
-   * @return \UserProject Returns Relation 
+   * @return \UserProject Returns Relation
    * @throws \Exception On Any Failure
    */
   public static function addRelation($user, $project, $permissions = null) {
@@ -209,15 +210,16 @@ class UserProject extends \api\model\AbstractEntity {
     // Does the Link Exist Already?
     if (!isset($link)) { // NO
       $link = new UserProject();
-      $link->user = \User::extractUserID($user);
-      $link->project = \Project::extractProjectID($project);
+      $link->user = User::extractUserID($user);
+      $link->project = Project::extractProjectID($project);
       $link->permissions = $permissions;
     } else { // YES
       $link->permissions = $permissions;
     }
 
     // Were we able to flush the changes?
-    if ($link->save() === FALSE) { // No
+    if ($link->save() === FALSE) {
+      // No
       throw new \Exception("Failed to Create/Update User<-->Project Link.", 1);
     }
 
@@ -227,7 +229,7 @@ class UserProject extends \api\model\AbstractEntity {
 
   /**
    * Delete the Relation between the User and Project
-   * 
+   *
    * @param mixed $user User ID or User Entity
    * @param mixed $project Project ID or Project Entity
    * @return mixed Returns Deleted Relation or 'null' if none found
@@ -250,13 +252,13 @@ class UserProject extends \api\model\AbstractEntity {
 
   /**
    * Delete All Project Relations for the Specified User
-   * 
+   *
    * @param mixed $user User ID or User Entity
    * @throws \Exception On Any Failure
    */
   public static function deleteRelationsUser($user) {
     // Are we able to extract the User ID from the Parameter?
-    $id = \User::extractUserID($user);
+    $id = User::extractUserID($user);
     if (!isset($id)) { // NO
       throw new \Exception("Parameter is invalid.", 1);
     }
@@ -272,13 +274,13 @@ class UserProject extends \api\model\AbstractEntity {
 
   /**
    * Delete All User Relations for the Specified Project
-   * 
+   *
    * @param mixed $project Project ID or Project Entity
    * @throws \Exception On Any Failure
    */
   public static function deleteRelationsProject($project) {
     // Are we able to extract the Project ID from the Parameter?
-    $id = \Project::extractProjectID($project);
+    $id = Project::extractProjectID($project);
     if (!isset($id)) { // NO
       throw new \Exception("Parameter is invalid.", 1);
     }
@@ -294,111 +296,127 @@ class UserProject extends \api\model\AbstractEntity {
 
   /**
    * List the Users Related to the Specified Project
-   * 
+   *
    * @param mixed $project Project ID or Project Entity
    * @return \User[] Related Users
    * @throws \Exception On Any Failure
    */
   public static function listUsers($project) {
     // Are we able to extract the Project ID from the Parameter?
-    $id = \Project::extractProjectID($project);
+    $id = Project::extractProjectID($project);
     if (!isset($id)) { // NO
       throw new \Exception("Parameter is invalid.", 1);
     }
 
     // Instantiate the Query
-    $pqhl = 'SELECT User.*' .
-            ' FROM User' .
-            ' JOIN UserProject' .
-            ' WHERE UserProject.project = :id:';
+    $pqhl = 'SELECT u.*' .
+      ' FROM models\User u' .
+      ' JOIN models\UserProject up' .
+      ' WHERE up.project = :id:';
     return self::selectQuery($pqhl, array('id' => $id));
   }
 
   /**
    * Count the Number of Users Related to the Specified Project
-   * 
+   *
    * @param mixed $project Project ID or Project Entity
    * @return integer Number of Related Users
    * @throws \Exception On Any Failure
    */
   public static function countUsers($project) {
     // Are we able to extract the Project ID from the Parameter?
-    $id = \Project::extractProjectID($project);
+    $id = Project::extractProjectID($project);
     if (!isset($id)) { // NO
       throw new \Exception("Parameter is invalid.", 1);
     }
 
     // Instantiate the Query
     $pqhl = 'SELECT COUNT(*) AS count' .
-            ' FROM UserProject' .
-            ' JOIN User' .
-            ' WHERE UserProject.project = :id:';
+      ' FROM models\UserProject up' .
+      ' JOIN models\User u' .
+      ' WHERE up.project = :id:';
     return self::countQuery($pqhl, array('id' => $id));
   }
 
   /**
    * List the Project Related to the Specified User
-   * 
+   *
    * @param mixed $user User ID or User Entity
+   * @param mixed $organization [DEFAULT null = In All Organizations] Organization ID or Organization Entity
    * @return \Project[] Related Users
    * @throws \Exception On Any Failure
    */
-  public static function listProjects($user) {
+  public static function listProjects($user, $organization = null) {
     // Are we able to extract the User ID from the Parameter?
-    $id = \User::extractUserID($user);
+    $id = User::extractUserID($user);
     if (!isset($id)) { // NO
       throw new \Exception("Parameter is invalid.", 1);
     }
 
+    // Do we have an Organization to Filter for?
+    $org_id = null;
+    if (isset($organization)) { // YES
+      $org_id = Organization::extractOrganizationID($organization);
+      // Is the Organization ID Valid?
+      if (!isset($org_id)) { // NO
+        throw new \Exception("Parameter is invalid.", 2);
+      }
+    }
+
     // Instantiate the Query
-    $pqhl = 'SELECT Project.*' .
-            ' FROM Project' .
-            ' JOIN UserProject' .
-            ' WHERE UserProject.user = :id:';
-    return self::selectQuery($pqhl, array('id' => $id));
+    $pqhl = 'SELECT p.*' .
+      ' FROM models\Project p' .
+      ' JOIN models\UserProject up' .
+      ' WHERE up.user = :user:';
+    $parameters = array('user' => $id);
+    if (isset($org_id)) {
+      $pqhl.='AND p.organization = :org:';
+      $parameters['org'] = $org_id;
+    }
+    return self::selectQuery($pqhl, $parameters);
   }
 
   /**
    * List the Project and Permissions Related to the Specified User
-   * 
+   *
    * @param mixed $user User ID or User Entity
    * @return \Project[] Related Users
    * @throws \Exception On Any Failure
    */
   public static function listProjectPermissions($user) {
     // Are we able to extract the User ID from the Parameter?
-    $id = \User::extractUserID($user);
+    $id = User::extractUserID($user);
     if (!isset($id)) { // NO
       throw new \Exception("Parameter is invalid.", 1);
     }
 
     // Instantiate the Query
-    $pqhl = 'SELECT UserProject.*, Project.*' .
-            ' FROM UserProject' .
-            ' JOIN Project' .
-            ' WHERE UserProject.user = :id:';
+    $pqhl = 'SELECT up.*, p.*' .
+      ' FROM models\UserProject up' .
+      ' JOIN models\Project p' .
+      ' WHERE up.user = :id:';
     return self::selectQuery($pqhl, array('id' => $id));
   }
 
   /**
    * Count the Number of Projects Related to the Specified User
-   * 
+   *
    * @param mixed $user User ID or User Entity
    * @return integer Number of Related Users
    * @throws \Exception On Any Failure
    */
   public static function countProjects($user) {
     // Are we able to extract the User ID from the Parameter?
-    $id = \User::extractUserID($user);
+    $id = User::extractUserID($user);
     if (!isset($id)) { // NO
       throw new \Exception("Parameter is invalid.", 1);
     }
 
     // Instantiate the Query
     $pqhl = 'SELECT COUNT(*) AS count' .
-            ' FROM Project' .
-            ' JOIN UserProject' .
-            ' WHERE UserProject.user = :id:';
+      ' FROM models\Project p' .
+      ' JOIN models\UserProject up' .
+      ' WHERE up.user = :id:';
     return self::countQuery($pqhl, array('id' => $id));
   }
 

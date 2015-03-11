@@ -21,7 +21,7 @@
  * @copyright 2015 Paulo Ferreira
  * @author Paulo Ferreira <pf at sourcenotes.org>
  */
-namespace controllers\usermode;
+namespace controllers\user;
 
 use api\controller\ActionContext;
 use api\controller\BaseServiceController;

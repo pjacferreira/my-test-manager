@@ -17,7 +17,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-namespace controllers\usermode;
+
+namespace controllers\admin;
 
 use api\controller\ActionContext;
 use common\utility\Strings;
@@ -43,13 +44,16 @@ class UsersController extends CrudServiceController {
    * default values for the remaining fields.
    * 
    * @param string $name User name
+   * @param string $hash [DEFAULT null = No Password] Password Hash
    * @return string HTTP Body Response
    */
-  public function create($name) {
+  public function create($name, $hash = null) {
     // Create Action Context
     $context = new ActionContext('create');
     // Call Action
-    return $this->doAction($context->setIfNotNull('user:name', Strings::nullOnEmpty($name)));
+    return $this->doAction($context->setIfNotNull('user:name', Strings::nullOnEmpty($name))
+                                    ->setIfNotNull('user:password', Strings::nullOnEmpty($hash))
+            );
   }
 
   /**

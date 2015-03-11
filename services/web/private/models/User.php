@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 namespace models;
 
 /**
@@ -90,7 +91,7 @@ class User extends \api\model\AbstractEntity {
    * @var boolean User Suspended?
    */
   public $suspended;
-  
+
   /*
    * ---------------------------------------------------------------------------
    * PHALCON Model Overrides
@@ -98,18 +99,25 @@ class User extends \api\model\AbstractEntity {
    */
 
   /**
+   * PHALCON per Instance Contructor
+   */
+  public function onConstruct() {
+    $this->suspended = 0;
+  }
+
+  /**
    * PHALCON per request Contructor
    */
   public function initialize() {
     // Define Relations
     // A Single User can Be the Creator for Many Other Users
-    $this->hasMany("creator", "User", "id");
+    $this->hasMany("creator", "models\User", "id");
     // A Single User can Be the Modifier for Many Other Users
-    $this->hasMany("modifier", "User", "id");
+    $this->hasMany("modifier", "models\User", "id");
     // Relation Between User and Organizations
-    $this->hasMany("id", "UserOrganization", "user");
+    $this->hasMany("id", "models\UserOrganization", "user");
     // Relation Between User and Projects
-    $this->hasMany("id", "UserProject", "user");
+    $this->hasMany("id", "models\UserProject", "user");
     // TODO: Model::skipAttributes has any impact or requirement here
   }
 

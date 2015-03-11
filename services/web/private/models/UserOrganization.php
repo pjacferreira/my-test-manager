@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 namespace models;
 
 use \common\utility\Strings;
@@ -66,8 +67,8 @@ class UserOrganization extends \api\model\AbstractEntity {
   public function initialize() {
     // Define Relations
     // A Single User can Only Have a Single Set of Permissions with an Organization
-    $this->belongsTo("user", "User", "id");
-    $this->belongsTo("organization", "Organization", "id");
+    $this->belongsTo("user", "models\User", "id");
+    $this->belongsTo("organization", "models\Organization", "id");
   }
 
   /**
@@ -164,13 +165,13 @@ class UserOrganization extends \api\model\AbstractEntity {
    */
   public static function findRelation($user, $org) {
     // Are we able to extract the User ID from the Parameter?
-    $user_id = \User::extractUserID($user);
+    $user_id = User::extractUserID($user);
     if (!isset($user_id)) { // NO
       throw new \Exception("User Parameter is invalid.", 1);
     }
 
     // Are we able to extract the Organization ID from the Parameter?
-    $org_id = \Organization::extractOrganizationID($org);
+    $org_id = Organization::extractOrganizationID($org);
     if (!isset($org_id)) { // NO
       throw new \Exception("Organization Parameter is invalid.", 2);
     }
@@ -209,8 +210,8 @@ class UserOrganization extends \api\model\AbstractEntity {
     // Does the Link Exist Already?
     if (!isset($link)) { // NO
       $link = new UserOrganization();
-      $link->user = \User::extractUserID($user);
-      $link->organization = \Organization::extractOrganizationID($org);
+      $link->user = User::extractUserID($user);
+      $link->organization = Organization::extractOrganizationID($org);
       $link->permissions = $permissions;
     } else { // YES
       $link->permissions = $permissions;
@@ -256,13 +257,15 @@ class UserOrganization extends \api\model\AbstractEntity {
    */
   public static function deleteRelationsUser($user) {
     // Are we able to extract the User ID from the Parameter?
-    $id = \User::extractUserID($user);
+    $id = User::extractUserID($user);
     if (!isset($id)) { // NO
       throw new \Exception("Parameter is invalid.", 1);
     }
 
     // Instantiate the Query
-    $query = new Phalcon\Mvc\Model\Query('DELETE FROM UserOrganization WHERE user = :id:', \Phalcon\Di::getDefault());
+    $query = new Phalcon\Mvc\Model\Query('DELETE'.
+            ' FROM models\UserOrganization uo'.
+            ' WHERE uo.user = :id:', \Phalcon\Di::getDefault());
 
     // Execute the query returning a result if any
     if ($query->execute(array('id' => $id)) === FALSE) {
@@ -278,13 +281,15 @@ class UserOrganization extends \api\model\AbstractEntity {
    */
   public static function deleteRelationsOrganization($org) {
     // Are we able to extract the Organization ID from the Parameter?
-    $id = \Organization::extractOrganizationID($org);
+    $id = Organization::extractOrganizationID($org);
     if (!isset($id)) { // NO
       throw new \Exception("Parameter is invalid.", 1);
     }
 
     // Instantiate the Query
-    $query = new Phalcon\Mvc\Model\Query('DELETE FROM UserOrganization WHERE organization = :id:', \Phalcon\Di::getDefault());
+    $query = new Phalcon\Mvc\Model\Query('DELETE'.
+            ' FROM models\UserOrganization uo'.
+            ' WHERE uo.organization = :id:', \Phalcon\Di::getDefault());
 
     // Execute the query returning a result if any
     if ($query->execute(array('id' => $id)) === FALSE) {
@@ -301,7 +306,7 @@ class UserOrganization extends \api\model\AbstractEntity {
    */
   public static function listUsers($org) {
     // Are we able to extract the Organization ID from the Parameter?
-    $id = \Organization::extractOrganizationID($org);
+    $id = Organization::extractOrganizationID($org);
     if (!isset($id)) { // NO
       throw new \Exception("Parameter is invalid.", 1);
     }
@@ -310,10 +315,10 @@ class UserOrganization extends \api\model\AbstractEntity {
     /* NOTE: The choice of the Entity Used with FROM is important, as it
      * represents the type of entity that will be created, on rehydration.
      */
-    $pqhl = 'SELECT User.*' .
-            ' FROM User' .
-            ' JOIN UserOrganization' .
-            ' WHERE UserOrganization.organization = :id:';
+    $pqhl = 'SELECT u.*' .
+            ' FROM models\User u' .
+            ' JOIN models\UserOrganization uo' .
+            ' WHERE uo.organization = :id:';
     return self::selectQuery($pqhl, array('id' => $id));
   }
 
@@ -326,16 +331,16 @@ class UserOrganization extends \api\model\AbstractEntity {
    */
   public static function countUsers($org) {
     // Are we able to extract the Organization ID from the Parameter?
-    $id = \Organization::extractOrganizationID($org);
+    $id = Organization::extractOrganizationID($org);
     if (!isset($id)) { // NO
       throw new \Exception("Parameter is invalid.", 1);
     }
 
     // Instantiate the Query
     $pqhl = 'SELECT COUNT(*) AS count' .
-            ' FROM UserOrganization' .
-            ' JOIN User' .
-            ' WHERE UserOrganization.organization = :id:';
+            ' FROM  models\UserOrganization uo' .
+            ' JOIN  models\User p' .
+            ' WHERE uo.organization = :id:';
     return self::countQuery($pqhl, array('id' => $id));
   }
 
@@ -348,16 +353,20 @@ class UserOrganization extends \api\model\AbstractEntity {
    */
   public static function listOrganizations($user) {
     // Are we able to extract the User ID from the Parameter?
-    $id = \User::extractUserID($user);
+    $id = User::extractUserID($user);
     if (!isset($id)) { // NO
       throw new \Exception("Parameter is invalid.", 1);
     }
 
+    /* PROBLEM: Return UserOrganization and not Organization Objects that we need
+    $uos = UserOrganization::find('user = '.$id);
+    return $uos;
+     */
     // Instantiate the Query
-    $pqhl = 'SELECT Organization.*' .
-            ' FROM Organization' .
-            ' JOIN UserOrganization' .
-            ' WHERE UserOrganization.user = :id:';
+    $pqhl = 'SELECT o.*' .
+            ' FROM models\Organization o ' .
+            ' JOIN models\UserOrganization uo' .
+            ' WHERE uo.user = :id:';
     return self::selectQuery($pqhl, array('id' => $id));
   }
 
@@ -370,16 +379,16 @@ class UserOrganization extends \api\model\AbstractEntity {
    */
   public static function listOrganizationPermissions($user) {
     // Are we able to extract the User ID from the Parameter?
-    $id = \User::extractUserID($user);
+    $id = User::extractUserID($user);
     if (!isset($id)) { // NO
       throw new \Exception("Parameter is invalid.", 1);
     }
 
     // Instantiate the Query
-    $pqhl = 'SELECT UserOrganization.*, Organization.*' .
-            ' FROM UserOrganization' .
-            ' JOIN Organization' .
-            ' WHERE UserOrganization.user = :id:';
+    $pqhl = 'SELECT uo.*, o.*' .
+            ' FROM  models\UserOrganization uo' .
+            ' JOIN  models\Organization o' .
+            ' WHERE uo.user = :id:';
     return self::selectQuery($pqhl, array('id' => $id));
   }
 
@@ -392,16 +401,16 @@ class UserOrganization extends \api\model\AbstractEntity {
    */
   public static function countOrganizations($user) {
     // Are we able to extract the User ID from the Parameter?
-    $id = \User::extractUserID($user);
+    $id = User::extractUserID($user);
     if (!isset($id)) { // NO
       throw new \Exception("Parameter is invalid.", 1);
     }
 
     // Instantiate the Query
     $pqhl = 'SELECT COUNT(*) AS count' .
-            ' FROM UserOrganization' .
-            ' JOIN Organization' .
-            ' WHERE UserOrganization.user = :id:';
+            ' FROM models\UserOrganization uo' .
+            ' JOIN models\Organization o' .
+            ' WHERE uo.user = :id:';
     return self::countQuery($pqhl, array('id' => $id));
   }
 

@@ -88,15 +88,15 @@ class Project extends \api\model\AbstractEntity {
   public function initialize() {
     // Define Relations
     // A Single User can Be the Creator for Many Other Users
-    $this->hasMany("creator", "User", "id");
+    $this->hasMany("creator", "models\User", "id");
     // A Single User can Be the Modifier for Many Other Users
-    $this->hasMany("modifier", "User", "id");
+    $this->hasMany("modifier", "models\User", "id");
     // A Single Organization can Be the Owner of Many Projects
-    $this->hasMany("organization", "Organization", "id");
+    $this->hasMany("organization", "models\Organization", "id");
     // A Single Project can Be the Owner of Many Containers
-    $this->hasOne("container", "Container", "id");
+    $this->hasOne("container", "models\Container", "id");
     // Relation Between User and Projects
-    $this->hasMany("id", "UserProject", "project");
+    $this->hasMany("id", "models\UserProject", "project");
   }
 
   /**

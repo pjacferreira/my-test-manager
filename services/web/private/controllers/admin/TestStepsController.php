@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-namespace controllers\usermode;
+namespace controllers\admin;
 
 use Library\ArrayUtilities;
 use TestCenter\ServiceBundle\API\CrudServiceController;

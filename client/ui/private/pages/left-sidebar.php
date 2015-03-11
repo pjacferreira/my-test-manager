@@ -3,6 +3,9 @@
  --- license http://opensource.org/licenses/AGPL-3.0 Affero GNU Public License v3.0
  -->
 <body id="page_lorem" style="background-color: #F6E1D3">
+  <!-- JS ON-READY SCRIPTS -->
+  <?php $this->includeJSScripts('on-ready'); ?>
+  <!-- SIDEBARS -->
   <?php include $this->templatesPath() . $this->setting('includes/lsidebar'); ?>
   <div class="pusher">
     <?php include $this->templatesPath() . $this->setting('includes/header'); ?>

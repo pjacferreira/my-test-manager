@@ -32,10 +32,10 @@ use Phalcon\Mvc\Micro\Collection as MicroCollection;
 $routes = new MicroCollection();
 
 // Associate a Controller with Routes
-$routes->setHandler(new controllers\usermode\ProjectsController());
+$routes->setHandler(new controllers\user\ProjectsController());
 
 // Base Route Prefix
-$routes->setPrefix('/project');
+$routes->setPrefix('/admin/project');
 
 // Associate Routes with Controller Functions
 $routes->map('/create/{name}', 'create');
@@ -61,10 +61,10 @@ $app->mount($routes);
 $routes = new MicroCollection();
 
 // Associate a Controller with Routes
-$routes->setHandler(new controllers\usermode\UserProjectController());
+$routes->setHandler(new controllers\user\UserProjectController());
 
 // Base Route Prefix
-$routes->setPrefix('/project/users');
+$routes->setPrefix('/admin/project/users');
 
 // Associate Routes with Controller Functions
 $routes->map('/list[/]?{org_id}', 'listUsers');
@@ -82,10 +82,10 @@ $app->mount($routes);
 $routes = new MicroCollection();
 
 // Associate a Controller with Routes
-$routes->setHandler(new controllers\usermode\ProjectsController());
+$routes->setHandler(new controllers\user\ProjectsController());
 
 // Base Route Prefix
-$routes->setPrefix('/projects');
+$routes->setPrefix('/admin/projects');
 
 // Associate Routes with Controller Functions
 $routes->map('/list', 'listProjects');
