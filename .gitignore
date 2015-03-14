@@ -1,0 +1,9 @@
+/.project
+
+# Ignore Special Files
+**/phpinfo.php
+**/*.phar
+**/*~
+**/*-
+**/*.bak
+**/*.mo
