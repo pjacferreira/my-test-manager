@@ -32,7 +32,7 @@ use Phalcon\Mvc\Micro\Collection as MicroCollection;
 $routes = new MicroCollection();
 
 // Associate a Controller with Routes
-$routes->setHandler(new controllers\user\ProjectsController());
+$routes->setHandler(new controllers\admin\ProjectsController());
 
 // Base Route Prefix
 $routes->setPrefix('/admin/project');
@@ -61,7 +61,7 @@ $app->mount($routes);
 $routes = new MicroCollection();
 
 // Associate a Controller with Routes
-$routes->setHandler(new controllers\user\UserProjectController());
+$routes->setHandler(new controllers\admin\UserProjectController());
 
 // Base Route Prefix
 $routes->setPrefix('/admin/project/users');
@@ -82,7 +82,7 @@ $app->mount($routes);
 $routes = new MicroCollection();
 
 // Associate a Controller with Routes
-$routes->setHandler(new controllers\user\ProjectsController());
+$routes->setHandler(new controllers\admin\ProjectsController());
 
 // Base Route Prefix
 $routes->setPrefix('/admin/projects');
