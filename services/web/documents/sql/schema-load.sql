@@ -1,13 +1,13 @@
 -- phpMyAdmin SQL Dump
--- version 4.0.10deb1
+-- version 3.4.10.1deb1
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Mar 14, 2015 at 11:03 AM
--- Server version: 5.5.41-0ubuntu0.14.04.1
--- PHP Version: 5.5.9-1ubuntu4.6
+-- Generation Time: Aug 05, 2014 at 09:18 AM
+-- Server version: 5.5.32
+-- PHP Version: 5.3.10-1ubuntu3.7
 
-SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 SET time_zone = "+00:00";
 
 
@@ -26,25 +26,34 @@ SET time_zone = "+00:00";
 -- Table structure for table `t_containers`
 --
 
+DROP TABLE IF EXISTS `t_containers`;
 CREATE TABLE IF NOT EXISTS `t_containers` (
-  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Identifier',
-  `id_root` int(11) DEFAULT NULL COMMENT 'Root Container ID',
-  `type` char(1) NOT NULL COMMENT 'Type of Contained Object',
-  `name` varchar(40) NOT NULL COMMENT 'Display Name of Entry',
-  `id_parent` int(11) DEFAULT NULL COMMENT 'Parent Container ID',
-  `id_link` int(11) DEFAULT NULL COMMENT 'If Container then this is the ID of Contained Object',
-  `type_owner` char(1) DEFAULT NULL COMMENT 'Type of the Owning Object',
-  `id_owner` int(11) DEFAULT NULL COMMENT 'ID of Object that Owns this Container or Entry',
-  `singlelevel` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'Allow Child Containers?',
-  `id_creator` int(11) NOT NULL COMMENT 'ID of User that Created the Entry',
-  `dt_creation` datetime NOT NULL COMMENT 'TimeStamp (UTC) of Creation',
-  `id_modifier` int(11) DEFAULT NULL COMMENT 'ID of the Last User to Modify the Entry',
-  `dt_modified` datetime DEFAULT NULL COMMENT 'TimeStamp (UTC) of Modification',
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id_parent` int(11) DEFAULT NULL,
+  `name` varchar(40) NOT NULL,
+  `id_owner` int(11) NOT NULL,
+  `ownertype` int(11) NOT NULL,
+  `singlelevel` tinyint(1) NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `FK_PARENT_CONTAINER` (`id_parent`),
-  KEY `FK_CONTAINER_TO_USER_CREATOR` (`id_creator`),
-  KEY `FK_CONTAINER_TO_USER_MODIFIER` (`id_modifier`)
+  KEY `IDX_C5F9997B1BB9D5A2` (`id_parent`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Containers' AUTO_INCREMENT=1 ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `t_container_entries`
+--
+
+DROP TABLE IF EXISTS `t_container_entries`;
+CREATE TABLE IF NOT EXISTS `t_container_entries` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id_container` int(11) DEFAULT NULL,
+  `name` varchar(40) NOT NULL,
+  `id_link` int(11) NOT NULL,
+  `linktype` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `IDX_53902B9E4797503C` (`id_container`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Container Entries' AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
@@ -52,6 +61,7 @@ CREATE TABLE IF NOT EXISTS `t_containers` (
 -- Table structure for table `t_documents`
 --
 
+DROP TABLE IF EXISTS `t_documents`;
 CREATE TABLE IF NOT EXISTS `t_documents` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `id_owner` int(11) NOT NULL,
@@ -68,19 +78,20 @@ CREATE TABLE IF NOT EXISTS `t_documents` (
 -- Table structure for table `t_organizations`
 --
 
+DROP TABLE IF EXISTS `t_organizations`;
 CREATE TABLE IF NOT EXISTS `t_organizations` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id_docroot` int(11) DEFAULT NULL,
+  `id_creator` int(11) DEFAULT NULL,
+  `id_modifier` int(11) DEFAULT NULL,
   `name` varchar(60) NOT NULL,
   `description` longtext,
-  `id_container` int(11) NOT NULL,
-  `id_creator` int(11) NOT NULL,
   `dt_creation` datetime NOT NULL,
-  `id_modifier` int(11) DEFAULT NULL,
   `dt_modified` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `FK_ORG_TO_CONTAINER` (`id_container`),
-  KEY `FK_ORG_TO_USER_CREATOR` (`id_creator`),
-  KEY `FK_ORG_TO_USER_MODIFIER` (`id_modifier`)
+  UNIQUE KEY `UNIQ_676499BE2C8888AD` (`id_docroot`),
+  KEY `IDX_676499BE629B4313` (`id_creator`),
+  KEY `IDX_676499BEFB643568` (`id_modifier`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Organizations' AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
@@ -89,21 +100,22 @@ CREATE TABLE IF NOT EXISTS `t_organizations` (
 -- Table structure for table `t_projects`
 --
 
+DROP TABLE IF EXISTS `t_projects`;
 CREATE TABLE IF NOT EXISTS `t_projects` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `id_organization` int(11) DEFAULT NULL,
+  `id_root` int(11) DEFAULT NULL,
+  `id_creator` int(11) DEFAULT NULL,
+  `id_modifier` int(11) DEFAULT NULL,
   `name` varchar(40) NOT NULL,
   `description` longtext,
-  `id_container` int(11) NOT NULL,
-  `id_creator` int(11) NOT NULL,
   `dt_creation` datetime NOT NULL,
-  `id_modifier` int(11) DEFAULT NULL,
   `dt_modified` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `FK_PROJECT_TO_CONTAINER` (`id_container`),
-  KEY `FK_PROJECT_TO_ORG` (`id_organization`),
-  KEY `FK_PROJECT_TO_USER_CREATOR` (`id_creator`),
-  KEY `FK_PROJECT_TO_USER_MODIFIER` (`id_modifier`)
+  UNIQUE KEY `UNIQ_8872AFFE9DD4E559` (`id_root`),
+  KEY `IDX_8872AFFEE22F160E` (`id_organization`),
+  KEY `IDX_8872AFFE629B4313` (`id_creator`),
+  KEY `IDX_8872AFFEFB643568` (`id_modifier`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Projects' AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
@@ -112,6 +124,7 @@ CREATE TABLE IF NOT EXISTS `t_projects` (
 -- Table structure for table `t_runs`
 --
 
+DROP TABLE IF EXISTS `t_runs`;
 CREATE TABLE IF NOT EXISTS `t_runs` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Run ID',
   `id_project` int(11) DEFAULT NULL,
@@ -144,6 +157,7 @@ CREATE TABLE IF NOT EXISTS `t_runs` (
 -- Table structure for table `t_run_playlists`
 --
 
+DROP TABLE IF EXISTS `t_run_playlists`;
 CREATE TABLE IF NOT EXISTS `t_run_playlists` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `id_run` int(11) DEFAULT NULL,
@@ -168,6 +182,7 @@ CREATE TABLE IF NOT EXISTS `t_run_playlists` (
 -- Table structure for table `t_sets`
 --
 
+DROP TABLE IF EXISTS `t_sets`;
 CREATE TABLE IF NOT EXISTS `t_sets` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `id_project` int(11) DEFAULT NULL,
@@ -193,6 +208,7 @@ CREATE TABLE IF NOT EXISTS `t_sets` (
 -- Table structure for table `t_set_tests`
 --
 
+DROP TABLE IF EXISTS `t_set_tests`;
 CREATE TABLE IF NOT EXISTS `t_set_tests` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `id_set` int(11) DEFAULT NULL,
@@ -209,6 +225,7 @@ CREATE TABLE IF NOT EXISTS `t_set_tests` (
 -- Table structure for table `t_statecodes`
 --
 
+DROP TABLE IF EXISTS `t_statecodes`;
 CREATE TABLE IF NOT EXISTS `t_statecodes` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `id_state` int(11) DEFAULT NULL,
@@ -231,6 +248,7 @@ CREATE TABLE IF NOT EXISTS `t_statecodes` (
 -- Table structure for table `t_states`
 --
 
+DROP TABLE IF EXISTS `t_states`;
 CREATE TABLE IF NOT EXISTS `t_states` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `id_creator` int(11) DEFAULT NULL,
@@ -252,6 +270,7 @@ CREATE TABLE IF NOT EXISTS `t_states` (
 -- Table structure for table `t_tests`
 --
 
+DROP TABLE IF EXISTS `t_tests`;
 CREATE TABLE IF NOT EXISTS `t_tests` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `id_project` int(11) DEFAULT NULL,
@@ -279,6 +298,7 @@ CREATE TABLE IF NOT EXISTS `t_tests` (
 -- Table structure for table `t_test_steps`
 --
 
+DROP TABLE IF EXISTS `t_test_steps`;
 CREATE TABLE IF NOT EXISTS `t_test_steps` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `id_test` int(11) DEFAULT NULL,
@@ -295,6 +315,7 @@ CREATE TABLE IF NOT EXISTS `t_test_steps` (
 -- Table structure for table `t_users`
 --
 
+DROP TABLE IF EXISTS `t_users`;
 CREATE TABLE IF NOT EXISTS `t_users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `id_creator` int(11) DEFAULT NULL,
@@ -307,11 +328,17 @@ CREATE TABLE IF NOT EXISTS `t_users` (
   `l_description` longtext,
   `dt_creation` datetime NOT NULL,
   `dt_modified` datetime DEFAULT NULL,
-  `suspended` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `IDX_AA32C390629B4313` (`id_creator`),
   KEY `IDX_AA32C390FB643568` (`id_modifier`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Users' AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='Users' AUTO_INCREMENT=2 ;
+
+--
+-- Dumping data for table `t_users`
+--
+
+INSERT INTO `t_users` (`id`, `id_creator`, `id_modifier`, `name`, `first_name`, `last_name`, `password`, `s_description`, `l_description`, `dt_creation`, `dt_modified`) VALUES
+(1, NULL, NULL, 'admin', NULL, NULL, '21232f297a57a5a743894a0e4a801fc3', NULL, NULL, '2014-08-05 10:22:23', NULL);
 
 -- --------------------------------------------------------
 
@@ -319,6 +346,7 @@ CREATE TABLE IF NOT EXISTS `t_users` (
 -- Table structure for table `t_user_orgs`
 --
 
+DROP TABLE IF EXISTS `t_user_orgs`;
 CREATE TABLE IF NOT EXISTS `t_user_orgs` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `id_user` int(11) NOT NULL,
@@ -336,6 +364,7 @@ CREATE TABLE IF NOT EXISTS `t_user_orgs` (
 -- Table structure for table `t_user_projects`
 --
 
+DROP TABLE IF EXISTS `t_user_projects`;
 CREATE TABLE IF NOT EXISTS `t_user_projects` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `id_user` int(11) NOT NULL,
@@ -355,26 +384,30 @@ CREATE TABLE IF NOT EXISTS `t_user_projects` (
 -- Constraints for table `t_containers`
 --
 ALTER TABLE `t_containers`
-  ADD CONSTRAINT `FK_CONTAINER_TO_USER_CREATOR` FOREIGN KEY (`id_creator`) REFERENCES `t_users` (`id`),
-  ADD CONSTRAINT `FK_CONTAINER_TO_USER_MODIFIER` FOREIGN KEY (`id_modifier`) REFERENCES `t_users` (`id`),
-  ADD CONSTRAINT `FK_PARENT_CONTAINER` FOREIGN KEY (`id_parent`) REFERENCES `t_containers` (`id`);
+  ADD CONSTRAINT `FK_C5F9997B1BB9D5A2` FOREIGN KEY (`id_parent`) REFERENCES `t_containers` (`id`);
+
+--
+-- Constraints for table `t_container_entries`
+--
+ALTER TABLE `t_container_entries`
+  ADD CONSTRAINT `FK_53902B9E4797503C` FOREIGN KEY (`id_container`) REFERENCES `t_containers` (`id`);
 
 --
 -- Constraints for table `t_organizations`
 --
 ALTER TABLE `t_organizations`
-  ADD CONSTRAINT `FK_ORG_TO_CONTAINER` FOREIGN KEY (`id_container`) REFERENCES `t_containers` (`id`),
-  ADD CONSTRAINT `FK_ORG_TO_USER_CREATOR` FOREIGN KEY (`id_creator`) REFERENCES `t_users` (`id`),
-  ADD CONSTRAINT `FK_ORG_TO_USER_MODIFIER` FOREIGN KEY (`id_modifier`) REFERENCES `t_users` (`id`);
+  ADD CONSTRAINT `FK_676499BE2C8888AD` FOREIGN KEY (`id_docroot`) REFERENCES `t_containers` (`id`),
+  ADD CONSTRAINT `FK_676499BE629B4313` FOREIGN KEY (`id_creator`) REFERENCES `t_users` (`id`),
+  ADD CONSTRAINT `FK_676499BEFB643568` FOREIGN KEY (`id_modifier`) REFERENCES `t_users` (`id`);
 
 --
 -- Constraints for table `t_projects`
 --
 ALTER TABLE `t_projects`
-  ADD CONSTRAINT `FK_PROJECT_TO_ORG` FOREIGN KEY (`id_organization`) REFERENCES `t_organizations` (`id`),
-  ADD CONSTRAINT `FK_PROJECT_TO_CONTAINER` FOREIGN KEY (`id_container`) REFERENCES `t_containers` (`id`),
-  ADD CONSTRAINT `FK_PROJECT_TO_USER_CREATOR` FOREIGN KEY (`id_creator`) REFERENCES `t_users` (`id`),
-  ADD CONSTRAINT `FK_PROJECT_TO_USER_MODIFIER` FOREIGN KEY (`id_modifier`) REFERENCES `t_users` (`id`);
+  ADD CONSTRAINT `FK_8872AFFE629B4313` FOREIGN KEY (`id_creator`) REFERENCES `t_users` (`id`),
+  ADD CONSTRAINT `FK_8872AFFE9DD4E559` FOREIGN KEY (`id_root`) REFERENCES `t_containers` (`id`),
+  ADD CONSTRAINT `FK_8872AFFEE22F160E` FOREIGN KEY (`id_organization`) REFERENCES `t_organizations` (`id`),
+  ADD CONSTRAINT `FK_8872AFFEFB643568` FOREIGN KEY (`id_modifier`) REFERENCES `t_users` (`id`);
 
 --
 -- Constraints for table `t_runs`
@@ -432,6 +465,7 @@ ALTER TABLE `t_states`
 --
 ALTER TABLE `t_tests`
   ADD CONSTRAINT `FK_ACD19A2721E5A74C` FOREIGN KEY (`id_owner`) REFERENCES `t_users` (`id`),
+  ADD CONSTRAINT `FK_ACD19A272C8888AD` FOREIGN KEY (`id_docroot`) REFERENCES `t_containers` (`id`),
   ADD CONSTRAINT `FK_ACD19A27629B4313` FOREIGN KEY (`id_creator`) REFERENCES `t_users` (`id`),
   ADD CONSTRAINT `FK_ACD19A27F12E799E` FOREIGN KEY (`id_project`) REFERENCES `t_projects` (`id`),
   ADD CONSTRAINT `FK_ACD19A27FB643568` FOREIGN KEY (`id_modifier`) REFERENCES `t_users` (`id`);
