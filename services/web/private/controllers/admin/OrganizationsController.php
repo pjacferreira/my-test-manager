@@ -17,6 +17,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 namespace controllers\admin;
 
 use api\controller\ActionContext;
@@ -192,9 +193,83 @@ class OrganizationsController extends CrudServiceController {
 
   /*
    * ---------------------------------------------------------------------------
+   * CREATE ACTION STAGES Functions
+   * ---------------------------------------------------------------------------
+   */
+
+  /**
+   * Initializes the Entity
+   * 
+   * @param \api\controller\ActionContext $context Context for Action
+   * @param \api\model\AbstractEntity $entity Entity to be Updated
+   * @return \api\model\AbstractEntity Updated Entity
+   * @throws \Exception On failure to create the entity (for any reason)
+   */
+  protected function stageInitializeEntity($context, $entity) {
+    $entity = parent::stageInitializeEntity($context, $entity);
+
+    // Get the Container
+    $container = $context->getParameter('container');
+
+    // Link the Organization to the Container
+    $entity->container = $container->id;
+    return $entity;
+  }
+
+  /**
+   * Saves Changes back to the Backend Data Store
+   * 
+   * @param \api\controller\ActionContext $context Context for Action
+   * @param \api\model\AbstractEntity $entity Entity to be Saved
+   * @return \api\model\AbstractEntity Saved Entity
+   * @throws \Exception On failure to create the entity (for any reason)
+   */
+  protected function stagePersistEntity($context, $entity) {
+    $entity = parent::stagePersistEntity($context, $entity);
+
+    // Get the Container
+    $container = $context->getParameter('container');
+    $container->setOwner($entity->id, 'O');
+
+    // Save the Container
+    $this->_persist($container);
+    return $entity;
+  }
+
+  /*
+   * ---------------------------------------------------------------------------
    * BaseController: STAGES
    * ---------------------------------------------------------------------------
    */
+
+  /**
+   * Perform any required preparation, before the Create Action Handler is Called.
+   * 
+   * @param \api\controller\ActionContext $context Incoming Context for Action
+   * @return \api\controller\ActionContext Outgoing Context for Action
+   * @throws \Exception On any type of failure condition
+   */
+  protected function preActionCreate($context) {
+    // Parameter Validation
+    assert('isset($context) && is_object($context)');
+
+    // Call the General Handler 1st (to Setup Context)
+    $context = $this->preAction($context);
+
+    // Name for Container
+    $name = $context->getParameter('organization:name');
+
+    // Create the Container for the Organization
+    $container = \models\Container::newRootContainer($name, 'O', true);
+
+    // If the Entity Allows it Set the Creation User and Date
+    $this->setCreator($container, $context->getParameter('cm_user'));
+
+    // Save the Container
+    $this->_persist($container);
+    $context->setParameter('container', $container);
+    return $context;
+  }
 
   /**
    * Perform any required preparation, before the Delete Action Handler is Called.
@@ -204,10 +279,13 @@ class OrganizationsController extends CrudServiceController {
    * @throws \Exception On any type of failure condition
    */
   protected function preActionDelete($context) {
+    // Parameter Validation
+    assert('isset($context) && is_object($context)');
+
     // Call the General Handler 1st (to Setup Context)
     $context = $this->preAction($context);
 
-    /* Implementation Notes:
+    /* (TODO) Implementation Notes:
      * Deleting the Organization, requires that we delete all references to the organization, before we can continue
      * Therefor, there are 2 options available:
      * 1. Delete all Projects, All Users Links, before we delete the Organization
@@ -220,7 +298,6 @@ class OrganizationsController extends CrudServiceController {
      * before he can delete the organization. Also, this also makes the code easier to manage, and less like to have bugs.
      * Option 3, is probably the better solution, but will have to be analyzed.
      */
-
     $organization = $context->getParameter('entity');
 
     // Do we have any Projects Associated with the Organization?
@@ -266,7 +343,7 @@ class OrganizationsController extends CrudServiceController {
 
         // Save the Organization for the Action
         $context->setParameter('entity', $org)
-                ->setParameter('organization', $org);
+          ->setParameter('organization', $org);
       }
 
       return $context;
@@ -284,7 +361,7 @@ class OrganizationsController extends CrudServiceController {
 
         // Save the Organization for the Action
         $context->setParameter('entity', $org)
-                ->setParameter('organization', $org);
+          ->setParameter('organization', $org);
 
         return $context;
       }, null, array('Read', 'Update', 'Delete'));
@@ -301,7 +378,7 @@ class OrganizationsController extends CrudServiceController {
 
     // Save the User in the Context
     return $context->setParameter('user', $user)
-                    ->setParameter('cm_user', $user);
+        ->setParameter('cm_user', $user);
   }
 
   /**
@@ -322,16 +399,6 @@ class OrganizationsController extends CrudServiceController {
     // Save the Organization for the Action
     $context->setParameter('entity', $organization);
     $context->setParameter('organization', $organization);
-
-    /* TODO    
-      // Create the Container for the Organization
-      $container = \Container::createContainer("ROOT ORG[{$organization->id}]", $organization);
-      $container->setSingleLevel(1);
-      if ($container->save() === FALSE) {
-      throw new \Exception("Failed to Create Container for Organization [{$organization->name}].", 1);
-      }
-      $organization->container = $container;
-     */
 
     // Get the User to Associate with the Organization
     $user = $context->getParameter('user');

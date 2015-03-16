@@ -137,23 +137,14 @@ abstract class CrudServiceController extends EntityServiceController {
     // Parameter Validation
     assert('isset($context) && is_object($context)');
 
-    /* TODO Re-factor this function
-     * Idea: For relations, allow the use of parameters with a name in the format (relation variable.relation parameter)
-     */
+    // Stage 1: Create the Entity
+    $entity = $this->stageCreateEntity($context);
 
-    // Create the Entity
-    $entity = $this->createEntity();
+    // Stage 2: Initialize the Entities Properties
+    $entity = $this->stageInitializeEntity($context, $entity);
 
-    // Set Entity Values
-    $this->setEntityValues($entity, $context->getParameters(), false);
-
-    // If the Entity Allows it Set the Creation User and Date
-    $this->setCreator($entity, $context->getParameter('cm_user'));
-
-    // Persist the Entity
-    $this->_persist($entity);
-
-    return $entity;
+    // Stage 3: Save the Entity
+    return $this->stagePersistEntity($context, $entity);
   }
 
   /**
@@ -167,14 +158,8 @@ abstract class CrudServiceController extends EntityServiceController {
     // Parameter Validation
     assert('isset($context) && is_object($context)');
 
-    // Get the Identifier for the Entity
-    $entity = $context->getParameter('entity');
-
-    if (!isset($entity)) {
-      throw new \Exception('Entity not found', 1);
-    }
-
-    return $entity;
+    // Stage 1: Get the Entity
+    return $this->stageGetEntity($context);
   }
 
   /**
@@ -188,20 +173,14 @@ abstract class CrudServiceController extends EntityServiceController {
     // Parameter Validation
     assert('isset($context) && is_object($context)');
 
-    // Get the Entity to Update
-    $entity = $context->getParameter('entity');
-    assert('isset($entity)');
+    // Stage 1: Get the Entity
+    $entity = $this->stageGetEntity($context);
 
-    // Set Entity Values
-    $this->setEntityValues($entity, $context->getParameters(), false);
+    // Stage 2: Update the Entities Properties
+    $entity = $this->stageUpdateEntity($context, $entity);
 
-    // If the Entity Allows it Set the Modifying User and Date
-    $this->setModifier($entity, $context->getParameter('cm_user'));
-
-    // Persist the Entity
-    $this->_persist($entity);
-
-    return $entity;
+    // Stage 3: Save the Entity
+    return $this->stagePersistEntity($context, $entity);
   }
 
   /**
@@ -215,12 +194,11 @@ abstract class CrudServiceController extends EntityServiceController {
     // Parameter Validation
     assert('isset($context) && is_object($context)');
 
-    // Get the Entity to Update
-    $entity = $context->getParameter('entity');
-    assert('isset($entity)');
+    // Stage 1: Get the Entity
+    $entity = $this->stageGetEntity($context);
 
-    // Delete Entity
-    $this->_delete($entity);
+    // Stage 2: Delete the Entity
+    $entity = $this->stageDeleteEntity($context, $entity);
 
     return true;
   }
@@ -284,6 +262,109 @@ abstract class CrudServiceController extends EntityServiceController {
     $result = $query->execute()->getFirst();
 
     return (integer) $result['count'];
+  }
+
+  /*
+   * ---------------------------------------------------------------------------
+   * ACTION STAGES Functions
+   * ---------------------------------------------------------------------------
+   */
+
+  /**
+   * Retrieve the Entity from the Action Context
+   * 
+   * @param \api\controller\ActionContext $context Context for Action
+   * @return \api\model\AbstractEntity Action Context Entity
+   * @throws \Exception On failure to retrieve the entity (for any reason)
+   */
+  protected function stageGetEntity($context) {
+    // Get the Entity to Update
+    $entity = $context->getParameter('entity');
+    if (!isset($entity)) {
+      throw new \Exception('Entity not found', 1);
+    }
+
+    return $entity;
+  }
+
+  /**
+   * Create a new Entity Based on the Action Context
+   * 
+   * @param \api\controller\ActionContext $context Context for Action
+   * @return \api\model\AbstractEntity Newly Created Entity
+   * @throws \Exception On failure to create the entity (for any reason)
+   */
+  protected function stageCreateEntity($context) {
+    // Create the Entity
+    $entity = $this->createEntity();
+
+    return $entity;
+  }
+
+  /**
+   * Initializes the Entity
+   * 
+   * @param \api\controller\ActionContext $context Context for Action
+   * @param \api\model\AbstractEntity $entity Entity to be Updated
+   * @return \api\model\AbstractEntity Updated Entity
+   * @throws \Exception On failure to create the entity (for any reason)
+   */
+  protected function stageInitializeEntity($context, $entity) {
+    // Set Entity Values
+    $this->setEntityValues($entity, $context->getParameters(), false);
+
+    // If the Entity Allows it Set the Creation User and Date
+    $this->setCreator($entity, $context->getParameter('cm_user'));
+
+    return $entity;
+  }
+
+  /**
+   * Update the Entity
+   * 
+   * @param \api\controller\ActionContext $context Context for Action
+   * @param \api\model\AbstractEntity $entity Entity to be Updated
+   * @return \api\model\AbstractEntity Updated Entity
+   * @throws \Exception On failure to update the entity (for any reason)
+   */
+  protected function stageUpdateEntity($context, $entity) {
+    // Set Entity Values
+    $this->setEntityValues($entity, $context->getParameters(), false);
+
+    // If the Entity Allows it Set the Modifying User and Date
+    $this->setModifier($entity, $context->getParameter('cm_user'));
+
+    return $entity;
+  }
+
+  /**
+   * Deletes the Entity from the Back-end Data Store
+   * 
+   * @param \api\controller\ActionContext $context Context for Action
+   * @param \api\model\AbstractEntity $entity Entity to be Deleted
+   * @return \api\model\AbstractEntity Deleted Entity
+   * @throws \Exception On failure to delete the entity (for any reason)
+   */
+  protected function stageDeleteEntity($context, $entity) {
+    // Delete Entity
+    $this->_delete($entity);
+
+    return $entity;
+  }
+
+  /**
+   * Saves Changes back to the Backend Data Store
+   * 
+   * @param \api\controller\ActionContext $context Context for Action
+   * @param \api\model\AbstractEntity $entity Entity to be Saved
+   * @return \api\model\AbstractEntity Saved Entity
+   * @throws \Exception On failure to create the entity (for any reason)
+   */
+  protected function stagePersistEntity($context, $entity) {
+    // Persist the Entity
+    $this->_persist($entity);
+
+    return $entity;
   }
 
   /*
@@ -718,7 +799,7 @@ abstract class CrudServiceController extends EntityServiceController {
     if ($entity->save() == false) { // NO      
       $messages = [];
       foreach ($entity->getMessages() as $message) {
-        $messages[]= $message->getMessage().'.';
+        $messages[] = $message->getMessage() . '.';
       }
 
       throw new \Exception(implode('\n', $messages), 1);

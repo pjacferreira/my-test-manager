@@ -18,29 +18,33 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 /*
- * Service Routes Loader
+ * USER MODE: Project Services
  * 
  * @license http://opensource.org/licenses/AGPL-3.0 Affero GNU Public License v3.0
  * @copyright 2015 Paulo Ferreira
  * @author Paulo Ferreira <pf at sourcenotes.org>
  */
+use Phalcon\Mvc\Micro\Collection as MicroCollection;
 
-// NOTE: Routes are matched in reverse order LIFO (so routes added later are processed 1st)
-// Add Addmin Routes?
-$ADMIN = true;
+/*
+ * Organization Services
+ */
+$controller = new controllers\user\ContainersController();
 
-// Common routes
-include __DIR__ . '/routes/common/session.php';
+$prefix = '/folder';
 
-// User Mode Routes
-include __DIR__ . '/routes/user/projects.php';
-include __DIR__ . '/routes/user/organizations.php';
-include __DIR__ . '/routes/user/users.php';
-include __DIR__ . '/routes/user/containers.php';
+/*
+ * Folder Actions
+ */
+$app->map($prefix . '/root/{entry}', array($controller, 'root'));
+$app->map($prefix . '/parent/{entry}', array($controller, 'parentFolder'));
+$app->map($prefix . '/create/{parent}/{name}[/]?{single_level}', array($controller, 'createFolder'));
+$app->map($prefix . '/rename/{folder}/{new_name}', array($controller, 'renameFolder'));
+$app->map($prefix . '/move/{entry}/{new_parent}', array($controller, 'moveEntry'));
+$app->map($prefix . '/delete/{entry}', array($controller, 'deleteEntry'));
 
-// Should we add Admin Mode routes?
-if ($ADMIN) { // YES
-  include __DIR__ . '/routes/admin/projects.php';
-  include __DIR__ . '/routes/admin/organizations.php';
-  include __DIR__ . '/routes/admin/users.php';
-}
+/*
+ * List Container Items
+ */
+$app->map($prefix . '/list/{folder:[0-9]+}[/]?{filter}', array($controller, 'listEntries'));
+$app->map($prefix . '/count/{folder:[0-9]+}[/]?{filter}', array($controller, 'countEntries'));

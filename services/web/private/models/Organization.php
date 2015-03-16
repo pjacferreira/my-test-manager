@@ -17,6 +17,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 namespace models;
 
 /**
@@ -79,12 +80,14 @@ class Organization extends \api\model\AbstractEntity {
    */
   public function initialize() {
     // Define Relations
-    // A Single User can Be the Creator for Many Other Users
+    // A Single User can be the Creator for Many Organizations
     $this->hasMany("creator", "models\User", "id");
-    // A Single User can Be the Modifier for Many Other Users
+    // A Single User can be the Modifier for Many Organizations
     $this->hasMany("modifier", "models\User", "id");
     // Relation Between User and Organizations
     $this->hasMany("id", "models\UserOrganization", "organization");
+    // A Single Organization is Linked to a Single Container
+    $this->hasOne("container", "models\Containers", "id");
   }
 
   /**
@@ -103,26 +106,27 @@ class Organization extends \api\model\AbstractEntity {
    */
   public function columnMap() {
     return array(
-        'id' => 'id',
-        'name' => 'name',
-        'description' => 'description',
-        'id_docroot' => 'container',
-        'id_creator' => 'creator',
-        'dt_creation' => 'date_created',
-        'id_modifier' => 'modifier',
-        'dt_modified' => 'date_modified'
+      'id' => 'id',
+      'name' => 'name',
+      'description' => 'description',
+      'id_container' => 'container',
+      'id_creator' => 'creator',
+      'dt_creation' => 'date_created',
+      'id_modifier' => 'modifier',
+      'dt_modified' => 'date_modified'
     );
   }
 
   /**
    * Called by PHALCON after a Record is Retrieved from the Database
    */
-  public function afterFetch() {
+  protected function afterFetch() {
     $this->id = (integer) $this->id;
+    $this->container = (integer) $this->container;
     $this->creator = (integer) $this->creator;
-    $this->modifier = isset($this->modifier) ? (integer) $this->modifier : null;    
+    $this->modifier = isset($this->modifier) ? (integer) $this->modifier : null;
   }
-  
+
   /*
    * ---------------------------------------------------------------------------
    * AbstractEntity: Overrides
@@ -157,6 +161,7 @@ class Organization extends \api\model\AbstractEntity {
     $array = $this->addProperty($array, 'name', null, $header);
     $array = $this->setDisplayField($array, 'name', $header);
     $array = $this->addPropertyIfNotNull($array, 'description', null, $header);
+    $array = $this->addReferencePropertyIfNotNull($array, 'container', null, $header);
     $array = $this->addReferencePropertyIfNotNull($array, 'creator', null, $header);
     $array = $this->addProperty($array, 'date_created', null, $header);
     $array = $this->addReferencePropertyIfNotNull($array, 'modifier', null, $header);

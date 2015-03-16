@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Test Center - Compliance Testing Application (Web Services)
  * Copyright (C) 2012-2015 Paulo Ferreira <pf at sourcenotes.org>
@@ -16,10 +17,13 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 namespace models;
 
+use common\utility\Strings;
+
 /**
- * Container Entity (Definition of a Document Container).
+ * Container Entity/Entry
  *
  * @license http://opensource.org/licenses/AGPL-3.0 Affero GNU Public License v3.0
  * @copyright 2015 Paulo Ferreira
@@ -29,39 +33,77 @@ class Container extends \api\model\AbstractEntity {
 
   /**
    *
-   * @var integer
+   * @var integer Container ID
    */
   public $id;
 
   /**
    *
-   * @var string
+   * @var integer ID of Root Container
+   */
+  public $root;
+
+  /**
+   *
+   * @var string Type of Container Entry
+   */
+  public $type;
+
+  /**
+   *
+   * @var string Container Entry's Name
    */
   public $name;
 
   /**
    *
-   * @var integer
+   * @var integer If Sub-Container, ID of the Parent Container
    */
   public $parent;
 
   /**
    *
-   * @var integer
+   * @var integer If Container Entry, ID of the Linked Object
+   */
+  public $link;
+
+  /**
+   *
+   * @var string Type of the Object that Owns this Container or Entry
+   */
+  public $type_owner;
+
+  /**
+   *
+   * @var integer ID of the Owning Object
    */
   public $owner;
 
   /**
    *
-   * @var integer
-   */
-  public $owner_type;
-
-  /**
-   *
-   * @var integer
+   * @var integer 0 - Allow Child Containers (false), 1 - No Child containers (true)
    */
   public $single_level;
+
+  /**
+   * @var integer Identifier of the User that Created the Entity
+   */
+  public $creator;
+
+  /**
+   * @var string Timestamp of Entity Creation
+   */
+  public $date_created;
+
+  /**
+   * @var integer Identifier of Last User to Modify the Entity
+   */
+  public $modifier;
+
+  /**
+   * @var string Timestamp of Last Modification
+   */
+  public $date_modified;
 
   /*
    * ---------------------------------------------------------------------------
@@ -74,7 +116,22 @@ class Container extends \api\model\AbstractEntity {
    */
   public function onConstruct() {
     // By Default Single Level
-    $this->single_level = true;
+    $this->single_level = 0;
+  }
+
+  /**
+   * PHALCON per request Contructor
+   */
+  public function initialize() {
+    // Define Relations
+    // A Single Container can be the Root for Many Other Containers or Entries
+    $this->hasMany("root", "models\Container", "id");
+    // A Single Container can be the Parent for Many Child Containers or Entries
+    $this->hasMany("parent", "models\Container", "id");
+    // A Single User can be the Creator for Many Containers
+    $this->hasMany("creator", "models\User", "id");
+    // A Single User can be the Modifier for Many Container
+    $this->hasMany("modifier", "models\User", "id");
   }
 
   /**
@@ -91,22 +148,36 @@ class Container extends \api\model\AbstractEntity {
    */
   public function columnMap() {
     return array(
-        'id' => 'id',
-        'name' => 'name',
-        'id_parent' => 'parent',
-        'id_owner' => 'owner',
-        'ownertype' => 'owner_type',
-        'singlelevel' => 'single_level'
+      'id' => 'id',
+      'id_root' => 'root',
+      'type' => 'type',
+      'name' => 'name',
+      'id_parent' => 'parent',
+      'id_link' => 'link',
+      'type_owner' => 'type_owner',
+      'id_owner' => 'owner',
+      'singlelevel' => 'single_level',
+      'id_creator' => 'creator',
+      'dt_creation' => 'date_created',
+      'id_modifier' => 'modifier',
+      'dt_modified' => 'date_modified'
     );
   }
 
   /**
    * Called by PHALCON after a Record is Retrieved from the Database
    */
-  public function afterFetch() {
+  protected function afterFetch() {
     $this->id = (integer) $this->id;
+    $this->root = isset($this->root) ? (integer) $this->root : null;
+    $this->parent = isset($this->parent) ? (integer) $this->parent : null;
+    $this->link = isset($this->link) ? (integer) $this->link : null;
+    $this->owner = isset($this->owner) ? (integer) $this->owner : null;
+    $this->creator = (integer) $this->creator;
+    $this->modifier = isset($this->modifier) ? (integer) $this->modifier : null;
+    $this->single_level = (integer) $this->single_level;
   }
-  
+
   /*
    * ---------------------------------------------------------------------------
    * AbstractEntity: Overrides
@@ -138,11 +209,19 @@ class Container extends \api\model\AbstractEntity {
     $array = parent::toArray($header);
 
     $array = $this->addKeyProperty($array, 'id', $header);
+    $array = $this->addReferencePropertyIfNotNull($array, 'root', null, $header);
+    $array = $this->addProperty($array, 'type', null, $header);
     $array = $this->addProperty($array, 'name', null, $header);
+    $array = $this->setDisplayField($array, 'name', $header);
     $array = $this->addProperty($array, 'parent', null, $header);
+    $array = $this->addProperty($array, 'link', null, $header);
+    $array = $this->addProperty($array, 'type_owner', null, $header);
     $array = $this->addProperty($array, 'owner', null, $header);
-    $array = $this->addProperty($array, 'owner_type', null, $header);
-    $array = $this->addProperty($array, 'single_level', $this->single_level ? true : false, $header);
+    $array = $this->addProperty($array, 'single_level', !!$this->single_level, $header);
+    $array = $this->addReferencePropertyIfNotNull($array, 'creator', null, $header);
+    $array = $this->addProperty($array, 'date_created', null, $header);
+    $array = $this->addReferencePropertyIfNotNull($array, 'modifier', null, $header);
+    $array = $this->addPropertyIfNotNull($array, 'date_modified', null, $header);
     return $array;
   }
 
@@ -161,29 +240,113 @@ class Container extends \api\model\AbstractEntity {
    * ---------------------------------------------------------------------------
    */
 
-  /**
-   * Add a Container to the Database
-   * 
-   * @param string $name Container Name
-   * @param integer $owner_id ID of Container's Owner
-   * @param integer $owner_type Type of Container's Owner
-   * @param boolean $single_level [OPTIONAL: DEFAULT = true] Is Single Level Container?
-   * @return \Container Returns Newly Created Container 
-   * @throws \Exception On Any Failure
-   */
-  public static function addContainer($name, $owner_id, $owner_type, $single_level = true) {
-    $container = new \Container();
-    $container->name = $name;
-    $container->owner = $owner_id;
-    $container->owner_type = $owner_type;
-    $container->single_level = $single_level;
-
-/*    
-    if ($container->save() === FALSE) {
-      throw new \Exception("Failed to Create Container [{$name}].", 1);
+  public function setOwner($id, $type) {
+    $type = Strings::nullOnEmpty($type);
+    if (!is_numeric($id) || !isset($type)) {
+      throw new \Exception("Owner Parameters are Invalid.", 1);
     }
-*/
-    
+
+    $this->root = (int) $id;
+    $type = strtoupper($type);
+    switch ($type[0]) {
+      case 'O' : // Organization
+      case 'P' : // Project
+      case 'T' : // Test
+      case 'S' : // Test Set
+      case 'R' : // Run
+        $this->root_type = $type[0];
+        break;
+      default:
+        throw new \Exception("Invalid Owner Type.", 2);
+    }
+  }
+
+  /**
+   * Try to Extract a Container ID from the incoming parameter
+   * 
+   * @param mixed $organization The Potential Container (object) or Container ID (integer)
+   * @return mixed Returns the Container ID or 'null' on failure;
+   */
+  public static function extractContainerID($container) {
+    // Is the parameter an Container Object?
+    if (is_object($container) && is_a($container, __CLASS__)) { // YES
+      return $container->id;
+    } else if (is_integer($container) && ($container >= 0)) { // NO: It's a Positive Integer
+      return $container;
+    }
+    // ELSE: None of the above
+    return null;
+  }
+
+  /**
+   * Basic Creator for a Root Container (Information Missing - owner id)
+   * 
+   * @param string $name Name of Container
+   * @param string $owner_type Type of Owning Object
+   * @param boolean $single_level [DEFAULT false] Allow Child Container 
+   * @return \models\Container newly create Container
+   */
+  public static function newRootContainer($name, $owner_type, $single_level = false) {
+    $name = Strings::nullOnEmpty($name);
+    $owner_type = Strings::nullOnEmpty($owner_type);
+
+    // Create Container
+    $container = new Container;
+    $container->type = 'F';
+    $container->name = $name;
+    $container->type_owner = $owner_type;
+    $container->single_level = !!$single_level ? 1 : 0;
+
+    return $container;
+  }
+
+  /**
+   * Basic Creator for Child Container (No More Information Required)
+   * 
+   * @param \models\Container $parent
+   * @param string $name Name of Container
+   * @param boolean $single_level [DEFAULT false] Allow Child Container 
+   * @return \models\Container newly create Container
+   */
+  public static function newChildContainer(Container $parent, $name, $single_level = false) {
+    $name = Strings::nullOnEmpty($name);
+
+    // Create Container
+    $container = new Container;
+
+    $container->root = $parent->root;
+    $container->type = 'F';
+    $container->name = $name;
+    $container->parent = $parent->id;
+    $container->type_owner = $parent->type_owner;
+    $container->owner = $parent->owner;
+    $container->single_level = !!$single_level ? 1 : 0;
+
+    return $container;
+  }
+
+  /**
+   * Basic Creator for Child Entry (Information Missing - link id)
+   * 
+   * @param \models\Container $parent Parent Container
+   * @param string $type Type of Container Entry
+   * @param string $name Name of Container Entry
+   * @return \models\Container newly created Container Entry
+   */
+  public static function newContainerEntry(Container $parent, $type, $name) {
+    $name = Strings::nullOnEmpty($name);
+    $type = Strings::nullOnEmpty($type);
+
+    // Create Container
+    $container = new Container;
+
+    $container->root = $parent->root;
+    $container->type = $type;
+    $container->name = $name;
+    $container->parent = $parent->id;
+    $container->type_owner = $parent->type_owner;
+    $container->owner = $parent->owner;
+
     return $container;
   }
 

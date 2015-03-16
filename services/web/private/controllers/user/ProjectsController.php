@@ -17,6 +17,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 namespace controllers\user;
 
 use api\controller\ActionContext;
@@ -38,48 +39,6 @@ class ProjectsController extends CrudServiceController {
    */
 
   /**
-   * Create an Project (if it doesn't already exist) within the Current Session
-   * Organization and with the Given Name.
-   * If more HTTP Request Parameters are given, then use those, otherwise use
-   * default values for the remaining fields.
-   * 
-   * @param string $name Project name
-   * @return string HTTP Body Response
-   */
-  public function create($name) {
-    // Create Action Context
-    $context = new ActionContext('create');
-    // Extract Clean (Security) URL Parameters (Overwriting with route parameters where necessary)
-    $context = $context
-            ->setIfNotNull('project:name', Strings::nullOnEmpty($name));
-
-    // Call the Function
-    return $this->doAction($context);
-  }
-
-  /**
-   * Create an Project (if it doesn't already exist) within the Organization
-   * specified and with the Given Name.
-   * If more HTTP Request Parameters are given, then use those, otherwise use
-   * default values for the remaining fields.
-   * 
-   * @param integer $org_id Organization's Unique Identifier
-   * @param string $name Project name
-   * @return string HTTP Body Response
-   */
-  public function createInOrg($org_id, $name) {
-    // Create Action Context
-    $context = new ActionContext('create');
-    // Extract Clean (Security) URL Parameters (Overwriting with route parameters where necessary)
-    $context = $context
-            ->setParameter('organization:id', (integer) $org_id)
-            ->setIfNotNull('project:name', Strings::nullOnEmpty($name));
-
-    // Call the Function
-    return $this->doAction($context);
-  }
-
-  /**
    * Retrieve the Project with the Given ID.
    * 
    * @param integer $id Project's Unique Identifier
@@ -90,7 +49,7 @@ class ProjectsController extends CrudServiceController {
     $context = new ActionContext('read');
     // Extract Clean (Security) URL Parameters (Overwriting with route parameters where necessary)
     $context = $context
-            ->setParameter('project:id', (integer) $id);
+      ->setParameter('project:id', (integer) $id);
 
     return $this->doAction($context);
   }
@@ -106,67 +65,9 @@ class ProjectsController extends CrudServiceController {
     $context = new ActionContext('read');
     // Extract Clean (Security) URL Parameters (Overwriting with route parameters where necessary)
     $context = $context
-            ->setIfNotNull('project:name', Strings::nullOnEmpty($name));
+      ->setIfNotNull('project:name', Strings::nullOnEmpty($name));
 
     return $this->doAction($context);
-  }
-
-  /**
-   * Update the Project, with the Given ID, information.
-   * 
-   * @param integer $id Project's Unique Identifier
-   * @return string HTTP Body Response
-   */
-  public function update($id) {
-    // Create Action Context
-    $context = new ActionContext('update');
-    // Extract Clean (Security) URL Parameters (Overwriting with route parameters where necessary)
-    $context = $context
-            ->setParameter('project:id', (integer) $id);
-
-    return $this->doAction($context);
-  }
-
-  /**
-   * Update the Project, with the Given Name, information.
-   * 
-   * @param string $name Project's Unique Name
-   * @return string HTTP Body Response
-   */
-  public function updateByName($name) {
-    // Create Action Context
-    $context = new ActionContext('update');
-    // Extract Clean (Security) URL Parameters (Overwriting with route parameters where necessary)
-    $context = $context
-            ->setIfNotNull('project:name', Strings::nullOnEmpty($name));
-
-    return $this->doAction($context);
-  }
-
-  /**
-   * Delete the Project with the Given ID.
-   * 
-   * @param integer $id Project's Unique Identifier
-   * @return string HTTP Body Response
-   */
-  public function delete($id) {
-    // Create Action Context
-    $context = new ActionContext('delete');
-    // Call Action
-    return $this->doAction($context->setParameter('project:id', (integer) $id));
-  }
-
-  /**
-   * Delete the Project with the Given Name.
-   * 
-   * @param string $name Project's Unique Name
-   * @return string HTTP Body Response
-   */
-  public function deleteByName($name) {
-    // Create Action Context
-    $context = new ActionContext('delete');
-    // Call Action
-    return $this->doAction($context->setIfNotNull('project:name', Strings::nullOnEmpty($name)));
   }
 
   /**
@@ -228,7 +129,7 @@ class ProjectsController extends CrudServiceController {
     $context = new ActionContext('list_in_organization');
     // Build Parameters
     $context = $context
-            ->setIfNotNull('organization:id', isset($org_id) ? (integer) $org_id : null);
+      ->setIfNotNull('organization:id', isset($org_id) ? (integer) $org_id : null);
 
     return $this->doAction($context);
   }
@@ -250,7 +151,7 @@ class ProjectsController extends CrudServiceController {
     $context = new ActionContext('count_in_organization');
     // Build Parameters
     $context = $context
-            ->setIfNotNull('organization:id', isset($org_id) ? (integer) $org_id : null);
+      ->setIfNotNull('organization:id', isset($org_id) ? (integer) $org_id : null);
 
     return $this->doAction($context);
   }
@@ -414,7 +315,7 @@ class ProjectsController extends CrudServiceController {
 
         // Save the Project for the Action
         $context->setParameter('entity', $project)
-                ->setParameter('project', $project);
+          ->setParameter('project', $project);
       }
 
       return $context;
@@ -431,7 +332,7 @@ class ProjectsController extends CrudServiceController {
 
         // Save the Project for the Action
         return $context->setParameter('entity', $project)
-                        ->setParameter('project', $project);
+            ->setParameter('project', $project);
       }, null, array('Read', 'Update', 'Delete'));
     }
 
@@ -446,7 +347,7 @@ class ProjectsController extends CrudServiceController {
 
     // Save the User in the Context
     return $context->setParameter('user', $user)
-                    ->setParameter('cm_user', $user);
+        ->setParameter('cm_user', $user);
   }
 
   /*
@@ -465,30 +366,30 @@ class ProjectsController extends CrudServiceController {
   public function priviledgeChecks($context) {
     // Do Access Checks
     return $this->onActionDo($context, array('Read', 'Create', 'Update', 'Delete'), function($controller, $context, $action) {
-              // Required Parameters
-              $user = $context->getParameter('user');
-              assert('isset($user)');
+        // Required Parameters
+        $user = $context->getParameter('user');
+        assert('isset($user)');
 
-              // Other Parameters
-              $project = $context->getParameter('project');
-              $organization = $context->getParameter('organization');
+        // Other Parameters
+        $project = $context->getParameter('project');
+        $organization = $context->getParameter('organization');
 
-              switch ($action) {
-                case 'Create':
-                  assert('isset($organization)');
-                  $controller->checkOrganizationAccess($user, $organization);
-                  break;
-                case 'Delete': // User Only Requires Access to Organization
-                  assert('isset($project)');
-                  $controller->checkOrganizationAccess($user, $project->getOrganization());
-                  break;
-                default: // Check if User Has Access to Project (and by consequence to the Organization)
-                  assert('isset($project)');
-                  $controller->checkProjectAccess($user, $project);
-              }
+        switch ($action) {
+          case 'Create':
+            assert('isset($organization)');
+            $controller->checkOrganizationAccess($user, $organization);
+            break;
+          case 'Delete': // User Only Requires Access to Organization
+            assert('isset($project)');
+            $controller->checkOrganizationAccess($user, $project->getOrganization());
+            break;
+          default: // Check if User Has Access to Project (and by consequence to the Organization)
+            assert('isset($project)');
+            $controller->checkProjectAccess($user, $project);
+        }
 
-              return null;
-            });
+        return null;
+      });
   }
 
   /**
@@ -501,17 +402,17 @@ class ProjectsController extends CrudServiceController {
   protected function contextChecks($context) {
     // Do Context Checks
     return $this->onActionDo($context, array('Read', 'Update', 'Delete'), function($controller, $context, $action) {
-              // Get the Context Project and Organization
-              $organization = $context->getParameter('organization');
-              $project = $context->getParameter('entity');
+        // Get the Context Project and Organization
+        $organization = $context->getParameter('organization');
+        $project = $context->getParameter('entity');
 
-              // Does the Project Belong to the Organization?
-              if ($project->organization !== $organization->id) {
-                throw new \Exception("Test Set [{$project->name}] is Not Part of the Organization[{$organization->name}]", 1);
-              }
+        // Does the Project Belong to the Organization?
+        if ($project->organization !== $organization->id) {
+          throw new \Exception("Test Set [{$project->name}] is Not Part of the Organization[{$organization->name}]", 1);
+        }
 
-              return null;
-            });
+        return null;
+      });
   }
 
   /*

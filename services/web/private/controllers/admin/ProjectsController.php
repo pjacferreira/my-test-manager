@@ -17,6 +17,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 namespace controllers\admin;
 
 use api\controller\ActionContext;
@@ -51,7 +52,7 @@ class ProjectsController extends CrudServiceController {
     $context = new ActionContext('create');
     // Extract Clean (Security) URL Parameters (Overwriting with route parameters where necessary)
     $context = $context
-            ->setIfNotNull('project:name', Strings::nullOnEmpty($name));
+      ->setIfNotNull('project:name', Strings::nullOnEmpty($name));
 
     // Call the Function
     return $this->doAction($context);
@@ -72,8 +73,8 @@ class ProjectsController extends CrudServiceController {
     $context = new ActionContext('create');
     // Extract Clean (Security) URL Parameters (Overwriting with route parameters where necessary)
     $context = $context
-            ->setParameter('organization:id', (integer) $org_id)
-            ->setIfNotNull('project:name', Strings::nullOnEmpty($name));
+      ->setParameter('organization:id', (integer) $org_id)
+      ->setIfNotNull('project:name', Strings::nullOnEmpty($name));
 
     // Call the Function
     return $this->doAction($context);
@@ -90,7 +91,7 @@ class ProjectsController extends CrudServiceController {
     $context = new ActionContext('read');
     // Extract Clean (Security) URL Parameters (Overwriting with route parameters where necessary)
     $context = $context
-            ->setParameter('project:id', (integer) $id);
+      ->setParameter('project:id', (integer) $id);
 
     return $this->doAction($context);
   }
@@ -106,7 +107,7 @@ class ProjectsController extends CrudServiceController {
     $context = new ActionContext('read');
     // Extract Clean (Security) URL Parameters (Overwriting with route parameters where necessary)
     $context = $context
-            ->setIfNotNull('project:name', Strings::nullOnEmpty($name));
+      ->setIfNotNull('project:name', Strings::nullOnEmpty($name));
 
     return $this->doAction($context);
   }
@@ -122,7 +123,7 @@ class ProjectsController extends CrudServiceController {
     $context = new ActionContext('update');
     // Extract Clean (Security) URL Parameters (Overwriting with route parameters where necessary)
     $context = $context
-            ->setParameter('project:id', (integer) $id);
+      ->setParameter('project:id', (integer) $id);
 
     return $this->doAction($context);
   }
@@ -138,7 +139,7 @@ class ProjectsController extends CrudServiceController {
     $context = new ActionContext('update');
     // Extract Clean (Security) URL Parameters (Overwriting with route parameters where necessary)
     $context = $context
-            ->setIfNotNull('project:name', Strings::nullOnEmpty($name));
+      ->setIfNotNull('project:name', Strings::nullOnEmpty($name));
 
     return $this->doAction($context);
   }
@@ -228,7 +229,7 @@ class ProjectsController extends CrudServiceController {
     $context = new ActionContext('list_in_organization');
     // Build Parameters
     $context = $context
-            ->setIfNotNull('organization:id', isset($org_id) ? (integer) $org_id : null);
+      ->setIfNotNull('organization:id', isset($org_id) ? (integer) $org_id : null);
 
     return $this->doAction($context);
   }
@@ -250,7 +251,7 @@ class ProjectsController extends CrudServiceController {
     $context = new ActionContext('count_in_organization');
     // Build Parameters
     $context = $context
-            ->setIfNotNull('organization:id', isset($org_id) ? (integer) $org_id : null);
+      ->setIfNotNull('organization:id', isset($org_id) ? (integer) $org_id : null);
 
     return $this->doAction($context);
   }
@@ -339,9 +340,83 @@ class ProjectsController extends CrudServiceController {
 
   /*
    * ---------------------------------------------------------------------------
+   * CREATE ACTION STAGES Functions
+   * ---------------------------------------------------------------------------
+   */
+
+  /**
+   * Initializes the Entity
+   * 
+   * @param \api\controller\ActionContext $context Context for Action
+   * @param \api\model\AbstractEntity $entity Entity to be Updated
+   * @return \api\model\AbstractEntity Updated Entity
+   * @throws \Exception On failure to create the entity (for any reason)
+   */
+  protected function stageInitializeEntity($context, $entity) {
+    $entity = parent::stageInitializeEntity($context, $entity);
+
+    // Get the Container
+    $container = $context->getParameter('container');
+
+    // Link the Organization to the Container
+    $entity->container = $container->id;
+    return $entity;
+  }
+
+  /**
+   * Saves Changes back to the Backend Data Store
+   * 
+   * @param \api\controller\ActionContext $context Context for Action
+   * @param \api\model\AbstractEntity $entity Entity to be Saved
+   * @return \api\model\AbstractEntity Saved Entity
+   * @throws \Exception On failure to create the entity (for any reason)
+   */
+  protected function stagePersistEntity($context, $entity) {
+    $entity = parent::stagePersistEntity($context, $entity);
+
+    // Get the Container
+    $container = $context->getParameter('container');
+    $container->setOwner($entity->id, 'P');
+
+    // Save the Container
+    $this->_persist($container);
+    return $entity;
+  }
+  
+  /*
+   * ---------------------------------------------------------------------------
    * BaseController: STAGE : PRE-ACTION
    * ---------------------------------------------------------------------------
    */
+
+  /**
+   * Perform any required preparation, before the Create Action Handler is Called.
+   * 
+   * @param \api\controller\ActionContext $context Incoming Context for Action
+   * @return \api\controller\ActionContext Outgoing Context for Action
+   * @throws \Exception On any type of failure condition
+   */
+  protected function preActionCreate($context) {
+    // Parameter Validation
+    assert('isset($context) && is_object($context)');
+
+    // Call the General Handler 1st (to Setup Context)
+    $context = $this->preAction($context);
+
+    // Name for Container
+    $name = $context->getParameter('project:name');
+
+    // Create the Container for the Organization
+    $container = \models\Container::newRootContainer($name, 'P', false);
+
+    // If the Entity Allows it Set the Creation User and Date
+    $this->setCreator($container, $context->getParameter('cm_user'));
+
+    // Save the Container
+    $this->_persist($container);
+    $context->setParameter('container', $container);
+    return $context;
+  }
 
   /**
    * Perform any required preparation, before the Delete Action Handler is Called.
@@ -358,13 +433,26 @@ class ProjectsController extends CrudServiceController {
 
     // Call the General Handler 1st (to Setup Context)
     $context = $this->preAction($context);
+
+    /* (TODO) Implementation Notes:
+     * Deleting the Projects, requires that we delete all references to the project, before we can continue
+     * Therefor, there are 2 options available:
+     * 1. Delete All Users Links/Test/Test Set/etc., before we delete the Project
+     * 2. Don't allow delete of the Project, until all Tests/Sets/etc. in the Project have been deleted.
+     * 3. Don't delete anything, just mark as delete (and maybe introduce a backup/purge functions, so as we can extract
+     *    these deleted entities)
+     *
+     * Even though we could have implemented Option 1, Option 2 is safer, as it implies a manual confirmation
+     * that you really want to delete the organization, by forcing the user to delete all the projects
+     * before he can delete the organization. Also, this also makes the code easier to manage, and less like to have bugs.
+     * Option 3, is probably the better solution, but will have to be analyzed.
+     */
     $project = $context->getParameter('entity');
 
     // Unlink all users from the Project
     \models\UserProject::deleteRelationsProject($project);
 
     // TODO Remove Project Container
-
     return $context;
   }
 
@@ -414,7 +502,7 @@ class ProjectsController extends CrudServiceController {
 
         // Save the Project for the Action
         $context->setParameter('entity', $project)
-                ->setParameter('project', $project);
+          ->setParameter('project', $project);
       }
 
       return $context;
@@ -431,7 +519,7 @@ class ProjectsController extends CrudServiceController {
 
         // Save the Project for the Action
         return $context->setParameter('entity', $project)
-                        ->setParameter('project', $project);
+            ->setParameter('project', $project);
       }, null, array('Read', 'Update', 'Delete'));
     }
 
@@ -446,7 +534,7 @@ class ProjectsController extends CrudServiceController {
 
     // Save the User in the Context
     return $context->setParameter('user', $user)
-                    ->setParameter('cm_user', $user);
+        ->setParameter('cm_user', $user);
   }
 
   /*
@@ -465,30 +553,30 @@ class ProjectsController extends CrudServiceController {
   public function priviledgeChecks($context) {
     // Do Access Checks
     return $this->onActionDo($context, array('Read', 'Create', 'Update', 'Delete'), function($controller, $context, $action) {
-              // Required Parameters
-              $user = $context->getParameter('user');
-              assert('isset($user)');
+        // Required Parameters
+        $user = $context->getParameter('user');
+        assert('isset($user)');
 
-              // Other Parameters
-              $project = $context->getParameter('project');
-              $organization = $context->getParameter('organization');
+        // Other Parameters
+        $project = $context->getParameter('project');
+        $organization = $context->getParameter('organization');
 
-              switch ($action) {
-                case 'Create':
-                  assert('isset($organization)');
-                  $controller->checkOrganizationAccess($user, $organization);
-                  break;
-                case 'Delete': // User Only Requires Access to Organization
-                  assert('isset($project)');
-                  $controller->checkOrganizationAccess($user, $project->getOrganization());
-                  break;
-                default: // Check if User Has Access to Project (and by consequence to the Organization)
-                  assert('isset($project)');
-                  $controller->checkProjectAccess($user, $project);
-              }
+        switch ($action) {
+          case 'Create':
+            assert('isset($organization)');
+            $controller->checkOrganizationAccess($user, $organization);
+            break;
+          case 'Delete': // User Only Requires Access to Organization
+            assert('isset($project)');
+            $controller->checkOrganizationAccess($user, $project->getOrganization());
+            break;
+          default: // Check if User Has Access to Project (and by consequence to the Organization)
+            assert('isset($project)');
+            $controller->checkProjectAccess($user, $project);
+        }
 
-              return null;
-            });
+        return null;
+      });
   }
 
   /**
@@ -501,17 +589,17 @@ class ProjectsController extends CrudServiceController {
   protected function contextChecks($context) {
     // Do Context Checks
     return $this->onActionDo($context, array('Read', 'Update', 'Delete'), function($controller, $context, $action) {
-              // Get the Context Project and Organization
-              $organization = $context->getParameter('organization');
-              $project = $context->getParameter('entity');
+        // Get the Context Project and Organization
+        $organization = $context->getParameter('organization');
+        $project = $context->getParameter('entity');
 
-              // Does the Project Belong to the Organization?
-              if ($project->organization !== $organization->id) {
-                throw new \Exception("Test Set [{$project->name}] is Not Part of the Organization[{$organization->name}]", 1);
-              }
+        // Does the Project Belong to the Organization?
+        if ($project->organization !== $organization->id) {
+          throw new \Exception("Test Set [{$project->name}] is Not Part of the Organization[{$organization->name}]", 1);
+        }
 
-              return null;
-            });
+        return null;
+      });
   }
 
   /*

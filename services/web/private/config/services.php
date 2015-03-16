@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Test Center - Compliance Testing Application (Web Services)
  * Copyright (C) 2012 - 2015 Paulo Ferreira <pf at sourcenotes.org>
@@ -16,7 +17,6 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 /*
  * @license http://opensource.org/licenses/AGPL-3.0 Affero GNU Public License v3.0
  * @copyright 2015 Paulo Ferreira
@@ -48,70 +48,78 @@ $di = new DI();
 $di['view'] = function () use ($config) {
   $view = new \Phalcon\Mvc\View\Simple();
   $view->registerEngines(
-          array(
-              ".phtml" => "Phalcon\Mvc\View\Engine\Php",
-              ".volt" => function($view, $di) use ($config) {
-                $volt = new \Phalcon\Mvc\View\Engine\Volt($view, $di);
-                $volt->setOptions(array("compiledPath" => $config->application->cacheDir));
+    array(
+      ".phtml" => "Phalcon\Mvc\View\Engine\Php",
+      ".volt" => function($view, $di) use ($config) {
+        $volt = new \Phalcon\Mvc\View\Engine\Volt($view, $di);
+        $volt->setOptions(array("compiledPath" => $config->application->cacheDir));
 
-                // Add Gettext Filter to VOLT
-                $compile = $volt->getCompiler()->addFilter('_', '_');
+        // Add Gettext Filter to VOLT
+        $compile = $volt->getCompiler()->addFilter('_', '_');
 
-                return $volt;
-              }
-          ));
-  $view->setViewsDir($config->application->viewsDir);
+        return $volt;
+      }
+    ));
+    $view->setViewsDir($config->application->viewsDir);
 
-  return $view;
-};
+    return $view;
+  };
 
-/**
- * The URL component is used to generate all kind of urls in the application
- */
-$di['url'] = function () use ($config) {
-  $url = new UrlResolver();
-  $url->setBaseUri($config->application->baseUri);
+  /**
+   * The URL component is used to generate all kind of urls in the application
+   */
+  $di['url'] = function () use ($config) {
+    $url = new UrlResolver();
+    $url->setBaseUri($config->application->baseUri);
 
-  return $url;
-};
+    return $url;
+  };
 
-/**
- * Database connection is created based in the parameters defined in the configuration file
- */
-$di['db'] = function () use ($config) {
-  $adapter = new DbAdapter(array(
+  /**
+   * Database connection is created based in the parameters defined in the configuration file
+   */
+  $di['db'] = function () use ($config) {
+    $adapter = new DbAdapter(array(
       "host" => $config->database->host,
       "username" => $config->database->username,
       "password" => $config->database->password,
       "dbname" => $config->database->dbname,
-  ));
+    ));
 
-  // The Options are required or PDO Converts Fields Fetched as Strings
-  $adapter->getInternalHandler()->setAttribute(\PDO::ATTR_EMULATE_PREPARES, false);
-  $adapter->getInternalHandler()->setAttribute(\PDO::ATTR_STRINGIFY_FETCHES, false);
+    // The Options are required or PDO Converts Fields Fetched as Strings
+    $adapter->getInternalHandler()->setAttribute(\PDO::ATTR_EMULATE_PREPARES, false);
+    $adapter->getInternalHandler()->setAttribute(\PDO::ATTR_STRINGIFY_FETCHES, false);
 
-  return $adapter;
-};
+    return $adapter;
+  };
 
-/**
- * PHALCON Metadata Cache System
- */
-$di['metadata'] = function() use ($config) {
-  // Instantiate a meta-data adapter
-  $metaData = new \Phalcon\Mvc\Model\Metadata\Files(array(
+  /**
+   * PHALCON Metadata Cache System
+   */
+  $di['metadata'] = function() use ($config) {
+    // Instantiate a meta-data adapter
+    $metaData = new \Phalcon\Mvc\Model\Metadata\Files(array(
       'metaDataDir' => $config->application->cacheDir
-  ));
+    ));
 
-  return $metaData;
-};
+    return $metaData;
+  };
 
-/**
- * Included Shared Services
- */
-include __DIR__ . '/../../../shared/config/services.php';
+  /**
+   * Type Registry
+   */
+  $di->setShared('typeRegistry', function () {
+    // Create Type Registry
+    return new \api\model\EntityRegistry;
+  });
 
-/*
- *  MUST BE THE LAST LINE IN THE FILE
- */
-return $di;
-        
+  /**
+   * Included Shared Services
+   */
+  include __DIR__ . '/../../../shared/config/services.php';
+
+  /*
+   *  MUST BE THE LAST LINE IN THE FILE
+   */
+  return $di;
+  
