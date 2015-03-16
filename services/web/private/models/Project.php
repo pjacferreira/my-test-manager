@@ -17,6 +17,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 namespace models;
 
 /**
@@ -93,10 +94,10 @@ class Project extends \api\model\AbstractEntity {
     $this->hasMany("modifier", "models\User", "id");
     // A Single Organization can Be the Owner of Many Projects
     $this->hasMany("organization", "models\Organization", "id");
-    // A Single Project can Be the Owner of Many Containers
-    $this->hasOne("container", "models\Container", "id");
     // Relation Between User and Projects
     $this->hasMany("id", "models\UserProject", "project");
+    // A Single Project is Linked to a Single Container
+    $this->hasOne("container", "models\Container", "id");
   }
 
   /**
@@ -113,24 +114,25 @@ class Project extends \api\model\AbstractEntity {
    */
   public function columnMap() {
     return array(
-        'id' => 'id',
-        'id_organization' => 'organization',
-        'name' => 'name',
-        'description' => 'description',
-        'id_root' => 'container',
-        'id_creator' => 'creator',
-        'dt_creation' => 'date_created',
-        'id_modifier' => 'modifier',
-        'dt_modified' => 'date_modified'
+      'id' => 'id',
+      'id_organization' => 'organization',
+      'name' => 'name',
+      'description' => 'description',
+      'id_container' => 'container',
+      'id_creator' => 'creator',
+      'dt_creation' => 'date_created',
+      'id_modifier' => 'modifier',
+      'dt_modified' => 'date_modified'
     );
   }
 
   /**
    * Called by PHALCON after a Record is Retrieved from the Database
    */
-  public function afterFetch() {
+  protected function afterFetch() {
     $this->id = (integer) $this->id;
     $this->organization = (integer) $this->organization;
+    $this->container = (integer) $this->container;
     $this->creator = (integer) $this->creator;
     $this->modifier = isset($this->modifier) ? (integer) $this->modifier : null;
   }
@@ -170,6 +172,7 @@ class Project extends \api\model\AbstractEntity {
     $array = $this->setDisplayField($array, 'name', $header);
     $array = $this->addPropertyIfNotNull($array, 'description', null, $header);
     $array = $this->addReferencePropertyIfNotNull($array, 'organization', null, $header);
+    $array = $this->addReferencePropertyIfNotNull($array, 'container', null, $header);
     $array = $this->addReferencePropertyIfNotNull($array, 'creator', null, $header);
     $array = $this->addProperty($array, 'date_created', null, $header);
     $array = $this->addReferencePropertyIfNotNull($array, 'modifier', null, $header);

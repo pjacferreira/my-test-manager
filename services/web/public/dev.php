@@ -63,7 +63,6 @@ try {
    */
   include_with_dev('loader');
 
-
   /**
    * Starting the application
    */
