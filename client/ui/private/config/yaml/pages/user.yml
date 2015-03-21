@@ -117,12 +117,13 @@ user:
     title: 'PAGE:TITLE:USER:TESTS'
     includes:
       content: 'user/tests.php'
-    required: ['jquery-jstree']
+    required: ['jquery-fancytree-contextmenu', 'jquery-jsrender']
     js:
-      files: ['common/session.js', 'user/tests.js']
+      files: ['common/session.js', 'common/forms.js', 'user/tests.js']
       scripts:
         on-load: |
           initialize();
+    css: 'user-tests.css'
 
   ##
   # User Test Sets Management Page

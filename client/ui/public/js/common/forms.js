@@ -127,9 +127,8 @@ function form_disable($form, errors) {
  * @returns {undefined}
  */
 function form_reset($form) {
-  $form.find('.field input').each(function () {
-    $(this).val('');
-  });
+  // Clear the Field Values
+  $form.find('clear');
 
   // Remove Existing Field Errors
   $form.find('.field.error').removeClass('error');

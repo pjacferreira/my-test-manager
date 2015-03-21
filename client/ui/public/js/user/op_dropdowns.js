@@ -26,12 +26,10 @@ function fill_list($list, entities, key_field, display_field, select) {
   // Fill the List
   var $template = $.templates('<option value="{{:' + key_field + '}}">{{:' + display_field + '}}</option>');
 
-  var html, entity;
-  for (var i = 0; i < entities.length; i++) {
-    entity = entities[i];
-    html = $template.render(entity);
-    $list.append(html);
-  }
+  // Fill in Dropdown List
+  $.each(entities, function(i, entity) {
+    $list.append($template.render(entity));
+  });
 
   /* SEMANTIC-UI DROPDOWN NOTES
    * Everytime the Drop Down's SELECT is rebuilt, the setup select behaviour
@@ -41,7 +39,7 @@ function fill_list($list, entities, key_field, display_field, select) {
   $list.parent().dropdown("restore defaults");
 
   // Do we have an item to select?
-  if($.isset(select)) { // YES
+  if ($.isset(select)) { // YES
     $list.parent().dropdown("set selected", select.toString());
   }
 
@@ -55,7 +53,7 @@ function select_project(element, value, selectedText, $selectedItem) {
   if ($.isNumeric(element) && element >= 0) {
     // Set Session Project
     testcenter.services.call(['session', 'set', 'project'], element, null, {
-      call_ok: function (reply) {
+      call_ok: function(reply) {
         // Update Session Project
         window.__session = $.extend({}, window.__session, {
           project: {
@@ -69,7 +67,7 @@ function select_project(element, value, selectedText, $selectedItem) {
 
         console.log('ORGANIZATION and PROJECT SET');
       },
-      call_nok: function (code, message) {
+      call_nok: function(code, message) {
         console.log('ERROR: select_project');
       }
     });
@@ -78,7 +76,7 @@ function select_project(element, value, selectedText, $selectedItem) {
 
 function initialize_projects() {
   testcenter.services.call(['org', 'projects', 'list'], null, null, {
-    call_ok: function (reply) {
+    call_ok: function(reply) {
       // Do we have a valid reply?
       if (is_entity_set(reply)) { // YES
         // Get the Drop Down
@@ -105,7 +103,7 @@ function initialize_projects() {
         $list.parent().removeClass('disabled loading');
       }
     },
-    call_nok: function (code, message) {
+    call_nok: function(code, message) {
       console.log('ERROR: initialize_projects');
     }
   });
@@ -127,7 +125,7 @@ function select_organization(element, value, selectedText, $selectedItem) {
 
     // Set Session Organization
     testcenter.services.call(['session', 'set', 'org'], element, null, {
-      call_ok: function (reply) {
+      call_ok: function(reply) {
         // Update Session Organization
         window.__session = $.extend({}, window.__session, {
           organization: {
@@ -146,7 +144,7 @@ function select_organization(element, value, selectedText, $selectedItem) {
 
         initialize_projects();
       },
-      call_nok: function (code, message) {
+      call_nok: function(code, message) {
         console.log('ERROR: select_organization');
       }
     });
@@ -159,7 +157,7 @@ function select_organization(element, value, selectedText, $selectedItem) {
  */
 function initialize_organizations() {
   testcenter.services.call(['orgs', 'list'], null, null, {
-    call_ok: function (reply) {
+    call_ok: function(reply) {
       // Do we have a valid reply?
       if (is_entity_set(reply)) { // YES
         // Get the Drop Down
@@ -170,7 +168,7 @@ function initialize_organizations() {
         fill_list($list, reply.entities, reply.__key, reply.__display, select);
       }
     },
-    call_nok: function (code, message) {
+    call_nok: function(code, message) {
       console.log('ERROR: initialize_organizations');
     }
   });

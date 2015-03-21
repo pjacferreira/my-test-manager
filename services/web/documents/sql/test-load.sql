@@ -79,12 +79,13 @@ INSERT INTO `t_user_projects` (`id`, `id_user`, `id_project`, `permissions`) VAL
 --
 
 INSERT INTO `t_containers` (`id`, `id_root`, `type`, `name`, `id_parent`, `id_link`, `type_owner`, `id_owner`, `singlelevel`, `id_creator`, `dt_creation`, `id_modifier`, `dt_modified`) VALUES
-(10, 4, 'F', 'folder 1',   4, NULL, 'P', 1, 0, 1, '2015-01-01 00:00:00', NULL, NULL),
-(11, 4, 'F', 'folder 2',   4, NULL, 'P', 1, 0, 1, '2015-01-01 00:00:00', NULL, NULL),
-(12, 4, 'T', 'test 1',     4, NULL, 'P', 1, 1, 1, '2015-01-01 00:00:00', NULL, NULL),
-(13, 4, 'T', 'test 2',     4, NULL, 'P', 1, 1, 1, '2015-01-01 00:00:00', NULL, NULL),
-(14, 4, 'S', 'test set 1', 4, NULL, 'P', 1, 1, 1, '2015-01-01 00:00:00', NULL, NULL),
-(15, 4, 'S', 'test set 2', 4, NULL, 'P', 1, 1, 1, '2015-01-01 00:00:00', NULL, NULL),
-(16, 4, 'R', 'run 1',      4, NULL, 'P', 1, 1, 1, '2015-01-01 00:00:00', NULL, NULL),
-(17, 4, 'R', 'run 2',      4, NULL, 'P', 1, 1, 1, '2015-01-01 00:00:00', NULL, NULL),
-(18, 4, 'T', 'test 1-1',  10, NULL, 'P', 1, 1, 1, '2015-01-01 00:00:00', NULL, NULL);
+(10, 4, 'F', 'folder 1',    4, NULL, 'P', 1, 0, 1, '2015-01-01 00:00:00', NULL, NULL),
+(11, 4, 'F', 'folder 2',    4, NULL, 'P', 1, 0, 1, '2015-01-01 00:00:00', NULL, NULL),
+(12, 4, 'T', 'test 1',      4, NULL, 'P', 1, 1, 1, '2015-01-01 00:00:00', NULL, NULL),
+(13, 4, 'T', 'test 2',      4, NULL, 'P', 1, 1, 1, '2015-01-01 00:00:00', NULL, NULL),
+(14, 4, 'S', 'test set 1',  4, NULL, 'P', 1, 1, 1, '2015-01-01 00:00:00', NULL, NULL),
+(15, 4, 'S', 'test set 2',  4, NULL, 'P', 1, 1, 1, '2015-01-01 00:00:00', NULL, NULL),
+(16, 4, 'R', 'run 1',       4, NULL, 'P', 1, 1, 1, '2015-01-01 00:00:00', NULL, NULL),
+(17, 4, 'R', 'run 2',       4, NULL, 'P', 1, 1, 1, '2015-01-01 00:00:00', NULL, NULL),
+(18, 4, 'F', 'folder 1-2', 10, NULL, 'P', 1, 1, 1, '2015-01-01 00:00:00', NULL, NULL),
+(19, 4, 'T', 'test 1-2',   10, NULL, 'P', 1, 1, 1, '2015-01-01 00:00:00', NULL, NULL);

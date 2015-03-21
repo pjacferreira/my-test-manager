@@ -38,6 +38,7 @@ $prefix = '/folder';
  */
 $app->map($prefix . '/root/{entry}', array($controller, 'root'));
 $app->map($prefix . '/parent/{entry}', array($controller, 'parentFolder'));
+$app->map($prefix . '/exists/{parent}/{name}', array($controller, 'exists'));
 $app->map($prefix . '/create/{parent}/{name}[/]?{single_level}', array($controller, 'createFolder'));
 $app->map($prefix . '/rename/{folder}/{new_name}', array($controller, 'renameFolder'));
 $app->map($prefix . '/move/{entry}/{new_parent}', array($controller, 'moveEntry'));

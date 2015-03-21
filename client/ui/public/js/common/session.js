@@ -12,10 +12,10 @@
  * @returns {undefined}
  */
 function initialize_session() {
-  testcenter.services.hello(null, {
-    call_ok: $.isset(window.hello_ok) && $.isFunction(window.hello_ok) ? window.hello_ok : default_hello_ok,
-    call_nok: $.isset(window.hello_nok) && $.isFunction(window.hello_nok) ? window.hello_nok : default_hello_nok
-  });
+    testcenter.services.hello(null, {
+      call_ok: $.isset(window.hello_ok) && $.isFunction(window.hello_ok) ? window.hello_ok : default_hello_ok,
+      call_nok: $.isset(window.hello_nok) && $.isFunction(window.hello_nok) ? window.hello_nok : default_hello_nok
+    });
 }
 
 /**

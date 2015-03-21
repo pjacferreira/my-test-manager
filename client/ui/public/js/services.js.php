@@ -206,14 +206,14 @@
       if (service_url !== null) { // YES
         // Build Parameters Part of URL
         if ($.isString(route_params)) {
-          route_params = [$.strings.nullOnEmpty(route_params)];
+          route_params = [route_params];
         } else if($.isset(route_params) && !$.isArray(route_params)) {
-          route_params = [route_params.toString()];
+          route_params = [route_params];
         }
 
         if ($.isArray(route_params)) {
           $.each(route_params, function (index, value) {
-            value = $.strings.nullOnEmpty(value);
+            value = $.isset(value) ? $.strings.nullOnEmpty(value.toString()) : null;
             if (value !== null) {
               value = encodeURIComponent(value);
               service_url = service_url !== null ? service_url + '/' + value : value;
@@ -266,7 +266,7 @@
         var ajax_context = $.extend({}, services.defaults.ajax, settings);
 
         // Call the Service
-        $.ajax(service_url, ajax_context);
+        return $.ajax(service_url, ajax_context);
       } else { // NO
         // Do we have a NOK Callback?
         if ($.isFunction(settings.call_nok)) { // YES: Call it
@@ -274,6 +274,8 @@
         }
       }
     }
+    
+    return null;
   };
 
   services.hello = function (page, settings) {
@@ -285,6 +287,6 @@
     }
 
     // Call the Service
-    services.call(['session', 'hello'], page, null, settings);
+    return services.call(['session', 'hello'], page, null, settings);
   };
 })(); // END

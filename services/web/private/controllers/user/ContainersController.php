@@ -71,6 +71,26 @@ class ContainersController extends BaseServiceController {
   }
 
   /**
+   * Does an Entry with the Given Name already Exist as a Child of the Parent?
+   * 
+   * @param integer $parent Parent Container ID
+   * @param string $name Folder Name
+   * @return string HTTP Body Response
+   */
+  public function exists($parent, $name) {
+    // Create and Initialize Action Context
+    $context = new ActionContext('exists');
+
+    // Initialize Context
+    $context = $context
+      ->setParameter('parent:id', (integer) $parent)
+      ->setIfNotNull('name', Strings::nullOnEmpty($name));
+
+    // Call Action
+    return $this->doAction($context);
+  }
+
+  /**
    * Create a Child Folder
    * 
    * @param integer $parent Parent Container ID
@@ -254,6 +274,22 @@ class ContainersController extends BaseServiceController {
    * @return \models\Container Root Container
    * @throws \Exception On failure to perform the action
    */
+  protected function doExistsAction($context) {
+    // Get the Current Container
+    $parent = $context->getParameter('parent');
+    $name = $context->getParameter('name');
+    assert('isset($parent) && isset($name)');
+
+    return $this->_exists($parent, $name);
+  }
+
+  /**
+   * Create a Child Container
+   * 
+   * @param \api\controller\ActionContext $context Context for Action
+   * @return \models\Container Root Container
+   * @throws \Exception On failure to perform the action
+   */
   protected function doCreateAction($context) {
     // Get the Current Container
     $parent = $context->getParameter('parent');
@@ -261,10 +297,18 @@ class ContainersController extends BaseServiceController {
     $single_level = $context->getParameter('folder:single_level');
     assert('isset($parent) && isset($name) && isset($single_level)');
 
-    // Create Child Folder and Save It
-    $folder = \models\Container::newChildContainer($parent, $name, $single_level);
-    $this->_persist($folder);
-    return $folder;
+    if (!$this->_exists($parent, $name)) {
+      // Create Child Folder and Save It
+      $folder = \models\Container::newChildContainer($parent, $name, $single_level);
+
+      // If the Entity Allows it Set the Creation User and Date
+      $this->setCreator($folder, $context->getParameter('cm_user'));
+
+      $this->_persist($folder);
+      return $folder;
+    } else {
+      throw new \Exception("Child with name [{$name}] already exist in Container ID [{$parent->id}] not found", 1);
+    }
   }
 
   /**
@@ -282,6 +326,10 @@ class ContainersController extends BaseServiceController {
 
     // Rename the Folder and Save It
     $folder->name = $name;
+
+    // If the Entity Allows it Set the Modification User and Date
+    $this->setModifier($folder, $context->getParameter('cm_user'));
+
     $this->_persist($folder);
     return $folder;
   }
@@ -301,6 +349,10 @@ class ContainersController extends BaseServiceController {
 
     // Change Parent and Save It
     $entry->parent = $parent->id;
+
+    // If the Entity Allows it Set the Modification User and Date
+    $this->setModifier($entry, $context->getParameter('cm_user'));
+
     $this->_persist($entry);
     return $entry;
   }
@@ -317,6 +369,9 @@ class ContainersController extends BaseServiceController {
     $entry = $context->getParameter('entry');
     assert('isset($entry)');
 
+    // User to Perform the Change
+    $user = $context->getParameter('cm_user');
+
     switch ($entry->type) {
       case 'F':
         // Is it a Child Folder?
@@ -324,7 +379,7 @@ class ContainersController extends BaseServiceController {
           // Did we delete all the child entries?
           if ($this->_deleteChildren($entry)) { // YES
             // Delete the Folder
-            $this->_delete($entry);
+            $this->_delete($user, $entry);
           } else { // NO
             // Root Containers Can only Be Deleted along with the Owner
             throw new \Exception("Container [$entry->id] is not Empty.", 1);
@@ -333,8 +388,9 @@ class ContainersController extends BaseServiceController {
           // Root Containers Can only Be Deleted along with the Owner
           throw new \Exception("Container [$entry->id] can not be deleted.", 1);
         }
+        break;
       default:
-        $this->_delete($entry);
+        $this->_delete($user, $entry);
     }
     return true;
   }
@@ -478,7 +534,7 @@ class ContainersController extends BaseServiceController {
       }
 
       return $context->setParameter('parent', $parent);
-    }, null, array('Create', 'Move'));
+    }, null, array('Exists', 'Create', 'Move'));
 
     /* TODO: Problem
      * How do we verify the access rights to the Container or Entry?
@@ -544,9 +600,10 @@ class ContainersController extends BaseServiceController {
         if (count($entities)) { // YES
           // Move the Entity Information to become Result Header
           $this->moveEntityHeader($entities[0], $return);
-          $return['__type'] = 'entity-set';
-          $return['entities'] = $entities;
         }
+
+        $return['__type'] = 'entity-set';
+        $return['entities'] = $entities;
         break;
       default:
         $return = $results;
@@ -560,6 +617,68 @@ class ContainersController extends BaseServiceController {
    * HELPER FUNCTIONS: Entity DB Persistance
    * ---------------------------------------------------------------------------
    */
+
+  /**
+   * If the Entity Manages it, this sets the User and Timestamp of when the
+   * Entity was created
+   * 
+   * @param \api\model\AbstractEntity $entity Entity to Base Query on
+   * @param \User $user User to set as the Objects Modifier
+   * @return \api\model\AbstractEntity Modified Entity
+   */
+  protected function setCreator($entity, $user) {
+    // Is the User Set?
+    if (isset($user)) { // YES
+      // Does this Entity Object Have a Creator Property?
+      if (property_exists($entity, 'creator')) { // YES
+        // Set Modifier
+        $entity->creator = \models\User::extractUserID($user);
+
+        // Set the Modification Date and Time
+        $now = new \DateTime();
+        $entity->date_created = $now->format('Y-m-d H:i:s');
+      }
+    }
+
+    return $entity;
+  }
+
+  /**
+   * If the Entity Manages it, this sets the User and Timestamp of when the
+   * Entity was modified
+   * 
+   * @param \api\model\AbstractEntity $entity Entity to Base Query on
+   * @param \User $user User to set as the Objects Modifier
+   * @return \api\model\AbstractEntity Modified Entity
+   */
+  protected function setModifier($entity, $user) {
+    // Is the User Set?
+    if (isset($user)) { // YES
+      // Does this Entity Object Have a Modifier Property?
+      if (property_exists($entity, 'modifier')) { // YES
+        // Set Modifier
+        $entity->modifier = \models\User::extractUserID($user);
+
+        // Set the Modification Date and Time
+        $now = new \DateTime();
+        $entity->date_modified = $now->format('Y-m-d H:i:s');
+      }
+    }
+
+    return $entity;
+  }
+
+  protected function _exists(\models\Container $parent, $name) {
+    $found = \models\Container::findFirst([
+        'conditions' => 'parent = :parent: and name = :name:',
+        'bind' => [
+          'parent' => $parent->id,
+          'name' => $name
+        ]
+    ]);
+
+    return !($found === FALSE);
+  }
 
   /**
    * Save New or Modified Entities to the Database
@@ -596,17 +715,18 @@ class ContainersController extends BaseServiceController {
      * 
      * Wether the entry is deleted or just marked as deleted has to be decided.
      */
+    return true;
   }
 
   /**
    * Delete Entry from the Database
    * 
-   * @param \api\model\AbstractEntity $entity Entity to Save
+   * @param \api\model\AbstractEntity $entity Entity to Delete
    * @throws \Exception On failure to delete 
    */
   protected function _delete($user, $entity) {
     // Call the Type
-    $regitry = $this->typeRegistry;
+    $registry = $this->typeRegistry;
 
     /* Step-by-Step
      * - Verify if the User Can Perform the Action on the Entry?
@@ -619,17 +739,7 @@ class ContainersController extends BaseServiceController {
      */
 
     // TODO Verify if the User Has Permissions to Delete the Entry
-    $registry->executeAction($entity->type, 'delete', [$entity->link], false);
-
-    // Were we able to delete the Entity?
-    if ($entity->delete() == false) { // NO
-      $exception = '';
-      foreach ($entity->getMessages() as $message) {
-        $exception+= $message->getMessage() . "\n";
-      }
-
-      throw new \Exception($exception, 1);
-    }
+    return $registry->executeAction($entity->type, 'delete', [$entity], false);
   }
 
   protected function _buildFilter($filter) {

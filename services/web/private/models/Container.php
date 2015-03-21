@@ -350,4 +350,25 @@ class Container extends \api\model\AbstractEntity {
     return $container;
   }
 
+  /**
+   * Delete the Folder
+   * 
+   * @param \models\Container $folder Folder to Delete
+   * @return boolean 'true' on folder deleted
+   * @throws \Exception On failure to delete 
+   */
+  public static function deleteFolder(Container $folder) {
+    // Were we able to delete the Entity?
+    if ($folder->delete() == false) { // NO
+      $exception = '';
+      foreach ($entity->getMessages() as $message) {
+        $exception+= $message->getMessage() . "\n";
+      }
+
+      throw new \Exception($exception, 1);
+    }
+
+    return true;
+  }
+
 }
