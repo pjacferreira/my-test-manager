@@ -246,7 +246,7 @@ class Container extends \api\model\AbstractEntity {
       throw new \Exception("Owner Parameters are Invalid.", 1);
     }
 
-    $this->root = (int) $id;
+    $this->owner = (int) $id;
     $type = strtoupper($type);
     switch ($type[0]) {
       case 'O' : // Organization
@@ -254,7 +254,7 @@ class Container extends \api\model\AbstractEntity {
       case 'T' : // Test
       case 'S' : // Test Set
       case 'R' : // Run
-        $this->root_type = $type[0];
+        $this->owner_type = $type[0];
         break;
       default:
         throw new \Exception("Invalid Owner Type.", 2);
@@ -276,6 +276,65 @@ class Container extends \api\model\AbstractEntity {
     }
     // ELSE: None of the above
     return null;
+  }
+
+  /**
+   * Does the Name Exist in the Container
+   * 
+   * @param \models\Container $container Parent Container
+   * @param string $name Entry Name
+   * @param string $type [DEFAULT null] Entry Type
+   * @return boolean 'true' The name exists, 'false' otherwise
+   */
+  public static function existsName($container, $name, $type = null) {
+    $id = self::extractContainerID($container);
+    $name = Strings::nullOnEmpty($name);
+    $type = Strings::nullOnEmpty($type);
+
+    $params = [
+      'conditions' => 'parent = :id: and name = :name:',
+      'bind' => [
+        'id' => $id,
+        'name' => $name
+      ]
+    ];
+
+    if (isset($type)) {
+      $params['conditions'].=' and type = :type:';
+      $params['bind']['type'] = $type[0];
+    }
+
+    $count = self::count($params);
+    return $count;
+  }
+
+  /**
+   * Find a Child Entry, in the Container, by Name and Optionally Type.
+   * 
+   * @param \models\Container $container Parent Container
+   * @param string $name Entry Name
+   * @param string $type [DEFAULT null] Entry Type
+   * @return \models\Container Container Entry or FALSE if none found
+   */
+  public static function findChildByName($container, $name, $type = null) {
+    $id = self::extractContainerID($container);
+    $name = Strings::nullOnEmpty($name);
+    $type = Strings::nullOnEmpty($type);
+
+    $params = [
+      'conditions' => 'parent = :id: and name = :name:',
+      'bind' => [
+        'id' => $id,
+        'name' => $name
+      ]
+    ];
+
+    if (isset($type)) {
+      $params['conditions'].=' and type = :type:';
+      $params['bind']['type'] = $type[0];
+    }
+
+    return self::findFirst($params);
   }
 
   /**
@@ -314,7 +373,7 @@ class Container extends \api\model\AbstractEntity {
     // Create Container
     $container = new Container;
 
-    $container->root = $parent->root;
+    $container->root = isset($parent->root) ? $parent->root : $parent->id;
     $container->type = 'F';
     $container->name = $name;
     $container->parent = $parent->id;
@@ -329,23 +388,25 @@ class Container extends \api\model\AbstractEntity {
    * Basic Creator for Child Entry (Information Missing - link id)
    * 
    * @param \models\Container $parent Parent Container
-   * @param string $type Type of Container Entry
+   * @param integer $id Entry ID to Link
    * @param string $name Name of Container Entry
+   * @param string $type Type of Container Entry
    * @return \models\Container newly created Container Entry
    */
-  public static function newContainerEntry(Container $parent, $type, $name) {
+  public static function newContainerEntry(Container $parent, $id, $name, $type) {
     $name = Strings::nullOnEmpty($name);
     $type = Strings::nullOnEmpty($type);
 
     // Create Container
     $container = new Container;
 
-    $container->root = $parent->root;
-    $container->type = $type;
+    $container->root = isset($parent->root) ? $parent->root : $parent->id;
+    $container->type = $type[0];
     $container->name = $name;
     $container->parent = $parent->id;
-    $container->type_owner = $parent->type_owner;
+    $container->link = (integer) $id;
     $container->owner = $parent->owner;
+    $container->type_owner = $parent->type_owner;
 
     return $container;
   }
