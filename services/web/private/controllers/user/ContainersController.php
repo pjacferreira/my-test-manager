@@ -21,7 +21,7 @@
 namespace controllers\user;
 
 use api\controller\ActionContext;
-use \common\utility\Strings;
+use common\utility\Strings;
 use api\controller\BaseServiceController;
 
 /**
@@ -432,7 +432,7 @@ class ContainersController extends BaseServiceController {
   }
 
   /**
-   * List Child Entries
+   * Count Child Entries
    * 
    * @param \api\controller\ActionContext $context Context for Action
    * @return \models\Container[] Container Entries

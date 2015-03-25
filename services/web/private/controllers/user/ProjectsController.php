@@ -55,22 +55,6 @@ class ProjectsController extends CrudServiceController {
   }
 
   /**
-   * Retrieve the Project with the Given Name.
-   * 
-   * @param string $name Project's Unique Name
-   * @return string HTTP Body Response
-   */
-  public function readByName($name) {
-    // Create Action Context
-    $context = new ActionContext('read');
-    // Extract Clean (Security) URL Parameters (Overwriting with route parameters where necessary)
-    $context = $context
-      ->setIfNotNull('project:name', Strings::nullOnEmpty($name));
-
-    return $this->doAction($context);
-  }
-
-  /**
    * List Project Entities in the Database.
    * 
    * Note: We can pass in request parameter to limit and organize the list returned.
@@ -319,7 +303,7 @@ class ProjectsController extends CrudServiceController {
       }
 
       return $context;
-    }, array('Read', 'Update', 'Delete'), 'Create');
+    }, null, 'Create');
 
     // Process 'project:id' Parameter (if it exists)
     if (!$context->hasParameter('entity')) {
