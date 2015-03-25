@@ -202,6 +202,8 @@ class Project extends \api\model\AbstractEntity {
    * @return mixed Returns the Project ID or 'null' on failure;
    */
   public static function extractProjectID($project) {
+    assert('isset($test)');
+
     // Is the parameter an Project Object?
     if (is_object($project) && is_a($project, __CLASS__)) { // YES
       return $project->id;
@@ -227,13 +229,14 @@ class Project extends \api\model\AbstractEntity {
    */
   public static function listInOrganization($org) {
     // Are we able to extract the Organization ID from the Parameter?
-    $id = \Organization::extractOrganizationID($org);
+    $id = \models\Organization::extractOrganizationID($org);
     if (!isset($id)) { // NO
       throw new \Exception("Parameter is invalid.", 1);
     }
 
     // Search for Matching Projects
-    $projects = self::find(array('organization' => $id));
+    $projects = self::find(['organization' => $id]);
+    
     // Did we successfully retrieve a list of Projects?
     if ($projects === FALSE) { // NO
       throw new \Exception("Failed to Retrieve Projects List.", 2);
@@ -251,18 +254,16 @@ class Project extends \api\model\AbstractEntity {
    */
   public static function countInOrganization($org) {
     // Are we able to extract the Organization ID from the Parameter?
-    $id = \Organization::extractOrganizationID($org);
+    $id = \models\Organization::extractOrganizationID($org);
     if (!isset($id)) { // NO
       throw new \Exception("Parameter is invalid.", 1);
     }
 
-    // Instantiate the Query
-    $pqhl = 'SELECT COUNT(*) AS count FROM Project WHERE organization = :id:';
-    $query = new Phalcon\Mvc\Model\Query($pqhl, \Phalcon\Di::getDefault());
+    // Find Child Entries
+    $count = \models\Container::count(['organization' => $id]);
 
-    // Execute the query returning a result if any
-    $result = $query->execute(array('id' => $id))->getFirst();
-    return (integer) $result['count'];
+    // Return Result Set
+    return (integer) $count;
   }
 
 }
