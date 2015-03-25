@@ -17,6 +17,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 namespace controllers\user;
 
 use api\controller\ActionContext;
@@ -44,16 +45,21 @@ class TestsController extends CrudServiceController {
    * default values for the remaining fields.
    * 
    * @param string $name Test name
+   * @param integer $folder Folder ID in which to create the test
    * @return string HTTP Body Response
    */
-  public function create($name) {
+  public function create($name, $folder = null) {
     // Create Action Context
     $context = new ActionContext('create');
+
+    // Clean Up Parameter
+    $folder = Strings::nullOnEmpty($folder);
+
     // Extract Clean (Security) URL Parameters (Overwriting with route parameters where necessary)
     $context = $context
-            ->setIfNotNull('test:name', Strings::nullOnEmpty($name));
-
-    // Call the Function
+      ->setIfNotNull('test:name', Strings::nullOnEmpty($name))
+      ->setIfNotNull('folder:id', isset($folder) ? (integer) $folder : null);
+    // Call Action
     return $this->doAction($context);
   }
 
@@ -68,24 +74,8 @@ class TestsController extends CrudServiceController {
     $context = new ActionContext('read');
     // Extract Clean (Security) URL Parameters (Overwriting with route parameters where necessary)
     $context = $context
-            ->setParameter('test:id', (integer) $id);
-
-    return $this->doAction($context);
-  }
-
-  /**
-   * Retrieve the Test with the Given Name.
-   * 
-   * @param string $name Test's Unique Name
-   * @return string HTTP Body Response
-   */
-  public function readByName($name) {
-    // Create Action Context
-    $context = new ActionContext('read');
-    // Extract Clean (Security) URL Parameters (Overwriting with route parameters where necessary)
-    $context = $context
-            ->setIfNotNull('test:name', Strings::nullOnEmpty($name));
-
+      ->setParameter('test:id', (integer) $id);
+    // Call Action
     return $this->doAction($context);
   }
 
@@ -100,8 +90,8 @@ class TestsController extends CrudServiceController {
     $context = new ActionContext('update');
     // Extract Clean (Security) URL Parameters (Overwriting with route parameters where necessary)
     $context = $context
-            ->setParameter('test:id', (integer) $id);
-
+      ->setParameter('test:id', (integer) $id);
+    // Call Action
     return $this->doAction($context);
   }
 
@@ -114,13 +104,16 @@ class TestsController extends CrudServiceController {
   public function delete($id) {
     // Create Action Context
     $context = new ActionContext('delete');
+    // Extract Clean (Security) URL Parameters (Overwriting with route parameters where necessary)
+    $context = $context
+      ->setParameter('test:id', (integer) $id);
     // Call Action
-    return $this->doAction($context->setParameter('test:id', (integer) $id));
+    return $this->doAction($context);
   }
 
   /**
-   * List Test Entities in the Database, in the Specified Project, or if not specified,
-   * in the Session Project.
+   * List Test Entities in the Database for the Session Project and, optionallu,
+   * in a specific Project Container.
    * 
    * Note: We can pass in request parameter to limit and organize the list returned.
    * 
@@ -129,43 +122,91 @@ class TestsController extends CrudServiceController {
    * __sort - Used to organize the sort order of the list
    * __limit - Limit the number of entities return in the list
    * 
-   * @param integer $project_id OPTIONAL Project's Unique Identifier
+   * @param string $filter OPTIONAL Filter String
+   * @param string $sort OPTIONAL Sort String
    * @return string HTTP Body Response
    */
-  public function listInProject($project_id = null) {
-    /* Allowing a NULL project_id is a win-win situation
-     * 1. Allows for the scenario that the service is listing the test for the 
-     * current session project_id
-     */
-
+  public function listInProject($filter = null, $sort = null) {
     // Create Action Context
-    $context = new ActionContext('list_in_project');
+    $context = new ActionContext('list');
     // Build Parameters
     $context = $context
-            ->setIfNotNull('project:id', isset($project_id) ? (integer) $project_id : null);
-
+      ->setIfNotNull('filter', Strings::nullOnEmpty($filter))
+      ->setIfNotNull('sort', Strings::nullOnEmpty($sort));
+    // Call Action
     return $this->doAction($context);
   }
 
   /**
-   * Number of Test Entities in the Database, in the Specified Project, or if not specified,
-   * in the Session Project.
+   * List Test Entities in the Database for the Session Project and, optionallu,
+   * in a specific Project Container.
+   * 
+   * Note: We can pass in request parameter to limit and organize the list returned.
+   * 
+   * Request Parameter:
+   * __filter - Used to filter the list of Tests
+   * __sort - Used to organize the sort order of the list
+   * __limit - Limit the number of entities return in the list
+   * 
+   * @param string $filter OPTIONAL Filter String
+   * @param string $sort OPTIONAL Sort String
+   * @return string HTTP Body Response
+   */
+  public function listInFolder($folder, $filter = null, $sort = null) {
+    // Create Action Context
+    $context = new ActionContext('list');
+    // Build Parameters
+    $context = $context
+      ->setParameter('folder:id', (integer) $folder)
+      ->setIfNotNull('filter', Strings::nullOnEmpty($filter))
+      ->setIfNotNull('sort', Strings::nullOnEmpty($sort));
+    // Call Action
+    return $this->doAction($context);
+  }
+
+  /**
+   * Count the Number of Tests for the Session Project and, optionally, in a
+   * specific Project Container.
    * 
    * Note: We can pass in request parameter to limit the entities being considered.
    * 
    * Request Parameter:
    * __filter - Used to filter the list of Tests
    * 
-   * @param integer $project_id OPTIONAL Project's Unique Identifier
+   * @param string $filter OPTIONAL Filter String
    * @return string HTTP Body Response
    */
-  public function countInProject($project_id = null) {
+  public function countInProject($filter = null) {
     // Create Action Context
-    $context = new ActionContext('count_in_project');
+    $context = new ActionContext('count');
     // Build Parameters
     $context = $context
-            ->setIfNotNull('project:id', isset($project_id) ? (integer) $project_id : null);
+      ->setIfNotNull('filter', Strings::nullOnEmpty($filter));
+    // Call Action
+    return $this->doAction($context);
+  }
 
+  /**
+   * Count the Number of Tests for the Session Project and, optionally, in a
+   * specific Project Container.
+   * 
+   * Note: We can pass in request parameter to limit the entities being considered.
+   * 
+   * Request Parameter:
+   * __filter - Used to filter the list of Tests
+   * 
+   * @param integer $folder Container ID to List Tests For
+   * @param string $filter OPTIONAL Filter String
+   * @return string HTTP Body Response
+   */
+  public function countInFolder($folder, $filter = null) {
+    // Create Action Context
+    $context = new ActionContext('count');
+    // Build Parameters
+    $context = $context
+      ->setParameter('folder:id', (integer) $folder)
+      ->setIfNotNull('filter', Strings::nullOnEmpty($filter));
+    // Call Action
     return $this->doAction($context);
   }
 
@@ -176,31 +217,56 @@ class TestsController extends CrudServiceController {
    */
 
   /**
-   * List Test Entities that are Part of a Project in the Database 
-   * based on the Action Context
+   * List Child Entries
    * 
    * @param \api\controller\ActionContext $context Context for Action
-   * @return  Phalcon\Mvc\Model\Resultset\Simple Result Set containing List of Entities
+   * @return \models\Container[] Container Entries
    * @throws \Exception On failure to perform the action
    */
-  protected function doListInProjectAction($parameters) {
-    $repository = $this->getRepository();
+  protected function doListAction($context) {
+    $tests = [];
+    if ($context->hasParameter('folder:id')) {
+      $container = $context->getParameter('folder');
 
-    return $repository->listTests($parameters['_filter']['project']);
+      // List Tests in Folder
+      $tests = \models\Test::listInFolder($container);
+    } else {
+      $project = $context->getParameter('project');
+
+      // List Tests in Project
+      $filter = $this->_buildFilter($context->getParameter('filter'));
+      $order = $this->_buildOrderBy($context->getParameter('sort'), 'name');
+      $tests = \models\Test::listInProject($project, $filter, $order);
+    }
+
+    // Return Result Set
+    return $tests;
   }
 
   /**
-   * Count Test Entities that are Part of an Project in the Database 
-   * based on the Action Context
+   * List Child Entries
    * 
    * @param \api\controller\ActionContext $context Context for Action
-   * @return integer Number of Entities Matching the Action Context
+   * @return \models\Container[] Container Entries
    * @throws \Exception On failure to perform the action
    */
-  protected function doCountInProjectAction($parameters) {
-    $repository = $this->getRepository();
+  protected function doCountAction($context) {
+    $count = 0;
+    if ($context->hasParameter('folder:id')) {
+      $container = $context->getParameter('folder');
 
-    return $repository->countTests($parameters['_filter']['project']);
+      // Count Tests in Folder
+      $count = \models\Test::countInFolder($container);
+    } else {
+      $project = $context->getParameter('project');
+
+      // Count Tests in Project
+      $filter = $this->_buildFilter($context->getParameter('filter'));
+      $count = \models\Test::countInProject($project, $filter);
+    }
+
+    // Return Result Set
+    return $count;
   }
 
   /*
@@ -223,6 +289,8 @@ class TestsController extends CrudServiceController {
     // Need a Session for all the Session Commands
     $this->sessionManager->checkInSession();
     $this->sessionManager->checkLoggedIn();
+    $this->sessionManager->checkOrganization();
+    $this->sessionManager->checkProject();
 
     return $context;
   }
@@ -235,19 +303,115 @@ class TestsController extends CrudServiceController {
    * @throws \Exception On any type of failure condition
    */
   protected function contextChecks($context) {
-    // Do Context Checks
-    return $this->onActionDo($context, array('Read', 'Update', 'Delete'), function($controller, $context, $action) {
-              // Get the Context Project and Test
-              $project = $context->getParameter('project');
-              $test = $context->getParameter('entity');
+    // (IF SPECIFIED) Verify that the Folder Belongs to the Project
+    $context = $this->onParameterDo($context, 'folder', function($controller, $context, $action, $value) {
+      // Is the Test Name Unique for the Project?
+      $project = $context->getParameter('project');
 
-              // Does the Test Belong to the Project?
-              if ($test->project !== $project->id) {
-                throw new \Exception("Test[{$test->name}] is Not Part of the Project[{$project->name}]", 1);
-              }
+      // Does the Folder Belong to the Project?
+      if (($value->type_owner != 'P') || ($value->owner !== $project->id)) { // NO
+        throw new \Exception("Container [{$value->id}] is invalid", 1);
+      }
 
-              return null;
-            });
+      return $context;
+    }, ['Create', 'List', 'Count'], null);
+
+    // Verify if the Test Name is UNIQUE in the PROJECT and FOLDER
+    $context = $this->onParameterDo($context, 'test:name', function($controller, $context, $action, $value) {
+      // Is the Test Name Unique for the Project?
+      $project = $context->getParameter('project');
+      $test = \models\Test::findFirstByName($project, $value);
+      // Did we find an existing test with the same name?
+      if ($test !== FALSE) { // YES
+        throw new \Exception("Test [$name] already exists in Project.", 2);
+      }
+
+      // Does the Folder already contain an Entity with the same name?
+      $folder = $context->getParameter('folder');
+      if (\models\Container::existsName($folder, $value)) { // YES
+        throw new \Exception("Duplicate Name [{$value}] in Folder.", 3);
+      }
+
+      return $context;
+    }, null, 'Create');
+
+    // Verify if the Test is Part of the PROJECT
+    $context = $this->onActionDo($context, array('Read', 'Update', 'Delete'), function($controller, $context, $action) {
+      // Get the Context Project and Test
+      $project = $context->getParameter('project');
+      $test = $context->getParameter('entity');
+
+      // Does the Test Belong to the Project?
+      if ($test->project !== $project->id) {
+        throw new \Exception("Test[{$test->name}] is Not Part of the Project[{$project->name}]", 1);
+      }
+
+      return null;
+    });
+
+    return $context;
+  }
+
+  /*
+   * ---------------------------------------------------------------------------
+   * CREATE ACTION STAGES Functions
+   * ---------------------------------------------------------------------------
+   */
+
+  /**
+   * Initializes the Entity
+   * 
+   * @param \api\controller\ActionContext $context Context for Action
+   * @param \api\model\AbstractEntity $entity Entity to be Updated
+   * @return \api\model\AbstractEntity Updated Entity
+   * @throws \Exception On failure to create the entity (for any reason)
+   */
+  protected function stageInitializeEntity($context, $entity) {
+    $entity = parent::stageInitializeEntity($context, $entity);
+
+    // Get the Container
+    $project = $context->getParameter('project');
+
+    // Get the Container
+    $container = $context->getParameter('test:container');
+
+    // Link the Test to the Project and Container
+    $entity->project = $project->id;
+    $entity->container = $container->id;
+    return $entity;
+  }
+
+  /**
+   * Saves Changes back to the Backend Data Store
+   * 
+   * @param \api\controller\ActionContext $context Context for Action
+   * @param \api\model\AbstractEntity $entity Entity to be Saved
+   * @return \api\model\AbstractEntity Saved Entity
+   * @throws \Exception On failure to create the entity (for any reason)
+   */
+  protected function stagePersistEntity($context, $entity) {
+    $entity = parent::stagePersistEntity($context, $entity);
+
+    // Get the Container
+    $test_container = $context->getParameter('test:container');
+    $test_container->setOwner($entity->id, 'T');
+
+    // Save the Container
+    $this->_persist($test_container);
+
+    // Get the Parent Folder in Which to Create the Test Link
+    $parent = $context->getParameter('folder');
+
+    // Create the Container for the Organization
+    $project_link = \models\Container::newContainerEntry($parent, $entity->id, $entity->name, 'T');
+
+    // If the Entity Allows it Set the Creation User and Date
+    $this->setCreator($project_link, $context->getParameter('cm_user'));
+
+    // Save the Container
+    $this->_persist($project_link);
+
+    return $entity;
   }
 
   /*
@@ -255,6 +419,35 @@ class TestsController extends CrudServiceController {
    * BaseController: STAGES
    * ---------------------------------------------------------------------------
    */
+
+  /**
+   * Perform any required preparation, before the Create Action Handler is Called.
+   * 
+   * @param \api\controller\ActionContext $context Incoming Context for Action
+   * @return \api\controller\ActionContext Outgoing Context for Action
+   * @throws \Exception On any type of failure condition
+   */
+  protected function preActionCreate($context) {
+    // Parameter Validation
+    assert('isset($context) && is_object($context)');
+
+    // Call the General Handler 1st (to Setup Context)
+    $context = $this->preAction($context);
+
+    // Name for Container
+    $name = $context->getParameter('test:name');
+
+    // Create the Container for the Organization
+    $container = \models\Container::newRootContainer($name, 'T', true);
+
+    // If the Entity Allows it Set the Creation User and Date
+    $this->setCreator($container, $context->getParameter('user'));
+
+    // Save the Container
+    $this->_persist($container);
+    $context->setParameter('test:container', $container);
+    return $context;
+  }
 
   /**
    * Perform any required preparation, before the Delete Action Handler is Called.
@@ -289,203 +482,66 @@ class TestsController extends CrudServiceController {
     // Parameter Validation
     assert('isset($context) && is_object($context)');
 
-    // Process 'project:id' Parameter (if it exists)
-    $context = $this->onParameterDo($context, 'project:id', function($controller, $context, $action, $value) {
-      // Did we find the Project with the Given ID?
-      $project = \Project::findFirst($value);
-      if ($project === FALSE) { // NO
-        throw new \Exception("Project [$value] not found", 1);
-      }
-
-      return $context->setParameter('project', $project);
-    }, null, array('Create', 'ListInProject', 'CountInProject'), function($controller, $context, $action) {
-      // Missing Project ID, so use the current Session Project
-      $controller->checkProject();
-
-      // Does the Session Project exist?
-      $id = $this->sessionManager->getProject();
-      $project = \Project::findFirst($id);
-      if ($project === FALSE) { // NO
-        throw new \Exception("Session Project [$id] is invalid.", 2);
-      }
-
-      // Get the Current Session Organization
-      return $context->setParameter('project', $project);
-    });
-
-    // TODO: Implement Container for Tests
-    // Process 'container:id' Parameter (if it exists)
-    $context = $this->onParameterDo($context, 'container:id', function($controller, $context, $action, $value) {
-      // Did we find the Container with the Given ID?
-      $container = \Container::findFirst($value);
-      if ($container === FALSE) { // NO
-        throw new \Exception("Container [$value] not found", 3);
-      }
-
-      return $context->setParameter('container', $container);
-    }, null, array('Create'));
-
-    /* TODO (TD-6) If the id argument, is used, for READ/UPDATE/DELETE Actions, 
-     * the container parameter, is not required (optimization), or should be 
-     * the container in which the test exists.
-     */
-
-    // Process 'test:name' Parameter (if it exists)
-    $context = $this->onParameterDo($context, 'test:name', function($controller, $context, $action, $value) {
-
-      // Try to Find the Test by Name
-      $project = $context->getParameter('project');
-      $test = \Test::findFirstByName($project, $value);
-
-      if ($action === 'Create') {
-        // Did we find an existing test with the same name?
-        if ($test !== FALSE) { // YES
-          throw new \Exception("Test [$name] already exists.", 5);
-        }
-      } else {
-        // Did we find an existing test?
-        if ($test === FALSE) { // NO
-          throw new \Exception("Test [$value] not found", 6);
-        }
-
-        // Save the Test for the Action
-        $context->setParameter('entity', $test)
-                ->setParameter('test', $test);
-      }
-
-      return $context;
-    }, array('Read', 'Update', 'Delete'), 'Create');
-
-    // Process 'test:id' Parameter (if it exists)
-    if (!$context->hasParameter('entity')) {
-      $context = $this->onParameterDo($context, 'test:id', function($controller, $context, $action, $value) {
-        // Does the Test with the given ID exist?
-        $test = \Test::findFirst($value);
-        if ($test === FALSE) { // NO
-          throw new \Exception("Test [{$value}] not found", 7);
-        }
-
-        // Save the Test for the Action
-        return $context->setParameter('entity', $test)
-                        ->setParameter('test', $test);
-      }, null, array('Read', 'Update', 'Delete'));
-    }
-
     // Get the User for the Active Session
-    $id = $this->sessionManager->getUser();
-    $user = \User::findFirst($id);
+    $user = $this->sessionManager->getUser();
+    $user = \models\User::findFirst($user['id']);
 
     // Did we find the user?
     if ($user === FALSE) { // NO
       throw new \Exception("User [$id] not found", 6);
     }
+    $context = $context
+      ->setParameter('user', $user)
+      ->setParameter('cm_user', $user);
 
-    // Save the User in the Context
-    return $context->setParameter('user', $user);
-  }
+    // Get Project for Session
+    $project = $this->sessionManager->getProject();
+    $project = \models\Project::findFirst($project['id']);
+    if ($project === FALSE) { // NO
+      throw new \Exception("Session Project [$id] is invalid.", 2);
+    }
+    $context = $context->setParameter('project', $project);
 
-  /**
-   * Perform any required setup, before the Action Handler is Called.
-   * 
-   * @param \api\controller\ActionContext $context Incoming Context for Action
-   * @return \api\controller\ActionContext Outgoing Context for Action
-   * @throws \Exception On any type of failure condition
-   */
-  protected function postActionCreate($context) {
-    // Parameter Validation
-    assert('isset($context) && is_object($context)');
+    // Process 'folder:id' Parameter (if it exists)
+    $context = $this->onParameterDo($context, 'folder:id', function($controller, $context, $action, $value) {
+      // Did we find the Container with the Given ID?
+      $container = \models\Container::findFirst($value);
+      if ($container === FALSE) { // NO
+        throw new \Exception("Container [$value] not found", 3);
+      }
 
-    // Get the Test
-    $test = $context->getParameter('entity');
+      // TODO: Verify the Folder belongs the Session Project
+      return $context->setParameter('folder', $container);
+    }, ['List', 'Count'], ['Create'], function($controller, $context, $action) {
+      // Get the ROOT Container for the Context Project
+      $project = $context->getParameter('project');
+      return $project->container;
+    });
 
-    // Create Document Root Container for Test
-    $container = new \Container();
-    $container->name = "DOCROOT Test [{$test->id}]";
-    $container->owner = $test->id;
-    // TODO Set Correct Type for TEST
-    $container->owner_type = 0;
-    $container->save();
+    // Process 'test:id' Parameter (if it exists)
+    if (!$context->hasParameter('entity')) {
+      $context = $this->onParameterDo($context, 'test:id', function($controller, $context, $action, $value) {
+        // Project
+        $project = $context->getParameter('project');
 
-    /* TODO: Implement the Correct Container Structure
-     * Problem: 
-     * 1. In the current structure, we have a CIRCULAR link (i.e. we have the 
-     * container, which references the owning object, in this case the test,
-     * and the test which references the container:
-     * Put more explicitly we have 2 fields, that form the circular link
-     * test:container  -> container:id
-     * container:owner -> test:id
-     * 
-     * The problem is that, when we are creating a new Test, we have to do the
-     * following steps:
-     * 1. Create Test (Set Properties)
-     * 2. Save Test (So that we can obtain the Test ID).
-     * 3. Create Container (Set Properties, including owner).
-     * 4. Save Container (So that we can obtain the Container ID).
-     * 5. Update Previous Test (set test:container -> container:id).
-     * 6. Save the Test (AGAIN)
-     * 
-     * POSSIBLE SOLUTION 1:
-     * Implement an intermediate table that links owning objects to their
-     * respective root container:
-     * 
-     * Example:
-     * LINK TABLE:
-     * - ID : Unqique Entry ID
-     * - OWNER: ID (of Owning Object)
-     * - OWNER: TYPE (of Object That Owns the Container)
-     * - CONTAINER: ID (of Container)
-     * 
-     * In this scenario, we need to do steps 1-4, but step 5-6 become.
-     * 5. Create Link Table Entry (Set Properties OWNER:OWNER TYPE:CONTAINER-
-     * 6. Save Link Table Entry
-     * 
-     * But this also implies that we need a seperate TABLE for Container Entries,
-     * for such things as Documents (Associated with a Test) or If we want
-     * to Allow Tests to be grouped (in a folder like structure in a project).
-     * 
-     * POSSIBLE SOLUTION 2:
-     * Maintain things, as they are, and create a single table with a more 
-     * flexible structure:
-     * Example:
-     * t_container_entries
-     * -------------------------------------------------------------------------
-     * BASE      | ID: AUTO_INCREMENT (Container Entry ID)
-     * ELEMENTS  | NAME: Container Entry Name (POSSIBLE NULL)
-     *           | DESCRIPTION: Container Entry Description (POSSIBLE NULL)
-     * -------------------------------------------------------------------------
-     * ROOT      | OWNER ID:  ID of OWNING ENTITY (POSSIBLE NULL)
-     * NODE      | OWNER TYPE: TYPE of OWNING ENTITY (PROJECT/TEST/etc.) (POSSIBLE NULL)
-     * -------------------------------------------------------------------------
-     *           | PARENT ID : ID of PARENT CONTAINER ENTRY (POSSIBLE NULL)
-     * CHILD     | LINK TYPE : If a Link to an Entity or External Document (Specify TYPE)
-     * NODE      | LINK ID   : If Link to Entity (This is the LINKED ENTITIES ID)
-     *           | LINK CODE : If Link to Document (This is the MD5 HASH of the Document)
-     * -------------------------------------------------------------------------
-     * 
-     * 
-     * Example Set of Container Entries for a File (F1) Stored in a Folder (D1)
-     * of a Test (T1)
-     * 
-     * ROOT ENTRY (R1,NULL,NULL,T1,TEST,NULL,NULL,NULL,NULL)
-     * FOLDER ENTRY (D1,Folder Name,Folder Description,NULL,NULL,R1,NULL,NULL,NULL)
-     * FILE ENTRY (F1,Real File Name,File Description,NULL,NULL,D1,FILE,NULL,MD5 HASH OF FILE)
-     * 
-     * Example Set of Container Entries for a Test (T1) in a Group Folder (G1) of
-     * a Project (P1)
-     * ROOT ENTRY (R1,NULL,NULL,P1,PROJECT,NULL,NULL,NULL,NULL)
-     * GROUP ENTRY (G1,Folder Name,Folder Description,NULL,NULL,R1,NULL,NULL,NULL)
-     * TEST ENTRY (IDt,TEST NAME,NULL,NULL,NULL,G1,TEST,T1,NULL)
-     */
-    // Associate Container with Test
-    $test->container = $container->id;
+        // Does the Organization with the given ID exist?
+        $test = \models\Test::findFirst([
+            'conditions' => 'project = :project: and id = :id:',
+            'bind' => [ 'project' => $project->id, 'id' => $value]
+        ]);
+        if ($test === FALSE) { // NO
+          throw new \Exception("Test [$value] not found in Current Session Project", 3);
+        }
 
-    // Add a Test Container Entry
-    $repository->createContainerEntry($parameters['container'], $test, $test->getName());
+        // Save the Organization for the Action
+        $context->setParameter('entity', $test)
+          ->setParameter('test', $test);
 
-    // Flush Changes
-    $this->getEntityManager()->flush();
+        return $context;
+      }, null, ['Read', 'Update', 'Delete']);
+    }
 
-    return $test;
+    return $context;
   }
 
   /**
@@ -513,22 +569,25 @@ class TestsController extends CrudServiceController {
         assert('isset($results)');
         $return = $results->toArray();
         break;
-      case 'ListInProject':
-        $return = array();
-        foreach ($results as $test) {
-          $id = $test->getId();
-          $return[$id] = $test->toArray();
-          unset($return[$id]['id']);
+      case 'List':
+        $return = [];
+        $entities = [];
+        $header = true;
+        foreach ($results as $project) {
+          $entities[] = $project->toArray($header);
+          $header = false;
+        }
+
+        // Do we have entities to display?
+        if (count($entities)) { // YES
+          // Move the Entity Information to become Result Header
+          $this->moveEntityHeader($entities[0], $return);
+          $return['__type'] = 'entity-set';
+          $return['entities'] = $entities;
         }
         break;
-      case 'ListInContainer':
-        $return = array();
-        foreach ($results as $entries) {
-          $id = $entries->getId();
-          $return[$id] = $entries->toArray();
-          unset($return[$id]['id']);
-        }
-        break;
+      default:
+        $return = $results;
     }
 
     return $return;
@@ -546,7 +605,103 @@ class TestsController extends CrudServiceController {
    * @return \Test An instance of a Test Entity, managed by this controller
    */
   protected function createEntity() {
-    return new \Test();
+    return new \models\Test();
+  }
+
+  /*
+   * ---------------------------------------------------------------------------
+   * HELPER FUNCTIONS: Entity DB Persistance
+   * ---------------------------------------------------------------------------
+   */
+
+  /**
+   * 
+   * @param type $filter
+   * @return type
+   */
+  protected function _buildFilter($filter) {
+    $condition = null;
+    if (isset($filter)) {
+      $filter = strtoupper($filter);
+      $filter = str_split($filter);
+      $filter = array_map(function($type) {
+        return "'{$type}'";
+      }, $filter);
+
+      return 'type IN (' . implode(',', $filter) . ')';
+    }
+
+    return null;
+  }
+
+  /**
+   * 
+   * @param type $sort
+   * @param type $default
+   * @return type
+   */
+  protected function _buildOrderBy($sort, $default) {
+    // Do we have Sort Condition Set?
+    if (!isset($sort)) { // NO: User Default
+      return $default;
+    }
+
+    // Explode the Sort Condition into Seperate Fields
+    $fields = explode(',', $sort);
+
+    // Process Each Field Extracting Sort Condition
+    $condition = '';
+    $comma = false;
+    $descdending = false;
+    foreach ($fields as $field) {
+      $field = Strings::nullOnEmpty($field);
+      if (!isset($field)) {
+        continue;
+      }
+
+      $descending = false;
+      if ($field[0] === '!') {
+        $descdending = true;
+        $field = Strings::nullOnEmpty(substr($field, 1));
+      }
+
+      if (isset($field) && property_exists('\models\Container', $field)) {
+        $condition .= $comma ? ", {$field}" : $field;
+        if ($descdending) {
+          $condition.=' DESC';
+        }
+      }
+    }
+
+    return $condition === '' ? $default : $condition;
   }
 
 }
+
+/* CONTEXT CHECKS
+ * ACTION - ALL:
+ *   - HAVE AN ACTIVE LOGGIN
+ *   - HAVE ORGANIZATION and PROJECT SELECTED
+ * ACTION - CREATE:
+ *   - IF FOLDER PROVIDED, MAKE SURE THE FOLDER BELONGS TO THE SESSION PROJECT
+ * ACTION - READ/UPDATE/DELETE
+ *   - VERIFY THAT THE TEST BELONGS TO THE SESSION PROJECT
+ * ACTION - LIST/COUNT
+ *   - IF FOLDER PROVIDED, MAKE SURE THE FOLDER BELONGS TO THE SESSION PROJECT
+ */
+
+/* SECURITY CHECKS
+ * ACTION - ALL:
+ *   - IMPLIED TRUE, if the USER HAS SUCCESSFULLY DEFINED ORGANIZATIO and PROJECT,
+ *     DOES THE USER HAVE ACCESS TO THE PROJECT
+ * ACTION - CREATE / UPDATE
+ *   - DOES THE USER HAVE (W)rite ACCESS TO THE TESTS in the PROJECT
+ * ACTION - DELETE
+ *   - DOES THE USER HAVE (D)elete ACCESS TO THE TESTS in the PROJECT
+ * 
+ * LEVELS FOR TESTS
+ * 0 - READ ACCESS (DEFAULT ACCESS, i.e. if a user can access the project
+ * he can read the tests, IMPLIED)
+ * 1 - WRITE ACCESS (User can Create and Update Tests).
+ * 2 - DELETE ACCESS (User can Delete Tests)
+ */

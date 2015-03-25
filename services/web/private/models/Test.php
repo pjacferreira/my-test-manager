@@ -16,7 +16,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 namespace models;
+
+use common\utility\Strings;
 
 /**
  * Test Entity (Encompasses Header Information Related to Tests).
@@ -26,6 +29,13 @@ namespace models;
  * @author Paulo Ferreira <pf at sourcenotes.org>
  */
 class Test extends \api\model\AbstractEntity {
+
+  // INITIAL STATE - Test has been Created but Not Modified
+  const STATE_CREATED = 0;
+  // TEST is STILL BEING WRITTEN
+  const STATE_IN_DEVELOPMENT = 1;
+  // TEST is READY for PRODUCTION
+  const STATE_READY = 9;
 
   /**
    *
@@ -127,9 +137,8 @@ class Test extends \api\model\AbstractEntity {
    * PHALCON per instance Contructor
    */
   public function onConstruct() {
-    // Make sure the Creation Date is Set
-    $now = new \DateTime();
-    $this->date_created = $now->format('Y-m-d H:i:s');
+    // By Default Single Level
+    $this->state = self::STATE_CREATED;
   }
 
   /**
@@ -148,18 +157,17 @@ class Test extends \api\model\AbstractEntity {
    */
   public function columnMap() {
     return array(
-        'id' => 'id',
-        'id_project' => 'project',
-        'name' => 'name',
-        'test_group' => 'group',
-        'description' => 'description',
-        'state' => 'state',
-        'id_docroot' => 'container',
-        'id_creator' => 'creator',
-        'dt_creation' => 'date_created',
-        'id_modifier' => 'modifier',
-        'dt_modified' => 'date_modified',
-        'id_owner' => 'owner'
+      'id' => 'id',
+      'id_project' => 'project',
+      'name' => 'name',
+      'description' => 'description',
+      'id_container' => 'container',
+      'state' => 'state',
+      'id_creator' => 'creator',
+      'dt_creation' => 'date_created',
+      'id_modifier' => 'modifier',
+      'dt_modified' => 'date_modified',
+      'id_owner' => 'owner'
     );
   }
 
@@ -168,8 +176,13 @@ class Test extends \api\model\AbstractEntity {
    */
   public function afterFetch() {
     $this->id = (integer) $this->id;
+    $this->project = (integer) $this->project;
+    $this->container = (integer) $this->container;
+    $this->state = (integer) $this->state;
+    $this->creator = (integer) $this->creator;
+    $this->modifier = isset($this->modifier) ? (integer) $this->modifier : null;
   }
-  
+
   /*
    * ---------------------------------------------------------------------------
    * AbstractEntity: Overrides
@@ -194,22 +207,24 @@ class Test extends \api\model\AbstractEntity {
   /**
    * Retrieves a Map representation of the Entities Field Values
    * 
+   * @param boolean $header (DEFAULT = true) Add Entity Header Information?
    * @return array Map of field <--> value tuplets
    */
-  public function toArray() {
-    $array = parent::toArray();
+  public function toArray($header = true) {
+    $array = parent::toArray($header);
 
-    $array = $this->addProperty($array, 'id');
-    $array = $this->addReferencePropertyIfNotNull($array, 'project');
-    $array = $this->addProperty($array, 'name');
-    $array = $this->addPropertyIfNotNull($array, 'group');
-    $array = $this->addPropertyIfNotNull($array, 'description');
-    $array = $this->addProperty($array, 'state');
-    $array = $this->addReferencePropertyIfNotNull($array, 'creator');
-    $array = $this->addProperty($array, 'date_created');
-    $array = $this->addReferencePropertyIfNotNull($array, 'modifier');
-    $array = $this->addPropertyIfNotNull($array, 'date_modified');
-    $array = $this->addReferencePropertyIfNotNull($array, 'owner');
+    $array = $this->addKeyProperty($array, 'id', $header);
+    $array = $this->addReferencePropertyIfNotNull($array, 'project', null, $header);
+    $array = $this->addProperty($array, 'name', null, $header);
+    $array = $this->setDisplayField($array, 'name', $header);
+    $array = $this->addPropertyIfNotNull($array, 'description', null, $header);
+    $array = $this->addReferencePropertyIfNotNull($array, 'container', null, $header);
+    $array = $this->addProperty($array, 'state', null, $header);
+    $array = $this->addReferencePropertyIfNotNull($array, 'creator', null, $header);
+    $array = $this->addProperty($array, 'date_created', null, $header);
+    $array = $this->addReferencePropertyIfNotNull($array, 'modifier', null, $header);
+    $array = $this->addPropertyIfNotNull($array, 'date_modified', null, $header);
+    $array = $this->addReferencePropertyIfNotNull($array, 'owner', null, $header);
     return $array;
   }
 
@@ -235,6 +250,8 @@ class Test extends \api\model\AbstractEntity {
    * @return mixed Returns the Test ID or 'null' on failure;
    */
   public static function extractTestID($test) {
+    assert('isset($test)');
+
     // Is the parameter an Test Object?
     if (is_object($test) && is_a($test, __CLASS__)) { // YES
       return $test->id;
@@ -285,8 +302,8 @@ class Test extends \api\model\AbstractEntity {
     }
 
     return self::findFirst(array(
-                "conditions" => $conditions,
-                "bind" => $parameters
+        "conditions" => $conditions,
+        "bind" => $parameters
     ));
   }
 
@@ -294,44 +311,134 @@ class Test extends \api\model\AbstractEntity {
    * List the Tests Related to the Specified Project
    * 
    * @param mixed $project Project ID or Project Entity
-   * @return \Test[] Related Tests
+   * @param array $filter Extra Filter conditions to use
+   * @return \models\Test[] Test in Project
    * @throws \Exception On Any Failure
    */
-  public static function listInProject($project) {
+  public static function listInProject($project, $filter = null, $order = null) {
+    assert('isset($project)');
+    assert('($filter === null) || is_array($filter)');
+    assert('($order === null) || (is_string($filter) && count($order))');
+
     // Are we able to extract the Project ID from the Parameter?
-    $project_id = \Project::extractProjectID($project);
-    if (isset($project_id)) { // NO
-      throw new \Exception("Project Parameter is invalid.", 1);
+    $id = \models\Project::extractProjectID($project);
+    if (!isset($id)) { // NO
+      throw new \Exception("Parameter is invalid.", 1);
     }
 
-    return self::find(array(
-                "conditions" => 'project = :project:',
-                "bind" => array('project' => $project_id),
-                "order" => 'id'
-    ));
+    // Build Query Conditions
+    $params = [
+      'conditions' => 'project = :id:',
+      'bind' => ['id' => $id],
+      'order' => isset($order) ? $order : 'id'
+    ];
+
+    // Merge in Filter Conditions
+    if (isset($filter)) {
+      $params['conditions'].=' and (' . $filter['conditions'] . ')';
+      $params['bind'] = array_merge($filter['bind'], $params['bind']);
+    }
+
+    // Search for Matching Projects
+    $tests = self::find($params);
+
+    return $tests === FALSE ? [] : $tests;
   }
 
   /**
    * Count the Number of Tests Related to the Specified Project
    * 
    * @param mixed $project Project ID or Project Entity
-   * @return integer Number of Related Tests
+   * @param array $filter Extra Filter conditions to use
+   * @return integer Number of Test under Given Conditions
    * @throws \Exception On Any Failure
    */
-  public static function countInProject($project) {
+  public static function countInProject($project, $filter = null) {
+    assert('isset($project)');
+    assert('($filter === null) || is_array($filter)');
+
     // Are we able to extract the Project ID from the Parameter?
-    $project_id = \Project::extractProjectID($project);
-    if (isset($project_id)) { // NO
-      throw new \Exception("Project Parameter is invalid.", 1);
+    $id = \models\Project::extractProjectID($project);
+    if (!isset($id)) { // NO
+      throw new \Exception("Parameter is invalid.", 1);
+    }
+
+    // Build Query Conditions
+    $params = [
+      'conditions' => 'project = :id:',
+      'bind' => ['id' => $id]
+    ];
+
+    // Merge in Filter Conditions
+    if (isset($filter)) {
+      $params['conditions'].=' and (' . $filter['conditions'] . ')';
+      $params['bind'] = array_merge($filter['bind'], $params['bind']);
+    }
+
+    // Find Child Entries
+    $count = self::count($params);
+
+    // Return Result Set
+    return (integer) $count;
+  }
+
+  /**
+   * List the Tests Related to the Specified Container
+   * 
+   * @param mixed $container Container ID or Container Entity
+   * @return \models\Test[] Test in Project
+   * @throws \Exception On Any Failure
+   */
+  public static function listInFolder($container) {
+    assert('isset($container)');
+
+    // Are we able to extract the Container ID from the Parameter?
+    $id = \models\Container::extractContainerID($container);
+    if (!isset($id)) { // NO
+      throw new \Exception("Container Parameter is invalid.", 1);
     }
 
     // Instantiate the Query
-    $pqhl = 'SELECT COUNT(*) FROM Test WHERE project = :id:';
-    $query = new Phalcon\Mvc\Model\Query($pqhl, \Phalcon\Di::getDefault());
+    /* NOTE: The choice of the Entity Used with FROM is important, as it
+     * represents the type of entity that will be created, on rehydration.
+     */
+    $pqhl = 'SELECT t.*' .
+      ' FROM models\Test t' .
+      ' JOIN models\Container c' .
+      ' WHERE c.parent = :id: and c.type = :type: and c.link = t.id' .
+      ' ORDER BY t.id';
 
-    // Execute the query returning a result if any
-    $result = $query->execute(array('id' => $project_id))->getFirst();
-    return (integer) $result['0'];
+    // Execute Query and Return Results
+    return self::selectQuery($pqhl, [
+        'id' => $id,
+        'type' => 'T'
+    ]);
+  }
+
+  /**
+   * Count the Number of Tests Related to the Specified Container
+   * 
+   * @param mixed $project Container ID or Container Entity
+   * @return integer Number of Test under Given Conditions
+   * @throws \Exception On Any Failure
+   */
+  public static function countInFolder($container) {
+    assert('isset($container)');
+
+    // Are we able to extract the Container ID from the Parameter?
+    $id = \models\Container::extractContainerID($container);
+    if (!isset($id)) { // NO
+      throw new \Exception("Container Parameter is invalid.", 1);
+    }
+
+    // Find Child Entries
+    $count = \models\Container::count([
+        'conditions' => 'parent = :id: and type = :type:',
+        'bind' => [ 'id' => $id, 'type' => 'T']
+    ]);
+
+    // Return Result Set
+    return (integer) $count;
   }
 
   /**
