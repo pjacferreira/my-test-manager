@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS `t_containers` (
   `type` char(1) NOT NULL COMMENT 'Type of Contained Object',
   `name` varchar(40) NOT NULL COMMENT 'Display Name of Entry',
   `id_parent` int(11) DEFAULT NULL COMMENT 'Parent Container ID',
-  `id_link` int(11) DEFAULT NULL COMMENT 'If Container then this is the ID of Contained Object',
+  `id_link` int(11) DEFAULT NULL COMMENT 'If Not Container then this is the ID of Linked Object',
   `type_owner` char(1) DEFAULT NULL COMMENT 'Type of the Owning Object',
   `id_owner` int(11) DEFAULT NULL COMMENT 'ID of Object that Owns this Container or Entry',
   `singlelevel` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'Allow Child Containers?',
@@ -255,22 +255,21 @@ CREATE TABLE IF NOT EXISTS `t_states` (
 CREATE TABLE IF NOT EXISTS `t_tests` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `id_project` int(11) DEFAULT NULL,
-  `id_docroot` int(11) DEFAULT NULL,
-  `id_creator` int(11) DEFAULT NULL,
-  `id_modifier` int(11) DEFAULT NULL,
-  `id_owner` int(11) DEFAULT NULL,
   `name` varchar(60) NOT NULL,
-  `test_group` varchar(60) DEFAULT NULL,
   `description` longtext,
+  `id_container` int(11) DEFAULT NULL,
   `state` int(11) NOT NULL,
+  `id_creator` int(11) NOT NULL,
   `dt_creation` datetime NOT NULL,
+  `id_modifier` int(11) DEFAULT NULL,
   `dt_modified` datetime DEFAULT NULL,
+  `id_owner` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `UNIQ_ACD19A272C8888AD` (`id_docroot`),
-  KEY `IDX_ACD19A27F12E799E` (`id_project`),
-  KEY `IDX_ACD19A27629B4313` (`id_creator`),
-  KEY `IDX_ACD19A27FB643568` (`id_modifier`),
-  KEY `IDX_ACD19A2721E5A74C` (`id_owner`)
+  KEY `FK_TEST_TO_PROJECT` (`id_project`),
+  KEY `FK_TEST_TO_CONTAINER` (`id_container`),
+  KEY `FK_TEST_TO_USER_CREATOR` (`id_creator`),
+  KEY `FK_TEST_TO_USER_MODIFIER` (`id_modifier`),
+  KEY `FK_TEST_TO_USER_OWNER` (`id_owner`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Tests' AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
@@ -431,11 +430,12 @@ ALTER TABLE `t_states`
 -- Constraints for table `t_tests`
 --
 ALTER TABLE `t_tests`
-  ADD CONSTRAINT `FK_ACD19A2721E5A74C` FOREIGN KEY (`id_owner`) REFERENCES `t_users` (`id`),
-  ADD CONSTRAINT `FK_ACD19A27629B4313` FOREIGN KEY (`id_creator`) REFERENCES `t_users` (`id`),
-  ADD CONSTRAINT `FK_ACD19A27F12E799E` FOREIGN KEY (`id_project`) REFERENCES `t_projects` (`id`),
-  ADD CONSTRAINT `FK_ACD19A27FB643568` FOREIGN KEY (`id_modifier`) REFERENCES `t_users` (`id`);
-
+  ADD CONSTRAINT `FK_TEST_TO_PROJECT` FOREIGN KEY (`id_project`) REFERENCES `t_projects` (`id`),
+  ADD CONSTRAINT `FK_TEST_TO_CONTAINER` FOREIGN KEY (`id_container`) REFERENCES `t_containers` (`id`),
+  ADD CONSTRAINT `FK_TEST_TO_USER_CREATOR` FOREIGN KEY (`id_creator`) REFERENCES `t_users` (`id`),
+  ADD CONSTRAINT `FK_TEST_TO_USER_MODIFIER` FOREIGN KEY (`id_modifier`) REFERENCES `t_users` (`id`),
+  ADD CONSTRAINT `FK_TEST_TO_USER_OWNER` FOREIGN KEY (`id_owner`) REFERENCES `t_users` (`id`);
+  
 --
 -- Constraints for table `t_test_steps`
 --
