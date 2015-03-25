@@ -18,11 +18,18 @@ function initialize() {
   // Initialize Forms
   initialize_forms();
 
+  $(document).on('testcenter.organization.change', function(event) {
+    console.log('Captured Organization Change');
+  });
+
+  $(document).on('testcenter.project.change', function(event) {
+    console.log('Captured Project Change');
+    initialize_folders_list();
+  });
+
   // Initialize Organizations
   initialize_dropdowns();
 
-  // Initialize the Folders List
-  initialize_folders_list();
 
   // Mark the Tests Columns as Being Four Wide
   $('#tests').get(0).__columns = 4;
@@ -36,31 +43,45 @@ function initialize() {
 
   // Remove Loader
   $('#loader').removeClass('active');
+
+  $.contextMenu({
+    selector: '#tests',
+    reposition: false, // Force Menu Rebuild on Each Click
+    build: contextmenu_tests
+  });
 }
 
 function initialize_folders_list() {
   var $tree = $('#folders');
 
+  // Has the Folders List been Initialized?
+  if ($tree.data('initialized')) { // YES
+    $tree.fancytree('destroy');
+  }
+
   // Initialize Tree
   $tree.fancytree({
     extensions: ['contextMenu'],
-    source: [{title: 'ROOT', key: 'f:4', folder: true, lazy: true, expandend: false}],
+    source: [{title: 'ROOT', key: 'f:' + window.__session.project.container, folder: true, lazy: true, expandend: false}],
     lazyLoad: lazy_loader,
     selectMode: 1,
     postProcess: entities_to_nodes,
     activate: select_node,
     contextMenu: {
-      menu: menu_items_folder,
-      actions: menu_action
+      menu: contextmenu_folder,
+      actions: menu_folder_action
     }
   });
+
+  // Mark Folders List as Initialized
+  $tree.data('initialized', true);
 }
 
 function lazy_loader(event, data) {
   var key = data.node.key.split(':');
   if (key.length > 1) {
     data.result = {
-      url: window.testcenter.services.url.service(['folder', 'list'], [key[1], 'F'], null),
+      url: window.testcenter.services.url.service(['folders', 'list'], [key[1], 'F'], null),
       cache: false
     };
   }
@@ -108,7 +129,7 @@ function select_node(event, data) {
 }
 
 function clicked_test(event) {
-  var element = event.toElement;
+  var element = event.target;
   var $test = $(element).closest('div.tc_test');
   if ($test.length) {
     var id = $test.attr('id').split(':');
@@ -122,7 +143,7 @@ function clicked_test(event) {
   return false;
 }
 
-function menu_items_folder(node) {
+function contextmenu_folder(node) {
   // All The Possible Actions on a Folder
   var items = {
     'rename': {'name': 'Rename', 'icon': 'edit'},
@@ -145,13 +166,51 @@ function menu_items_folder(node) {
   return items;
 }
 
-function menu_action(node, action, options) {
+function contextmenu_tests($trigger, event) {
+  // List of Context Menu Items
+  var items = {
+    'edit': {'name': 'Edit', 'icon': 'edit'},
+    'delete': {'name': 'Delete', 'icon': 'delete'},
+    'seperator': '---------',
+    'create': {'name': 'New Test..', 'icon': 'add'}
+  };
+
+  // Did we click on a test?
+  var $element = $(event.target);
+  if ($element.hasClass('tc_test')) { // YES
+    return {
+      'callback': function(key, options) {
+        menu_test_action(key, key === 'create' ? null : $element, options);
+      },
+      'items': items
+    };
+  } else { // NO - Only Option is Create
+    items['edit'].disabled = true;
+    items['delete'].disabled = true;
+    return {
+      'callback': function(key, options) {
+        menu_test_action(key, null, options);
+      },
+      'items': items
+    };
+  }
+}
+
+function menu_folder_action(node, action, options) {
   console.log('Selected action "' + action + '" on node ' + node.key);
   var $form = $('#form_' + action + '_folder');
   if ($form.length) {
     form_show($form);
   } else {
     console.log('Missing Form for action[' + action + ']');
+  }
+}
+
+function menu_test_action(key, $test, options) {
+  if ($test) {
+    console.log('Selected action "' + key + '" on Test [' + $test.attr('id') + ']');
+  } else {
+    console.log('Selected action "' + key + '"');
   }
 }
 
@@ -165,7 +224,7 @@ function load_tests(folder_id) {
   $list.empty();
 
   // Load the Tests into the Folder
-  testcenter.services.call(['folder', 'list'], [folder_id, 'T'], null, {
+  testcenter.services.call(['folders', 'list'], [folder_id, 'T'], null, {
     call_ok: function(entity_set) {
 
       var nodes = [];
@@ -498,3 +557,33 @@ function form_hide($form) {
     alert("Failed Initializing Comunication with Server.");
   }
 }
+
+/* TODO:
+ * 1. We need to be able to handle organization change event (i.e. the event is
+ * fired when the organization is changed in the dropdown).
+ * 
+ * POSSIBLE SOLUTION:
+ * 1. On Capturing the event we could do:
+ * a) Destroy/Clear the Tests Navigation Page.
+ * b) Place Dimmer over the Navigation Pane.
+ * 
+ * 2. We need to be able to handle changge of project (i.e. the event is
+ * fired when the project is changed in the dropdown).
+ * 
+ * POSSIBLE SOLUTION:
+ * 1. On Capturing the event we could do:
+ * a) Clear the Test Pane Window (Replace it with the filler it had at the
+ * beginning).
+ * b) Create/Reset the fancytree.
+ * 
+ * 3. Currently, when the Test Navigator is created, no folder is selected
+ * (i.e. nothing is loaded in the tests part of the window), therefore it
+ * does not make sense to display the test context-menu since we can't really
+ * do anything.
+ * 
+ * POSSIBLE SOLUTIONS:
+ * 1. When creating the test navigator, automatically select the ROOT FOLDER
+ * for the project.
+ * 2. Don't display / create the Context Menun until the root folder has been
+ * selected.
+ */

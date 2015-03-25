@@ -56,14 +56,14 @@ function select_project(element, value, selectedText, $selectedItem) {
       call_ok: function(reply) {
         // Update Session Project
         window.__session = $.extend({}, window.__session, {
-          project: {
-            id: element,
-            name: value
-          }
+          project: reply
         });
 
         // Disable Choose Label
         $('#choose').addClass('hidden');
+
+        // Trigger Project Change Event
+        $(document).trigger('testcenter.project.change');
 
         console.log('ORGANIZATION and PROJECT SET');
       },
@@ -128,11 +128,11 @@ function select_organization(element, value, selectedText, $selectedItem) {
       call_ok: function(reply) {
         // Update Session Organization
         window.__session = $.extend({}, window.__session, {
-          organization: {
-            id: element,
-            name: value
-          }
+          organization: reply
         });
+
+        // Trigger Organization Change Event
+        $(document).trigger('testcenter.organization.change');
 
         // Make sure the user knows he has to select something 1st
         $('#choose').removeClass('hidden');

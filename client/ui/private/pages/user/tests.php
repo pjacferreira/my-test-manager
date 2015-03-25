@@ -46,31 +46,31 @@
 </div>      
 <div id="navigator">
   <h3 class="ui top attached centered inverted header">
-    Tests Manager
+    <?php echo _("PAGE:USER:TESTS:TEST_MANAGER") ?>
   </h3>
   <div class="ui attached segment">
     <div class="ui divided grid">
       <div class="four wide column">
         <h3 class="ui header centered inverted" style="background-color: black">
-          Navigation
+          <?php echo _("PAGE:USER:TESTS:FOLDERS") ?>
         </h3>
         <div id="folders">
         </div>
       </div>
       <div class="twelve wide column">
         <h3 class="ui header centered inverted" style="background-color: blue">
-          Tests
+          <?php echo _("PAGE:USER:TESTS:TESTS") ?>
         </h3>
         <div id="tests" class="ui four column grid middle aligned internally celled">
-          <div class="tc_test aligned column">Select a Folder</div>
+          <div class="tc_test aligned column"><?php echo _("PAGE:USER:TESTS:FILLER:SELECT_FOLDER") ?></div>
         </div>
       </div>
     </div>
   </div>
   <h3 class="ui centered attached inverted header">
-    Test Details
+    <?php echo _("PAGE:USER:TESTS:TEST_DETAILS") ?>
   </h3>
   <div class="ui bottom attached segment">
-    Select a Test
+    <?php echo _("PAGE:USER:TESTS:FILLER:SELECT_TEST") ?>
   </div>
 </div>
