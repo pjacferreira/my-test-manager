@@ -28,8 +28,8 @@ namespace common\utility;
 class Arrays {
 
   /**
-   * Test if the given is an empty array. 
-   * 
+   * Test if the given is an empty array.
+   *
    * @param array $array Parameter to test
    * @return array NULL if not array or empty array, '$array' otherwise
    */
@@ -44,14 +44,14 @@ class Arrays {
   /**
    * Test if an Array is Map (An Associative Array of key<-->value tuplets, in
    * which the key, is not numeric).
-   * 
+   *
    * @param array $array Array to Test
-   * @return boolean 'true' if array is considered associative, 'false' otherwise 
+   * @return boolean 'true' if array is considered associative, 'false' otherwise
    */
   public static function is_map($array) {
     $array = self::nullOnEmpty($array);
     return ($array !== null) &&
-            ((bool) count(array_filter(array_keys($array), 'is_string')));
+    ((bool) count(array_filter(array_keys($array), 'is_string')));
   }
 
   /**
@@ -60,7 +60,7 @@ class Arrays {
    * the key in 'from' will overrite the key in 'into' according to the following
    * rules (i.e. associative arrar are treated like javascript objects/maps
    * and the values are merged).
-   * 
+   *
    * @param array $into the Array to Merge Into
    * @param array $from the Array to Merge From
    * @return array Resultant Array
@@ -124,11 +124,11 @@ class Arrays {
 
   /**
    * Deep Extract a value from an associateve array (MAP).
-   * 
+   *
    * @param string $path A key path that points to the value to extract
    * @param array $array Map to search for key
    * @param mixed $default [DEFAULT: null] value to return if the key doesn't exist
-   * @param bool $default_on_null [DEFAULT: true] if the key exists and it's value is null, 
+   * @param bool $default_on_null [DEFAULT: true] if the key exists and it's value is null,
    *   do we return the default value?
    * @return mixed value result of extract
    */
@@ -162,11 +162,11 @@ class Arrays {
 
   /**
    * Deep Set a value from an associateve array (MAP).
-   * 
+   *
    * @param string $path A key path that points to the value to extract
    * @param array $array Map to search for key
    * @param mixed $default [DEFAULT: null] value to return if the key doesn't exist
-   * @param bool $default_on_null [DEFAULT: true] if the key exists and it's value is null, 
+   * @param bool $default_on_null [DEFAULT: true] if the key exists and it's value is null,
    *   do we return the default value?
    * @return mixed value result of extract
    */
@@ -199,7 +199,7 @@ class Arrays {
 
   /**
    * Extract Only the Required Keys from the Array
-   * 
+   *
    * @param string|string[] $keys Keys to extract from the map
    * @param array $array Map of values to filter
    * @param array $defaults [DEFAULT: Null] Default values to use, if map does not contain the key
@@ -207,7 +207,7 @@ class Arrays {
    */
   public static function filter($keys, $array, $defaults = null) {
     $keys = is_string($keys) ? [$keys] :
-            (is_array($keys) ? $keys : null);
+    (is_array($keys) ? $keys : null);
     $defaults = is_array($defaults) ? $defaults : null;
 
     // Look for Matiching Keys in the $array or, if available, in defaults
@@ -233,7 +233,7 @@ class Arrays {
    * Search an associative array, multi-level, for a value, with optional type
    * verification and default value in case key was not found, or the value
    * is not valid.
-   * 
+   *
    * @param array $array Associative Array
    * @param mixed $keys Key (string) or key path (string[]) to extract
    * @param mixed $default (OPTIONAL) default value to return, in case key not found (DEFAULT: NULL)
@@ -271,7 +271,7 @@ class Arrays {
    * Search an associative array, single-level, for a value, with optional type
    * verification and default value in case key was not found, or the value
    * is not valid.
-   * 
+   *
    * @param array $array Associative Array
    * @param string $key Key to extract
    * @param mixed $default (OPTIONAL) default value to return, in case key not found (DEFAULT: NULL)
@@ -309,10 +309,10 @@ class Arrays {
 
     return $value;
   }
-  
+
   /**
    * Return a Normalized Path Variable (i.e. an array of strings)
-   * 
+   *
    * @param mixed $path Path to normalize
    * @return array return normalized path or 'null'
    */

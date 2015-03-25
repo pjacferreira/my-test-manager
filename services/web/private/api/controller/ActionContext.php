@@ -18,8 +18,8 @@
  */
 namespace api\controller;
 
-use \common\utility\Arrays;
-use \common\utility\Strings;
+use common\utility\Arrays;
+use common\utility\Strings;
 
 /**
  * Class to Provide a Working Context for a Controller Action.
@@ -28,8 +28,7 @@ use \common\utility\Strings;
  * @copyright 2015 Paulo Ferreira
  * @author Paulo Ferreira <pf at sourcenotes.org>
  */
-class ActionContext
-{
+class ActionContext {
 
     protected $m_sAction;
     protected $m_arParameters;

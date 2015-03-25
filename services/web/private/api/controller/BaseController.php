@@ -577,9 +577,13 @@ class BaseController extends Controller {
       // If no Value is Set, then see if we have a function that can get an alternative value
       if (!isset($value) && isset($functionOnMissing)) {
         $value = $functionOnMissing($this, $context, $action);
+/* Don't Set the Parameter Value. Why? Because this way we can see if the parameter
+ * actually had a value, or a default was used.
         if (isset($value)) {
           $context->setParameter($parameter, $value);
         }
+ *
+ */
       }
 
       if (isset($value)) {
