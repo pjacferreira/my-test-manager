@@ -35,7 +35,6 @@ $prefix = '/project';
 /*
  * RETRIEVE the PROFILE for any PROJECT the SESSION USER has Access To
  */
-$app->map($prefix . '/profile/{name}', array($controller, 'readByName'));
 $app->map($prefix . '/profile/{id:[0-9]+}', array($controller, 'read'));
 
 $prefix = '/projects';

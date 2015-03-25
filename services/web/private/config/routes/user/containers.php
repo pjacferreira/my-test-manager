@@ -31,11 +31,11 @@ use Phalcon\Mvc\Micro\Collection as MicroCollection;
  */
 $controller = new controllers\user\ContainersController();
 
-$prefix = '/folder';
-
 /*
  * Folder Actions
  */
+$prefix = '/folder';
+
 $app->map($prefix . '/root/{entry}', array($controller, 'root'));
 $app->map($prefix . '/parent/{entry}', array($controller, 'parentFolder'));
 $app->map($prefix . '/exists/{parent}/{name}', array($controller, 'exists'));
@@ -47,5 +47,7 @@ $app->map($prefix . '/delete/{entry}', array($controller, 'deleteEntry'));
 /*
  * List Container Items
  */
-$app->map($prefix . '/list/{folder:[0-9]+}[/]?{filter}', array($controller, 'listEntries'));
+$prefix = '/folders';
+
+$app->map($prefix . '/list/{folder:[0-9]+}[/]?{filter}[/]?{sort}', array($controller, 'listEntries'));
 $app->map($prefix . '/count/{folder:[0-9]+}[/]?{filter}', array($controller, 'countEntries'));

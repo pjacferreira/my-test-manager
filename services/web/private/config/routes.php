@@ -25,6 +25,17 @@
  * @author Paulo Ferreira <pf at sourcenotes.org>
  */
 
+/* TODO: 
+ * 1. Limit the routes that are loaded based on the Session State
+ * i.e.
+ * - If we don't have a login yet, then no use allowing for USER
+ * or ADMIN Routes (should be limited to Session Routes)
+ * - If nthe logged in user doesn't have administrative rights, no use loading
+ * ADMIN routes.
+ * 
+ * On top of everything, it makes things more secure.
+ */
+
 // NOTE: Routes are matched in reverse order LIFO (so routes added later are processed 1st)
 // Add Addmin Routes?
 $ADMIN = true;
@@ -37,6 +48,7 @@ include __DIR__ . '/routes/user/projects.php';
 include __DIR__ . '/routes/user/organizations.php';
 include __DIR__ . '/routes/user/users.php';
 include __DIR__ . '/routes/user/containers.php';
+include __DIR__ . '/routes/user/tests.php';
 
 // Should we add Admin Mode routes?
 if ($ADMIN) { // YES
