@@ -27,7 +27,7 @@
 use Phalcon\Mvc\Micro\Collection as MicroCollection;
 
 /*
- * Organization Services
+ * Test Services
  */
 $controller = new controllers\user\TestsController();
 

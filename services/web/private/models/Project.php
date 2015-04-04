@@ -202,7 +202,7 @@ class Project extends \api\model\AbstractEntity {
    * @return mixed Returns the Project ID or 'null' on failure;
    */
   public static function extractProjectID($project) {
-    assert('isset($test)');
+    assert('isset($project)');
 
     // Is the parameter an Project Object?
     if (is_object($project) && is_a($project, __CLASS__)) { // YES

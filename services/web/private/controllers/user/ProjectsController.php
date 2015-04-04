@@ -482,12 +482,16 @@ class ProjectsController extends CrudServiceController {
           $header = false;
         }
 
+        // Create Base Entity Set Identified
+        $return['__type'] = 'entity-set';
+
         // Do we have entities to display?
         if (count($entities)) { // YES
           // Move the Entity Information to become Result Header
           $this->moveEntityHeader($entities[0], $return);
-          $return['__type'] = 'entity-set';
           $return['entities'] = $entities;
+        } else {
+          $return['entities'] = [];
         }
         break;
       default:
