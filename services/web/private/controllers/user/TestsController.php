@@ -217,10 +217,10 @@ class TestsController extends CrudServiceController {
    */
 
   /**
-   * List Child Entries
+   * List Test Entities
    * 
    * @param \api\controller\ActionContext $context Context for Action
-   * @return \models\Container[] Container Entries
+   * @return \models\Test[] Container Entries
    * @throws \Exception On failure to perform the action
    */
   protected function doListAction($context) {
@@ -244,10 +244,10 @@ class TestsController extends CrudServiceController {
   }
 
   /**
-   * List Child Entries
+   * Count Test Entries
    * 
    * @param \api\controller\ActionContext $context Context for Action
-   * @return \models\Container[] Container Entries
+   * @return integer Number of Tests
    * @throws \Exception On failure to perform the action
    */
   protected function doCountAction($context) {
@@ -335,20 +335,6 @@ class TestsController extends CrudServiceController {
       return $context;
     }, null, 'Create');
 
-    // Verify if the Test is Part of the PROJECT
-    $context = $this->onActionDo($context, array('Read', 'Update', 'Delete'), function($controller, $context, $action) {
-      // Get the Context Project and Test
-      $project = $context->getParameter('project');
-      $test = $context->getParameter('entity');
-
-      // Does the Test Belong to the Project?
-      if ($test->project !== $project->id) {
-        throw new \Exception("Test[{$test->name}] is Not Part of the Project[{$project->name}]", 1);
-      }
-
-      return null;
-    });
-
     return $context;
   }
 
@@ -392,24 +378,27 @@ class TestsController extends CrudServiceController {
   protected function stagePersistEntity($context, $entity) {
     $entity = parent::stagePersistEntity($context, $entity);
 
-    // Get the Container
-    $test_container = $context->getParameter('test:container');
-    $test_container->setOwner($entity->id, 'T');
+    // Are we creating a new test?
+    if ($context->getAction() === 'Create') { // YES
+      // Get the Container
+      $test_container = $context->getParameter('test:container');
+      $test_container->setOwner($entity->id, 'T');
 
-    // Save the Container
-    $this->_persist($test_container);
+      // Save the Container
+      $this->_persist($test_container);
 
-    // Get the Parent Folder in Which to Create the Test Link
-    $parent = $context->getParameter('folder');
+      // Get the Parent Folder in Which to Create the Test Link
+      $parent = $context->getParameter('folder');
 
-    // Create the Container for the Organization
-    $project_link = \models\Container::newContainerEntry($parent, $entity->id, $entity->name, 'T');
+      // Create the Container for the Organization
+      $project_link = \models\Container::newContainerEntry($parent, $entity->id, $entity->name, 'T');
 
-    // If the Entity Allows it Set the Creation User and Date
-    $this->setCreator($project_link, $context->getParameter('cm_user'));
+      // If the Entity Allows it Set the Creation User and Date
+      $this->setCreator($project_link, $context->getParameter('cm_user'));
 
-    // Save the Container
-    $this->_persist($project_link);
+      // Save the Container
+      $this->_persist($project_link);
+    }
 
     return $entity;
   }
@@ -468,7 +457,7 @@ class TestsController extends CrudServiceController {
 
     // Unlink all Relations tot the Test
     $this->getRepository()->removeRelations($test);
-    return $parameters;
+    return $context;
   }
 
   /**
@@ -488,7 +477,7 @@ class TestsController extends CrudServiceController {
 
     // Did we find the user?
     if ($user === FALSE) { // NO
-      throw new \Exception("User [$id] not found", 6);
+      throw new \Exception("User [$id] not found", 1);
     }
     $context = $context
       ->setParameter('user', $user)
@@ -530,11 +519,12 @@ class TestsController extends CrudServiceController {
             'bind' => [ 'project' => $project->id, 'id' => $value]
         ]);
         if ($test === FALSE) { // NO
-          throw new \Exception("Test [$value] not found in Current Session Project", 3);
+          throw new \Exception("Test [$value] not found in Current Session Project", 4);
         }
 
-        // Save the Organization for the Action
-        $context->setParameter('entity', $test)
+        // Save the Test for the Action
+        $context
+          ->setParameter('entity', $test)
           ->setParameter('test', $test);
 
         return $context;
@@ -602,7 +592,7 @@ class TestsController extends CrudServiceController {
   /**
    * Creates an instance of the Entity Managed by the Controller
    * 
-   * @return \Test An instance of a Test Entity, managed by this controller
+   * @return \models\Test An instance of a Test Entity, managed by this controller
    */
   protected function createEntity() {
     return new \models\Test();
@@ -704,4 +694,11 @@ class TestsController extends CrudServiceController {
  * he can read the tests, IMPLIED)
  * 1 - WRITE ACCESS (User can Create and Update Tests).
  * 2 - DELETE ACCESS (User can Delete Tests)
+ */
+
+/* TODO:
+ * 1. If the Test Name is Modified (maybe through the update service) the container
+ * link also has to have the name modified.
+ * 2. If the Update is Called, but nothing is modified, than don't persist the
+ * object, or re-brand the modifier.
  */

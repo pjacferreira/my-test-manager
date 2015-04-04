@@ -59,13 +59,13 @@ class Test extends \api\model\AbstractEntity {
    *
    * @var string
    */
-  public $group;
+  public $description;
 
   /**
    *
-   * @var string
+   * @var integer
    */
-  public $description;
+  public $container;
 
   /**
    *
@@ -75,9 +75,9 @@ class Test extends \api\model\AbstractEntity {
 
   /**
    *
-   * @var integer
+   * @var boolean
    */
-  public $container;
+  public $renumber;
 
   /**
    *
@@ -139,6 +139,8 @@ class Test extends \api\model\AbstractEntity {
   public function onConstruct() {
     // By Default Single Level
     $this->state = self::STATE_CREATED;
+    // Clear Flag
+    $this->renumber = 0;
   }
 
   /**
@@ -163,6 +165,7 @@ class Test extends \api\model\AbstractEntity {
       'description' => 'description',
       'id_container' => 'container',
       'state' => 'state',
+      'renumber' => 'renumber',
       'id_creator' => 'creator',
       'dt_creation' => 'date_created',
       'id_modifier' => 'modifier',
@@ -179,6 +182,7 @@ class Test extends \api\model\AbstractEntity {
     $this->project = (integer) $this->project;
     $this->container = (integer) $this->container;
     $this->state = (integer) $this->state;
+    $this->renumber = (integer) $this->renumber;
     $this->creator = (integer) $this->creator;
     $this->modifier = isset($this->modifier) ? (integer) $this->modifier : null;
   }
@@ -220,6 +224,7 @@ class Test extends \api\model\AbstractEntity {
     $array = $this->addPropertyIfNotNull($array, 'description', null, $header);
     $array = $this->addReferencePropertyIfNotNull($array, 'container', null, $header);
     $array = $this->addProperty($array, 'state', null, $header);
+    $array = $this->addProperty($array, 'renumber', null, $header);
     $array = $this->addReferencePropertyIfNotNull($array, 'creator', null, $header);
     $array = $this->addProperty($array, 'date_created', null, $header);
     $array = $this->addReferencePropertyIfNotNull($array, 'modifier', null, $header);
@@ -278,33 +283,34 @@ class Test extends \api\model\AbstractEntity {
    */
   public static function findInProject($project, $nameid) {
     // Are we able to extract the Project ID from the Parameter?
-    $project_id = \Project::extractProjectID($project);
-    if (isset($project_id)) { // NO
+    $project_id = \models\Project::extractProjectID($project);
+    if (!isset($project_id)) { // NO
       throw new \Exception("Project Parameter is invalid.", 1);
     }
 
-    $conditions = 'project = :project:';
-    $parameters = array('project' => $project_id);
+    $params = [
+      "conditions" => 'project = :project:',
+      "bind" => ['project' => $project_id],
+    ];
+
     // Is the Name/ID Parameters an Integer?
     if (is_int($nameid) && ($nameid >= 0)) { // YES
-      $conditions = 'id = :id: and ' . $conditions;
-      $parameters['id'] = (integer) $nameid;
+      $params['conditions'] .= ' and id = :id:';
+      $params['bind']['id'] = $nameid;
     } else if (is_string($nameid)) { // NO: It's a String
       $nameid = Strings::nullOnEmpty($nameid);
       // Does it have a value?
       if (!isset($nameid)) { // NO
         throw new \Exception("Name/ID Parameter is invalid.", 2);
       }
-      $conditions.= 'name = :name: and ' . $conditions;
-      $parameters['name'] = $nameid;
+      $params['conditions'] .= ' and name = :name:';
+      $params['bind']['name'] = $nameid;
     } else { // UNKNOWN TYPE
       throw new \Exception("Name/ID Parameter is invalid.", 3);
     }
 
-    return self::findFirst(array(
-        "conditions" => $conditions,
-        "bind" => $parameters
-    ));
+    $test = self::findFirst($params);
+    return $test !== FALSE ? $test : null;
   }
 
   /**
@@ -341,7 +347,6 @@ class Test extends \api\model\AbstractEntity {
 
     // Search for Matching Projects
     $tests = self::find($params);
-
     return $tests === FALSE ? [] : $tests;
   }
 
@@ -409,10 +414,11 @@ class Test extends \api\model\AbstractEntity {
       ' ORDER BY t.id';
 
     // Execute Query and Return Results
-    return self::selectQuery($pqhl, [
+    $tests = self::selectQuery($pqhl, [
         'id' => $id,
         'type' => 'T'
     ]);
+    return $tests === FALSE ? null : $tests;
   }
 
   /**
@@ -471,3 +477,18 @@ class Test extends \api\model\AbstractEntity {
   }
 
 }
+
+/* TODO: Add Test Type
+ * Why?
+ * Because this would allow us to create different run modules.
+ * 
+ * Example:
+ * We can use test type 0 - Manual
+ * and then have a test type 1 - CodeCeption (Automatic)
+ * 
+ * This would allow us to integrate automated test into a single framework!
+ * We could have a user start a Run, with a sequence of manual tests, then
+ * have the system continue the play, with automatic test, and return back
+ * to the use (notify the user after the auto test are complete) so he can
+ * continue with the manual tests.
+ */
