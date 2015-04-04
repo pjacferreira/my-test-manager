@@ -24,7 +24,7 @@
 /*******************************
  * FORMS                       * 
  *******************************/
-.ui.form {
+.testcenter.ui.form {
   position: fixed;
   opacity: 0.5;
   background-color: #3d3131; 
@@ -36,12 +36,12 @@
   z-index: 10;
 }
 
-.ui.form:hover {
+.testcenter.ui.form:hover {
   opacity: 0.95;
 }
 
 /* PLACE BEHIND BACKGROUND */
-.ui.form.hidden {
+.testcenter.ui.form.hidden {
   z-index: -110;
 }
 
