@@ -259,6 +259,7 @@ CREATE TABLE IF NOT EXISTS `t_tests` (
   `description` longtext,
   `id_container` int(11) DEFAULT NULL,
   `state` int(11) NOT NULL,
+  `renumber` boolean NOT NULL DEFAULT 0,
   `id_creator` int(11) NOT NULL,
   `dt_creation` datetime NOT NULL,
   `id_modifier` int(11) DEFAULT NULL,
@@ -282,10 +283,17 @@ CREATE TABLE IF NOT EXISTS `t_test_steps` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `id_test` int(11) DEFAULT NULL,
   `sequence` int(11) NOT NULL,
-  `name` varchar(80) NOT NULL,
+  `title` varchar(80) NOT NULL,
   `description` longtext,
+  `id_creator` int(11) NOT NULL,
+  `dt_creation` datetime NOT NULL,
+  `id_modifier` int(11) DEFAULT NULL,
+  `dt_modified` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `IDX_6BA99109535F620E` (`id_test`)
+  UNIQUE KEY `IU_TEST_SEQUENCE` (`id_test`,`sequence`),
+  KEY `FK_STEP_TO_TEST` (`id_test`),
+  KEY `FK_STEP_TO_USER_CREATOR` (`id_creator`),
+  KEY `FK_STEP_TO_USER_MODIFIER` (`id_modifier`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Test Steps' AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
@@ -440,7 +448,9 @@ ALTER TABLE `t_tests`
 -- Constraints for table `t_test_steps`
 --
 ALTER TABLE `t_test_steps`
-  ADD CONSTRAINT `FK_6BA99109535F620E` FOREIGN KEY (`id_test`) REFERENCES `t_tests` (`id`);
+  ADD CONSTRAINT `FK_STEP_TO_TEST` FOREIGN KEY (`id_test`) REFERENCES `t_tests` (`id`),
+  ADD CONSTRAINT `FK_STEP_TO_USER_CREATOR` FOREIGN KEY (`id_creator`) REFERENCES `t_users` (`id`),
+  ADD CONSTRAINT `FK_STEP_TO_USER_MODIFIER` FOREIGN KEY (`id_modifier`) REFERENCES `t_users` (`id`);
 
 --
 -- Constraints for table `t_users`

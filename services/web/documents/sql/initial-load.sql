@@ -1,5 +1,5 @@
 -- phpMyAdmin SQL Dump
--- version 3.4.10.1deb1
+-- version 4.0.10deb1
 -- http://www.phpmyadmin.net
 
 --------------------------------------------------------------------------------
@@ -20,15 +20,6 @@
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 --------------------------------------------------------------------------------
 
-SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
-SET time_zone = "+00:00";
-
-
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8 */;
-
 --
 -- Database: `testcenter`
 --
@@ -37,9 +28,5 @@ SET time_zone = "+00:00";
 -- Dumping data for table `t_users`
 --
 
-INSERT INTO `t_users` (`id`, `id_creator`, `id_modifier`, `name`, `first_name`, `last_name`, `password`, `s_description`, `l_description`, `dt_creation`, `dt_modified`) VALUES
-(1, NULL, NULL, 'admin', NULL, NULL, '21232f297a57a5a743894a0e4a801fc3', NULL, NULL, '2014-01-01 00:00:00', NULL);
-
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+INSERT INTO `t_users` (`id`, `id_creator`, `id_modifier`, `name`, `first_name`, `last_name`, `password`, `s_description`, `l_description`, `dt_creation`, `dt_modified`, `suspended`) VALUES
+(1, NULL, NULL, 'admin', NULL, NULL, '21232f297a57a5a743894a0e4a801fc3', NULL, NULL, '2014-01-01 00:00:00', NULL, 0);
