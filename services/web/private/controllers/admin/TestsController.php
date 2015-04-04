@@ -20,7 +20,7 @@
 namespace controllers\admin;
 
 use api\controller\ActionContext;
-use \common\utility\Strings;
+use common\utility\Strings;
 use api\controller\CrudServiceController;
 
 /**

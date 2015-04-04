@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 namespace models;
 
 /**
@@ -26,6 +27,9 @@ namespace models;
  * @author Paulo Ferreira <pf at sourcenotes.org>
  */
 class TestStep extends \api\model\AbstractEntity {
+
+  const SEQUENCE_STEP = 100;
+  const MAX_SEQUENCE = 100000;
 
   /**
    *
@@ -49,13 +53,37 @@ class TestStep extends \api\model\AbstractEntity {
    *
    * @var string
    */
-  public $name;
+  public $title;
 
   /**
    *
    * @var string
    */
   public $description;
+
+  /**
+   *
+   * @var integer
+   */
+  public $creator;
+
+  /**
+   *
+   * @var string
+   */
+  public $date_created;
+
+  /**
+   *
+   * @var integer
+   */
+  public $modifier;
+
+  /**
+   *
+   * @var string
+   */
+  public $date_modified;
 
   /**
    * Independent Column Mapping.
@@ -72,7 +100,11 @@ class TestStep extends \api\model\AbstractEntity {
   public function initialize() {
     // Define Relations
     // A Step can only Belong to a Single Test
-    $this->belongsTo("test", "Test", "id");
+    $this->hasMany("test", "models\Test", "id");
+    // A Single User can Be the Creator for Many Test Steps
+    $this->hasMany("creator", "models\User", "id");
+    // A Single User can Be the Modifier for Many Test Steps
+    $this->hasMany("modifier", "models\User", "id");
   }
 
   /**
@@ -91,11 +123,15 @@ class TestStep extends \api\model\AbstractEntity {
    */
   public function columnMap() {
     return array(
-        'id' => 'id',
-        'id_test' => 'test',
-        'sequence' => 'sequence',
-        'name' => 'name',
-        'description' => 'description'
+      'id' => 'id',
+      'id_test' => 'test',
+      'sequence' => 'sequence',
+      'title' => 'title',
+      'description' => 'description',
+      'id_creator' => 'creator',
+      'dt_creation' => 'date_created',
+      'id_modifier' => 'modifier',
+      'dt_modified' => 'date_modified',
     );
   }
 
@@ -104,8 +140,12 @@ class TestStep extends \api\model\AbstractEntity {
    */
   public function afterFetch() {
     $this->id = (integer) $this->id;
+    $this->test = (integer) $this->test;
+    $this->sequence = (integer) $this->sequence;
+    $this->creator = (integer) $this->creator;
+    $this->modifier = isset($this->modifier) ? (integer) $this->modifier : null;
   }
-  
+
   /*
    * ---------------------------------------------------------------------------
    * AbstractEntity: Overrides
@@ -118,7 +158,7 @@ class TestStep extends \api\model\AbstractEntity {
    * @return string Name
    */
   public function entityName() {
-    return "teststep";
+    return "step";
   }
 
   /*
@@ -130,16 +170,22 @@ class TestStep extends \api\model\AbstractEntity {
   /**
    * Retrieves a Map representation of the Entities Field Values
    * 
+   * @param boolean $header (DEFAULT = true) Add Entity Header Information?
    * @return array Map of field <--> value tuplets
    */
-  public function toArray() {
-    $array = parent::toArray();
+  public function toArray($header = true) {
+    $array = parent::toArray($header);
 
-    $array = $this->addProperty($array, 'id');
-    $array = $this->addReferencePropertyIfNotNull($array, 'test');
-    $array = $this->addProperty($array, 'seqeuence');
-    $array = $this->addProperty($array, 'name');
-    $array = $this->addPropertyIfNotNull($array, 'description');
+    $array = $this->addKeyProperty($array, 'id', $header);
+    $array = $this->addReferencePropertyIfNotNull($array, 'test', null, $header);
+    $array = $this->addProperty($array, 'sequence', null, $header);
+    $array = $this->addProperty($array, 'title', null, $header);
+    $array = $this->setDisplayField($array, 'title', $header);
+    $array = $this->addPropertyIfNotNull($array, 'description', null, $header);
+    $array = $this->addReferencePropertyIfNotNull($array, 'creator', null, $header);
+    $array = $this->addProperty($array, 'date_created', null, $header);
+    $array = $this->addReferencePropertyIfNotNull($array, 'modifier', null, $header);
+    $array = $this->addPropertyIfNotNull($array, 'date_modified', null, $header);
     return $array;
   }
 
@@ -154,9 +200,195 @@ class TestStep extends \api\model\AbstractEntity {
 
   /*
    * ---------------------------------------------------------------------------
+   * Public Helper Functions
+   * ---------------------------------------------------------------------------
+   */
+
+  /**
+   * Try to Extract a Test Step ID from the incoming parameter
+   * 
+   * @param mixed $step Test Step Entity (object) or Test Step ID (integer)
+   * @return mixed Returns the Test ID or 'null' on failure;
+   */
+  public static function extractStepID($step) {
+    assert('isset($step)');
+
+    // Is the parameter an Test Object?
+    if (is_object($step) && is_a($step, __CLASS__)) { // YES
+      return $step->id;
+    } else if (is_integer($step) && ($step >= 0)) { // NO: It's a Positive Integer
+      return $step;
+    }
+    // ELSE: None of the above
+    return null;
+  }
+
+  /*
+   * ---------------------------------------------------------------------------
    * PHALCON Model Extensions
    * ---------------------------------------------------------------------------
    */
+
+  /**
+   * Find the First Step in the Test 
+   * 
+   * @param mixed $test Test ID or Test Entity
+   * @return mixed Returns Step or 'null' if none found
+   * @throws \Exception On Any Failure
+   */
+  public static function firstStep($test) {
+    // Are we able to extract the Test ID from the Parameter?
+    $id = \models\Test::extractTestID($test);
+    if (!isset($id)) { // NO
+      throw new \Exception("Test Parameter is invalid.", 1);
+    }
+
+    $params = [
+      "conditions" => 'test = :id:',
+      "bind" => ['id' => $id],
+      "order" => 'sequence'
+    ];
+
+    $step = self::findFirst($params);
+    return $step !== FALSE ? $step : null;
+  }
+
+  /**
+   * Find the Last Step in the Test 
+   * 
+   * @param mixed $test Test ID or Test Entity
+   * @return mixed Returns Step or 'null' if none found
+   * @throws \Exception On Any Failure
+   */
+  public static function lastStep($test) {
+    // Are we able to extract the Test ID from the Parameter?
+    $id = \models\Test::extractTestID($test);
+    if (!isset($id)) { // NO
+      throw new \Exception("Test Parameter is invalid.", 1);
+    }
+
+    $params = [
+      "conditions" => 'test = :id:',
+      "bind" => ['id' => $id],
+      "order" => 'sequence DESC'
+    ];
+
+    $step = self::findFirst($params);
+    return $step !== FALSE ? $step : null;
+  }
+
+  /**
+   * Find the Step in the Test with the Given Sequence
+   * 
+   * @param mixed $test Test ID or Test Entity
+   * @param integer $sequence Step Sequence Number
+   * @return mixed Returns Step or 'null' if none found
+   * @throws \Exception On Any Failure
+   */
+  public static function findStep($test, $sequence) {
+    // Are we able to extract the Test ID from the Parameter?
+    $id = \models\Test::extractTestID($test);
+    if (!isset($id)) { // NO
+      throw new \Exception("Test Parameter is invalid.", 1);
+    }
+
+    // Have we been provided with a Valid Sequence?
+    if (!is_integer($sequence) || ($sequence <= 0)) { // NO:
+      throw new \Exception("Sequence Parameter is invalid.", 2);
+    }
+
+
+    $params = [
+      "conditions" => 'test = :id: and sequence = :sequence:',
+      "bind" => ['id' => $id, 'sequence' => $sequence],
+      "order" => 'sequence'
+    ];
+
+    $step = self::findFirst($params);
+    return $step !== FALSE ? $step : null;
+  }
+
+  /**
+   * Find the Previous Step before the Given Step
+   * 
+   * @param TestStep $step Test ID or Test Entity
+   * @return TestStep Previous Step or 'null' if none found
+   * @throws \Exception On Any Failure
+   */
+  public static function previousStep(TestStep $step) {
+    assert('isset($step)');
+
+    // Build Query Parameters
+    $params = [
+      "conditions" => 'test = :test: and sequence < :sequence:',
+      "bind" => ['test' => $step->test, 'sequence' => $step->sequence],
+      "order" => 'sequence DESC'
+    ];
+
+    $previous = self::findFirst($params);
+    return $previous !== FALSE ? $previous : null;
+  }
+
+  /**
+   * Find the Next Step after the Given Step
+   * 
+   * @param TestStep $step Test ID or Test Entity
+   * @return TestStep Next Step or 'null' if none found
+   * @throws \Exception On Any Failure
+   */
+  public static function nextStep(TestStep $step) {
+    assert('isset($step)');
+
+    // Build Query Parameters
+    $params = [
+      "conditions" => 'test = :test: and sequence > :sequence:',
+      "bind" => ['test' => $step->test, 'sequence' => $step->sequence],
+      "order" => 'sequence'
+    ];
+
+    $next = self::findFirst($params);
+    return $next !== FALSE ? $next : null;
+  }
+
+  public static function sequenceRange($test, $contains) {
+    assert('isset($test)');
+    assert('isset($test) && is_integer($contains)');
+
+    // Are we able to extract the Test ID from the Parameter?
+    $id = \models\Test::extractTestID($test);
+    if (!isset($id)) { // NO
+      throw new \Exception("Test Parameter is invalid.", 1);
+    }
+
+    // Start and End of Range
+    $start = $contains;
+    $end = $contains;
+
+    // Do we want the 1st range area?
+    if ($contains <= 0) { // YES
+      $start = 0;
+      $next = self::firstStep($test);
+    } else { // NO : Possibly
+      // Find Closest, with smaller or equal to the given sequence
+      $params = [
+        "conditions" => 'test = :id: and sequence <= :sequence:',
+        "bind" => ['id' => $id, 'sequence' => $contains],
+        "order" => 'sequence DESC'
+      ];
+      $step = self::findFirst($params);
+      // Find Closest, with sequence higher to the given      
+      $params = [
+        "conditions" => 'test = :id: and sequence > :sequence:',
+        "bind" => ['id' => $id, 'sequence' => $contains],
+        "order" => 'sequence'
+      ];
+      $next = self::findFirst($params);
+      $start = isset($step) ? $step->sequence : 0;
+    }
+
+    $end = isset($next) ? $next->sequence : $start;
+    return [$start, $end];
+  }
 
   /**
    * Create a New Test Step, with the Given Title and Sequence.
@@ -168,159 +400,130 @@ class TestStep extends \api\model\AbstractEntity {
    * @return \TestStep New Test Step
    * @throws \Exception On Any Failure
    */
-  public static function createStep($test, $title, $sequence = null) {
+  public static function newStep($test, $title, $sequence = null) {
+    assert('isset($test)');
     assert('isset($title) && is_string($title)');
+    assert('!isset($sequence) || is_integer($sequence)');
 
-    if (isset($sequence)) {
-      $step = self::findStep($test, $sequence);
-      if (isset($step)) {
-        throw new \Exception("Sequence #[$sequence] already exists in Test [{$step->test}]", 1);
-      }
+    $renumber = false;
+    if (!isset($sequence) || ($sequence >= self::MAX_SEQUENCE)) {
+      $last = self::lastStep($test);
+      $sequence = isset($last) ? $last->sequence + self::SEQUENCE_STEP : self::SEQUENCE_STEP;
     } else {
-      // Get the Last Step if it exists
-      $step = self::lastStep($test);
-      // Calculate the Next Step Sequence
-      $sequence = isset($step) ? $step->sequence + 10 : 10;
+      list($start, $end) = self::sequenceRange($test, $sequence);
+      if ($start === $end) {
+        $sequence = $start + self::SEQUENCE_STEP;
+      } else {
+        $difference = $end - $start;
+        if (($end - $start) > 1) {
+          $sequence = $start + floor($difference / 2);
+        } else {
+          throw new \Exception("Unable to Insert Step at after [{$sequence}]. Please renumber the Steps and try again", 1);
+        }
+      }
     }
 
     // Create the Step
     $step = new TestStep();
-    $step->test = $test;
+    $step->test = $test->id;
     $step->title = $title;
-    $step->sequence = sequence;
-
-    // Were we able to flush the changes?
-    if ($step->save() === FALSE) { // No
-      throw new \Exception("Failed to Save the Test Step.", 1);
-    }
+    $step->sequence = $sequence;
 
     return $step;
   }
 
   /**
-   * Delete the Step from the Given Test
+   * Move Step Up One Place in the List or Before the Specified Step
    * 
-   * @param mixed $test Test ID or Test Entity
-   * @param integer $sequence Step Sequence Number
-   * @return mixed Returns Step or 'null' if none found
+   * @param TestStep $step Current Step 
+   * @param integer $before OPTIONAL Before Step Sequence
+   * @return TestStep Modified Test Step, or null, if no change
    * @throws \Exception On Any Failure
    */
-  public static function deleteStep($test, $sequence) {
-    // Find the Step to Remove
-    $step = self::findStep($test, $sequence);
+  public static function moveUp(TestStep $step, $before = null) {
+    assert('isset($step)');
+    assert('!isset($before) || is_integer($before)');
 
-    // Did we find the Step?
-    if (isset($step)) { // YES
-      // Were we able to delete the Step?
-      if ($step->delete() === FALSE) { // NO
-        throw new \Exception("Failed to Delete Step [{$step->sequence}] for Test [{$step->test}].", 2);
+    // Did we specify a before step?
+    $previous = null;
+    if (!isset($before) || !is_integer($before)) { // NO: So Move Up one Position
+      $previous = self::previousStep($step);
+    } else
+    // Are we really moving up the list?
+    if ($step->sequence > $before) { // YES
+      $previous = self::findStep($step->test, $before);
+    }
+
+    // Do we have a Before Step?
+    if (isset($previous)) { // YES: Find the Pre-Before Step
+      $pre_previous = self::previousStep($previous);
+      $start = isset($pre_previous) ? $pre_previous->sequence : 0;
+      $end = $previous->sequence;
+
+      // New Sequence
+      $difference = $end - $start;
+      if ($difference > 1) {
+        $sequence = $start + floor($difference / 2);
+
+        // Were we able to re-position the step?
+        $step->sequence = $sequence;
+        if ($step->save() === FALSE) { // No
+          throw new \Exception("Failed to Save the Test Step.", 1);
+        }
+        return $step;
+      } else {
+        throw new \Exception("No position to insert the step into. Please renumber the Steps and try again.", 1);
       }
     }
 
-    return $step;
+    return null;
   }
 
   /**
-   * Find the Step in the Test with the Given Sequence
+   * Move Step Down One Place in the List or After the Specified Step
    * 
-   * @param mixed $test Test ID or Test Entity
-   * @param integer $sequence Step Sequence Number
-   * @return mixed Returns Step or 'null' if none found
+   * @param TestStep $step Current Step 
+   * @param integer $after OPTIONAL After Step Sequence
+   * @return TestStep Modified Test Step, or null, if no change
    * @throws \Exception On Any Failure
    */
-  public function findStep($test, $sequence) {
-    // Are we able to extract the Test ID from the Parameter?
-    $test_id = \Test::extractTestID($test);
-    if (isset($test_id)) { // NO
-      throw new \Exception("Test Parameter is invalid.", 1);
+  public static function moveDown(TestStep $step, $after = null) {
+    assert('isset($step)');
+    assert('!isset($after) || is_integer($after)');
+
+    // Did we specify a before step?
+    $next = null;
+    if (!isset($after) || !is_integer($after)) { // NO: So Move Down One Position
+      $next = self::nextStep($step);
+    } else
+    // Are we really moving down the list?
+    if ($step->sequence < $after) { // YES
+      $next = self::findStep($step->test, $after);
     }
 
-    // Have we been provided with a Valid Sequence?
-    if (!is_integer($sequence) || ($sequence <= 0)) { // NO:
-      throw new \Exception("Sequence Parameter is invalid.", 1);
+    // Do we have an After Step?
+    if (isset($next)) { // YES: Find the Pre-After Step
+      $post_next = self::nextStep($next);
+      $start = $next->sequence;
+      $end = isset($post_next) ? $post_next->sequence : $start + self::SEQUENCE_STEP * 2;
+
+      // New Sequence
+      $difference = $end - $start;
+      if ($difference > 1) {
+        $sequence = $start + floor($difference / 2);
+
+        // Were we able to re-position the step?
+        $step->sequence = $sequence;
+        if ($step->save() === FALSE) { // No
+          throw new \Exception("Failed to Save the Test Step.", 1);
+        }
+        return $step;
+      } else {
+        throw new \Exception("No position to insert the step into. Please renumber the Steps and try again.", 1);
+      }
     }
 
-    return self::findFirst(array(
-                "conditions" => 'test = :id: and sequence = :sequence:',
-                "bind" => array(
-                    'id' => $test_id,
-                    'sequence' => (integer) $sequence
-                ))
-    );
-  }
-
-  /**
-   * Find the First Step in the Test 
-   * 
-   * @param mixed $test Test ID or Test Entity
-   * @return mixed Returns Step or 'null' if none found
-   * @throws \Exception On Any Failure
-   */
-  public function firstStep($test) {
-    // Are we able to extract the Test ID from the Parameter?
-    $test_id = \Test::extractTestID($test);
-    if (isset($test_id)) { // NO
-      throw new \Exception("Test Parameter is invalid.", 1);
-    }
-
-    return self::findFirst(array(
-                "conditions" => 'test = :id:',
-                "bind" => array('id' => $test_id),
-                "order" => 'sequence')
-    );
-  }
-
-  /**
-   * Find the Next Step in the Test Given the Sequence as Reference
-   * 
-   * @param mixed $test Test ID or Test Entity
-   * @param mixed $sequence Test Step Sequence or Test Step Entity
-   * @return mixed Returns Step or 'null' if none found
-   * @throws \Exception On Any Failure
-   */
-  public function nextStep($test, $sequence = 0) {
-    // Are we able to extract the Test ID from the Parameter?
-    $test_id = \Test::extractTestID($test);
-    if (isset($test_id)) { // NO
-      throw new \Exception("Test Parameter is invalid.", 1);
-    }
-
-    // Is the Sequence an Test Step Object?
-    if (is_object($stepseq) && is_a($stepseq, __CLASS__)) { // YES
-      $sequence = $stepseq->sequence;
-    } else if (is_integer($stepseq) && ($stepseq = 0)) { // NO: It's a Positive Integer
-      $sequence = (integer) $stepseq;
-    } else { // NO: Unknown Type
-      throw new \Exception("Sequence Parameter is invalid.", 1);
-    }
-
-    return self::findFirst(array(
-                "conditions" => 'test = :id: and sequence > :sequence:',
-                "bind" => array('id' => $test_id, 'sequence' => (integer) $sequence),
-                "order" => 'sequence'
-                    )
-    );
-  }
-
-  /**
-   * Find the Last Step in the Test 
-   * 
-   * @param mixed $test Test ID or Test Entity
-   * @return mixed Returns Step or 'null' if none found
-   * @throws \Exception On Any Failure
-   */
-  public function lastStep($test) {
-    // Are we able to extract the Test ID from the Parameter?
-    $test_id = \Test::extractTestID($test);
-    if (isset($test_id)) { // NO
-      throw new \Exception("Test Parameter is invalid.", 1);
-    }
-
-    return self::findFirst(array(
-                "conditions" => 'test = :id:',
-                "bind" => array('id' => $test_id),
-                "order" => 'sequence DESC')
-    );
+    return null;
   }
 
   /**
@@ -332,29 +535,28 @@ class TestStep extends \api\model\AbstractEntity {
    * @return \TestStep Modified Test Step
    * @throws \Exception On Any Failure
    */
-  public static function moveStep($test, $sequence, $to) {
-    // Find the Step to Move
-    $step = self::findStep($test, $sequence);
+  public static function moveStep($test, TestStep $step, $after) {
+    assert('isset($test)');
+    assert('isset($step)');
+    assert('isset($after) && is_integer($after)');
 
-    // Throw Exception if We Don't Find the Step
-    if (!isset($step)) {
-      throw new \Exception("There is no Step with Sequence #[$sequence].", 1);
+    list($start, $end) = self::sequenceRange($test, $after <= 0 ? null : $after);
+    if ($start === $end) {
+      $sequence = $start + self::SEQUENCE_STEP;
+    } else {
+      $difference = $end - $start;
+      if (($end - $start) > 1) {
+        $sequence = $start + floor($difference / 2);
+      } else {
+        throw new \Exception("Unable to Insert Step at after [{$sequence}]. Please renumber the Steps and try again", 1);
+      }
     }
 
-    // See if Destination Sequence is Occupied
-    $destination = self::findStep($test, $to);
-    if (isset($destination)) {
-      throw new \Exception("Destination Sequence[$to] already exists.", 2);
-    }
-
-    // Modify Sequence Number and Flush Changes
-    $step->sequence = $to;
-
+    $step->sequence = $sequence;
     // Were we able to flush the changes?
     if ($step->save() === FALSE) { // No
-      throw new \Exception("Failed to Save the Test Step.", 3);
+      throw new \Exception("Failed to Save the Test Step.", 1);
     }
-
     return $step;
   }
 
@@ -366,51 +568,66 @@ class TestStep extends \api\model\AbstractEntity {
    * @return integer Number of Steps in the Test
    * @throws \Exception On Any Failure
    */
-  public function renumberSteps($test, $step = 10) {
+  public static function renumberSteps($test) {
     assert('is_integer($step) && ($step > 0)');
 
     // Get the List of Links for the Set
-    $steps = self::listInTest($test);
+    $steps = self::listInTest($test, true);
     $count = count($steps);
     if (isset($steps) && $count) {
-
-      // TODO: Add Transaction Management
       // Re-sequence the links
-      $next_seq = $step;
+      $next_seq = self::SEQUENCE_STEP * $count;
+      $modified = [];
       foreach ($steps as $step) {
-        // Calculate New Sequence Number
-        $step->sequence = $next_seq;
+        // Is the New Sequence Number Different than the old?
+        if ($next_seq !== $step->sequence) { // YES: Update
+          $step->sequence = $next_seq;
+          $modified[] = $step;
+        }
+        $next_seq-=self::SEQUENCE_STEP;
+      }
 
+      // Save Modified Steps
+      foreach ($modified as $step) {
         // Were we able to flush the changes?
-        if ($step->save() === FALSE) { // No
+        if ($step->save() === FALSE) { // NO
           throw new \Exception("Failed to Save the Test Step.", 1);
         }
-        $next_seq+=$step;
       }
+      
+      // Return Renumbered List
+      return self::listInTest($test);
     }
-
-    return $count;
+    return $steps;
   }
 
   /**
    * List the Test Steps Related to the Specified Test
    * 
    * @param mixed $test Test ID or Test Entity
-   * @return \TestStep[] Related Test Steps
+   * @param boolean $descending [DEFAULT false] Sort in Descending Order by Sequence
+   * @return TestStep[] Related Test Steps
    * @throws \Exception On Any Failure
    */
-  public function listInTest($test) {
+  public static function listInTest($test, $descending = false) {
+    assert('isset($test)');
+
     // Are we able to extract the Test ID from the Parameter?
-    $test_id = \Test::extractTestID($test);
-    if (isset($test_id)) { // NO
+    $id = \models\Test::extractTestID($test);
+    if (!isset($id)) { // NO
       throw new \Exception("Parameter is invalid.", 1);
     }
 
-    return self::find(array(
-                "conditions" => 'test = :id:',
-                "bind" => array('id' => $test_id),
-                "order" => "sequence"
-    ));
+    // Build Query Conditions
+    $params = [
+      'conditions' => 'test = :id:',
+      'bind' => ['id' => $id],
+      'order' => !!$descending ? 'sequence DESC' : 'sequence'
+    ];
+
+    // Search for Matching Projects
+    $steps = self::find($params);
+    return $steps === FALSE ? null : $steps;
   }
 
   /**
@@ -420,20 +637,26 @@ class TestStep extends \api\model\AbstractEntity {
    * @return integer Number of Related Tests
    * @throws \Exception On Any Failure
    */
-  public function countInTest($test) {
+  public static function countInTest($test) {
+    assert('isset($test)');
+
     // Are we able to extract the Test ID from the Parameter?
-    $test_id = \Test::extractTestID($test);
-    if (isset($test_id)) { // NO
+    $id = \models\Test::extractTestID($test);
+    if (!isset($id)) { // NO
       throw new \Exception("Parameter is invalid.", 1);
     }
 
-    // Instantiate the Query
-    $pqhl = 'SELECT COUNT(*) FROM TestStep WHERE test = :id:';
-    $query = new Phalcon\Mvc\Model\Query($pqhl, \Phalcon\Di::getDefault());
+    // Build Query Conditions
+    $params = [
+      'conditions' => 'test = :id:',
+      'bind' => ['id' => $id]
+    ];
 
-    // Execute the query returning a result if any
-    $result = $query->execute(array('id' => $test_id))->getFirst();
-    return (integer) $result['0'];
+    // Find Child Entries
+    $count = self::count($params);
+
+    // Return Result Set
+    return (integer) $count;
   }
 
   /**
