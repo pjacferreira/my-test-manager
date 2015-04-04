@@ -13,7 +13,7 @@
  */
 function initialize_forms() {
   // Initialize All Forms in the Document Body
-  $(document.body).find(".form").each(function () {
+  $(document.body).find(".form").each(function() {
     var $this = $(this);
     var name = $.strings.nullOnEmpty($this.attr('id'));
     if (name !== null) {
@@ -128,8 +128,10 @@ function form_disable($form, errors) {
  */
 function form_reset($form) {
   // Clear the Field Values
-  $form.find('clear');
-
+  $form.find('.field > :input').each(function() {
+    $(this).val('');
+  });
+  
   // Remove Existing Field Errors
   $form.find('.field.error').removeClass('error');
 }
