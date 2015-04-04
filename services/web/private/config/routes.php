@@ -49,6 +49,7 @@ include __DIR__ . '/routes/user/organizations.php';
 include __DIR__ . '/routes/user/users.php';
 include __DIR__ . '/routes/user/containers.php';
 include __DIR__ . '/routes/user/tests.php';
+include __DIR__ . '/routes/user/steps.php';
 
 // Should we add Admin Mode routes?
 if ($ADMIN) { // YES
