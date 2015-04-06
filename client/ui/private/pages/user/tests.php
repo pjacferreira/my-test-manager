@@ -48,7 +48,7 @@
 <div id="form_create_test" class="testcenter ui form hidden">
   <h4 class="ui dividing header"><?php echo _("FORM:TITLE:TEST:CREATE") ?></h4>
   <div class="required field">
-    <input name="step-name" placeholder="<?php echo _("FIELD:TEST:NAME") ?>" type="text">
+    <input name="test-name" placeholder="<?php echo _("FIELD:TEST:NAME") ?>" type="text">
   </div>
   <div class="ui buttons">
     <div id="button_create_test" class="ui positive button"><?php echo _("BUTTON:TEST:CREATE") ?></div>
@@ -61,7 +61,7 @@
 <div id="form_create_step" class="testcenter ui form hidden">
   <h4 class="ui dividing header"><?php echo _("FORM:TITLE:STEP:CREATE") ?></h4>
   <div class="required field">
-    <input name="step-title" placeholder="<?php echo _("FIELD:STEP:NAME") ?>" type="text">
+    <input name="title" placeholder="<?php echo _("FIELD:STEP:NAME") ?>" type="text">
   </div>
   <div class="ui buttons">
     <div id="button_create_step" class="ui positive button"><?php echo _("BUTTON:STEP:CREATE") ?></div>
@@ -80,7 +80,11 @@
     <label><?php echo _("FIELD:TITLE:STEP:DESCRIPTION") ?></label>
     <textarea name="step-description" placeholder="<?php echo _("FIELD:PLACEHOLDER:STEP:DESCRIPTION") ?>" type="text"></textarea>
   </div>
-  <div id="button_update_step" class="ui positive button"><?php echo _("BUTTON:STEP:UPDATE") ?></div>
+  <div class="ui buttons">
+    <div id="button_update_step" class="ui positive button"><?php echo _("BUTTON:STEP:UPDATE") ?></div>
+    <div class="or"></div>
+    <div id="button_cancel" class="ui negative button"><?php echo _("BUTTON:CANCEL") ?></div>
+  </div>
   <div class="ui error message"></div>
 </div>      
 <div id="navigator">

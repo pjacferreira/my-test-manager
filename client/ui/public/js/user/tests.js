@@ -136,6 +136,15 @@ function clicked_test(event) {
   return false;
 }
 
+function test_node(node) {
+  return test_key(node.key);
+}
+
+function test_key(node_id) {
+  var id = node_id.split(':');
+  return id.length > 1 ? id[1] : null;
+}
+
 function contextmenu_folder(node) {
 // All The Possible Actions on a Folder
   var items = {
@@ -269,24 +278,7 @@ function load_test(id) {
   testcenter.services.call(['test', 'read'], id, null, {
     call_ok: function(test) {
       // Save the Test Data Information with the Form
-      $form.data('test', test);
-
-      var $fields = $form.find('.field > :input');
-
-      $fields.each(function() {
-        var $field = $(this);
-        var name = this.name;
-        if ($.isset(name)) {
-          // Remove Leading 'test'
-          var property = name.split('-');
-          property = (property.length > 1) ? property[1] : property[0];
-          if (test.hasOwnProperty(property)) {
-            $field.val(test[property]);
-          }
-        }
-      });
-      // Finished Loading
-      $form.removeClass('loading');
+      form_load($form, test, 'test');
     },
     call_nok: function(code, message) {
       form_disable($form, message);
@@ -557,6 +549,31 @@ function do_click_step(action, test, sequence) {
         }
       });
       break;
+    case 'new':
+      // Display Create Step Form
+      var $form = $('#form_create_step');
+      $form.data('test', test);
+      $form.data('after', sequence);
+      form_show($form);
+      break;
+    case 'edit':
+      // Display Create Step Form
+      var $form = $('#form_edit_step');
+      $form.data('test', test);
+      $form.data('step', sequence);
+      $form.addClass('loading');
+      form_show($form);
+
+      // Load the Test Steps
+      testcenter.services.call(['step', 'read'], [test, sequence], null, {
+        call_ok: function(step) {
+          form_load($form, step, 'step');
+        },
+        call_nok: function(code, message) {
+          console.log('ERROR: Failed to Delete Step [' + code + ':' + message + ']');
+        }
+      });
+      break;
     case 'delete':
       // Load the Test Steps
       testcenter.services.call(['step', 'delete'], [test, sequence], null, {
@@ -775,7 +792,7 @@ function __initialize_form_create_step($form) {
  * @param {type} $form
  * @returns {undefined}
  */
-function __initialize_form_update_step($form) {
+function __initialize_form_edit_step($form) {
   __initialize_form($form);
 }
 
@@ -932,8 +949,17 @@ function __button_create_step(event) {
   var $form = event.data;
   form_submit($form,
     {
-      name: {
-        identifier: 'name',
+      test: {
+        identifier: 'test',
+        rules: [
+          {
+            type: 'empty',
+            prompt: 'Missing Test ID'
+          }
+        ]
+      },
+      title: {
+        identifier: 'title',
         rules: [
           {
             type: 'empty',
@@ -1145,27 +1171,41 @@ function __do_update_test() {
 
 function __do_create_step() {
   var $form = $('#form_create_step');
+
   // Extract Field Values
   var values = {};
-  $form.find('.field input').each(function() {
+  $form.find('.field > :input').each(function() {
     values[this.name] = $(this).val();
   });
-  // Build Route Parameters
-  var node = window.$selected_step;
-  var params = [values['step-title']];
-  if (node) {
-    var key = node.key.split(':');
-    params.push(key[1]);
-    console.log('Create Child Node [' + values.name + '] under Parent Node [' + key[1] + ':' + node.title + ']');
+
+  // Get the Test Associated with the Form
+  var test = $form.data('test');
+  var after = $form.data('after');
+
+  // Create Service to Call and Parameters
+  var service, params;
+  if ($.isset(after)) {
+    service = ['step', 'create', 'after'];
+    params = [test, after, values['title']];
   } else {
-    console.log('Create Child Node [' + values.name + '] under Project Root');
+    service = ['step', 'create'];
+    params = [test, values['title']];
   }
 
-  testcenter.services.call(['test', 'create'], params, null, {
+  testcenter.services.call(service, params, null, {
     call_ok: function(entity) {
-      var key_field = entity.__key;
-      var display_field = entity.__display;
-      list_appendNode(entity[key_field], entity[display_field]);
+      var $list = $('#list_steps');
+      var first = false, last = false;
+      if ($.isset(after)) {
+        var $previous = $list.find('#step-' + test + '-' + after);
+        last = $previous.next().length === 0;
+        var $step = create_step(entity.test, entity.sequence, entity.title, entity.description, false, last);
+        $previous.after($step);
+      } else {
+        first = $list.find('> .item').length === 0;
+        var $step = create_step(entity.test, entity.sequence, entity.title, entity.description, first, true);
+        $list.append($step);
+      }
 
       // Hide the Form 
       form_hide($form);
@@ -1178,9 +1218,10 @@ function __do_create_step() {
 }
 
 function __do_update_step() {
-  var $form = $('#form_update_step');
+  var $form = $('#form_edit_step');
 
   // Get the Test Associated with the Form
+  var test = $form.data('test');
   var step = $form.data('step');
 
   // Extract Field Values
@@ -1190,19 +1231,23 @@ function __do_update_step() {
     if ($.isset(name)) {
       // Remove Leading 'test'
       var property = name.split('-');
-      property = (property.length > 1) ? property[1] : property[0];
-      if ($.inArray(property, step.__fields) >= 0) {
-        if (property !== step.__key) {
-          values['step:' + property] = $(this).val();
-        }
+      property = (property.length > 1) ? property[1] : null;
+      if ($.isset(property)) {
+        values['step:' + property] = $(this).val();
       }
     }
   });
 
-  testcenter.services.call(['step', 'update'], [step['test'], step['sequence']], values, {
+  testcenter.services.call(['step', 'update'], [test, step], values, {
     type: 'POST',
     call_ok: function(entity) {
-      console.log("Updated Step [" + step['test'] + ":" + step['sequence'] + "]");
+      var $step = $('#list_steps > #step-' + entity.test + '-' + entity.sequence);
+      $step.find('.header').html(entity.title);
+      $step.find('.description').html($.isset(entity.description) ? entity.description : "No Descrption Set");
+      // Hide the Form 
+      form_hide($form);
+      // Log
+      console.log("Updated Step [" + test + ":" + step + "]");
     },
     call_nok: function(code, message) {
       form_show_errors($form, message);
@@ -1250,6 +1295,46 @@ function form_hide($form) {
     // TODO : Display Message in a More Friendly Fashion (Toaster, etc.)
     alert("Failed Initializing Comunication with Server.");
   }
+}
+
+function form_load($form, values, prefix) {
+  $form.find('.field > :input').each(function() {
+    var field = field_key(this.name, prefix);
+
+    var value = $.objects.get(field, values);
+    if (value !== null) {
+      $this = $(this);
+      if (this.type === 'checkbox') {
+        value = (value === 'true') ? true : false;
+        $this.prop('checked', value);
+      } else if ((this.type === 'hidden') && $this.parent().hasClass('dropdown')) {
+        $this.parent().dropdown('set selected', value).dropdown('set value', value);
+      } else {
+        $this.val(value);
+      }
+    }
+  });
+
+  // Remove the Loading Symbol
+  $form.removeClass('loading');
+}
+
+function field_key(name, prefix) {
+  // Cleanup Variables
+  name = $.strings.nullOnEmpty(name);
+  if ($.isset(name)) {
+    prefix = $.strings.nullOnEmpty(prefix);
+    if ($.isset(prefix)) {
+      prefix += '-';
+      if (name.slice(0, prefix.length) === prefix) {
+        name = name.slice(prefix.length);
+      }
+    }
+
+    name = name.replace(/-/g, '.');
+  }
+
+  return name;
 }
 
 /* TODO:
