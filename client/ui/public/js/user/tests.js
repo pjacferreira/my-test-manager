@@ -180,7 +180,7 @@ function contextmenu_tests($trigger, event) {
     var id = $test.attr('id').split(':');
     return {
       'callback': function(key, options) {
-        menu_test_action(key === 'create' ? null : $element, key, options);
+        menu_test_action(key === 'create' ? null : $test, key, options);
       },
       'items': items
     };
@@ -244,7 +244,7 @@ function load_tests(folder_id) {
       // Do we have Nodes?
       if (nodes.length) { // YES
         // Build the Rows of Tests
-        var n_columns = $list.get(0).__columns;
+        var n_columns = list_getColumns($list);
         var n_rows = Math.floor(nodes.length / n_columns) + 1;
         var offset, rows = [], row_nodes;
         for (var i = 0; i < n_rows; i++) {
@@ -632,7 +632,7 @@ function list_initialize(columns) {
     $.isNumeric(columns) &&
     (columns > 0) ? Math.floor(columns) : 4;
   if ($list.length) {
-    $('#tests').get(0).__columns = columns;
+    $list.data('list.columns', columns);
   }
 
   return $list;
@@ -644,15 +644,15 @@ function list_clear() {
   return $list;
 }
 
-function list_getColumns() {
-  var $list = $('#tests');
-  return $list.length ? $('#tests').get(0).__columns : 0;
+function list_getColumns($list) {
+  $list = $list ? $list : $('#tests');
+  return $list.length ? $list.data('list.columns') : 0;
 }
 
 function list_setColumns(columns) {
   var $list = $('#tests');
   if ($list.length && $.isset(columns) && $.isNumeric(columns) && (columns > 0)) {
-    $('#tests').get(0).__columns = Math.floor(columns);
+    $list.data('list.columns', Math.floor(columns));
   }
   return $list;
 }
@@ -1335,6 +1335,57 @@ function field_key(name, prefix) {
   }
 
   return name;
+}
+
+function create_navigator(selector) {
+  var $container = $(selector);
+
+  if ($container.length) {
+    $container.navigator({
+      title: 'PAGE:USER:TESTS:TEST_MANAGER',
+      panes: {
+        folders: {
+          order: 1,
+          size: 4,
+          creator: function($pane, settings) {
+            $pane.foldertree(settings);
+          },
+          settings: {
+            title: 'PAGE:USER:TESTS:FOLDERS',
+            root: {
+              id: 4,
+              title: 'ROOT'
+            },
+            callbacks: {
+              data_url: function(id) {
+                return window.testcenter.services.url.service(['folders', 'list'], [id, 'F'], null);
+              },
+              data_to_nodes: null,
+              'context-menu': contextmenu_folder
+            }
+          }
+        },
+        items: {
+          order: 2,
+          size: 12,
+          creator: function($pane, settings) {
+            $pane.gridlist(settings);
+          },
+          settings: {
+            title: 'PAGE:USER:TESTS:TESTS',
+            columns: 4,
+            callback: {
+              loader: null,
+              post_process: null,
+              'context-menu': contextmenu_tests
+            }
+          }
+        }
+      }
+    });
+  } else {
+    console.log('Container for Navigator not Found.');
+  }
 }
 
 /* TODO:
