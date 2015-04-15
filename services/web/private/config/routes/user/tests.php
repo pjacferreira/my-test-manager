@@ -40,7 +40,7 @@ $app->map($prefix . '/create/{name}', array($controller, 'create'));
 $app->map($prefix . '/create/{name}/{folder:[0-9]+}', array($controller, 'create'));
 $app->map($prefix . '/read/{id:[0-9]+}', array($controller, 'read'));
 $app->map($prefix . '/update/{id:[0-9]+}', array($controller, 'update'));
-$app->map($prefix . '/delete/{id:[0-9]+}', array($controller, 'deleteTest'));
+$app->map($prefix . '/delete/{id:[0-9]+}', array($controller, 'delete'));
 
 /*
  * List All Tests on Just Tests in a Particular Folder

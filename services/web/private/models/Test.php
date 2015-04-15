@@ -317,14 +317,15 @@ class Test extends \api\model\AbstractEntity {
    * List the Tests Related to the Specified Project
    * 
    * @param mixed $project Project ID or Project Entity
-   * @param array $filter Extra Filter conditions to use
+   * @param array $filter OPTIONAL Filter Condition
+   * @param array $order OPTIONAL Sort Order Condition
    * @return \models\Test[] Test in Project
    * @throws \Exception On Any Failure
    */
   public static function listInProject($project, $filter = null, $order = null) {
     assert('isset($project)');
     assert('($filter === null) || is_array($filter)');
-    assert('($order === null) || (is_string($filter) && count($order))');
+    assert('($order === null) || is_string($order)');
 
     // Are we able to extract the Project ID from the Parameter?
     $id = \models\Project::extractProjectID($project);
@@ -347,7 +348,7 @@ class Test extends \api\model\AbstractEntity {
 
     // Search for Matching Projects
     $tests = self::find($params);
-    return $tests === FALSE ? [] : $tests;
+    return $tests !== FALSE ? $tests : [];
   }
 
   /**
@@ -418,7 +419,7 @@ class Test extends \api\model\AbstractEntity {
         'id' => $id,
         'type' => 'T'
     ]);
-    return $tests === FALSE ? null : $tests;
+    return $tests !== FALSE ? $tests : [];
   }
 
   /**
@@ -448,6 +449,8 @@ class Test extends \api\model\AbstractEntity {
   }
 
   /**
+   * 
+   * TODO: Migrate to PHALCON
    * 
    * @param type $test
    * @return boolean

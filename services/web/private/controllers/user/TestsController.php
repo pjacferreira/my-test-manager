@@ -112,8 +112,7 @@ class TestsController extends CrudServiceController {
   }
 
   /**
-   * List Test Entities in the Database for the Session Project and, optionallu,
-   * in a specific Project Container.
+   * List Test Set Entities in the Database, in the Specified Session Project.
    * 
    * Note: We can pass in request parameter to limit and organize the list returned.
    * 
@@ -122,8 +121,8 @@ class TestsController extends CrudServiceController {
    * __sort - Used to organize the sort order of the list
    * __limit - Limit the number of entities return in the list
    * 
-   * @param string $filter OPTIONAL Filter String
-   * @param string $sort OPTIONAL Sort String
+   * @param string $filter OPTIONAL Used to filter the list of Tests
+   * @param string $sort OPTIONAL Used to organize the sort order of the list
    * @return string HTTP Body Response
    */
   public function listInProject($filter = null, $sort = null) {
@@ -138,18 +137,12 @@ class TestsController extends CrudServiceController {
   }
 
   /**
-   * List Test Entities in the Database for the Session Project and, optionallu,
-   * in a specific Project Container.
+   * List Test Entities in the Database for the Session Project and in a specific 
+   * Project Container.
    * 
-   * Note: We can pass in request parameter to limit and organize the list returned.
-   * 
-   * Request Parameter:
-   * __filter - Used to filter the list of Tests
-   * __sort - Used to organize the sort order of the list
-   * __limit - Limit the number of entities return in the list
-   * 
-   * @param string $filter OPTIONAL Filter String
-   * @param string $sort OPTIONAL Sort String
+   * @param integer $folder Folder ID for Which we want to list the Contained Tests
+   * @param string $filter OPTIONAL Used to filter the list of Tests
+   * @param string $sort OPTIONAL Used to organize the sort order of the list
    * @return string HTTP Body Response
    */
   public function listInFolder($folder, $filter = null, $sort = null) {
@@ -165,13 +158,7 @@ class TestsController extends CrudServiceController {
   }
 
   /**
-   * Count the Number of Tests for the Session Project and, optionally, in a
-   * specific Project Container.
-   * 
-   * Note: We can pass in request parameter to limit the entities being considered.
-   * 
-   * Request Parameter:
-   * __filter - Used to filter the list of Tests
+   * Count the Number of Test Entities in the Database, in the Session Project.
    * 
    * @param string $filter OPTIONAL Filter String
    * @return string HTTP Body Response
@@ -187,13 +174,8 @@ class TestsController extends CrudServiceController {
   }
 
   /**
-   * Count the Number of Tests for the Session Project and, optionally, in a
-   * specific Project Container.
-   * 
-   * Note: We can pass in request parameter to limit the entities being considered.
-   * 
-   * Request Parameter:
-   * __filter - Used to filter the list of Tests
+   * Count the Number of Tests for the Session Project and in a specific Project 
+   * Container.
    * 
    * @param integer $folder Container ID to List Tests For
    * @param string $filter OPTIONAL Filter String
@@ -305,7 +287,7 @@ class TestsController extends CrudServiceController {
   protected function contextChecks($context) {
     // (IF SPECIFIED) Verify that the Folder Belongs to the Project
     $context = $this->onParameterDo($context, 'folder', function($controller, $context, $action, $value) {
-      // Is the Test Name Unique for the Project?
+      // Get Working Project
       $project = $context->getParameter('project');
 
       // Does the Folder Belong to the Project?
