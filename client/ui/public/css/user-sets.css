@@ -1,0 +1,54 @@
+/* 
+ * Copyright 2015 Paulo Ferreira <pf at sourcenotes.org>
+ * License http://opensource.org/licenses/AGPL-3.0 Affero GNU Public License v3.0
+ */
+/*******************************
+ * BACKGROUND                  * 
+ *******************************/
+.bg_background {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  z-index: -100;
+  overflow: hidden;
+  opacity: 1;
+  background-color: #ccc;
+}
+
+.bg_background > img {
+  top: 0px;
+  left: 0px;
+  position: absolute;
+}
+
+/*******************************
+ * FORMS                       * 
+ *******************************/
+.testcenter.ui.form {
+  position: fixed;
+  opacity: 0.5;
+  background-color: #3d3131; 
+  padding: 10px; 
+  width: 500px; 
+  border-radius: 10px;
+  /* CENTER HORIZONTALLY */  
+  margin: 10px auto;
+  z-index: 10;
+}
+
+.testcenter.ui.form:hover {
+  opacity: 0.95;
+}
+
+/* PLACE BEHIND BACKGROUND */
+.testcenter.ui.form.hidden {
+  z-index: -110;
+}
+
+
+/*******************************
+ * TOASTER                     * 
+ *******************************/
+#toaster .cf_toaster .content {
+	text-align: left;
+}

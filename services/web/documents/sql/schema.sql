@@ -171,20 +171,22 @@ CREATE TABLE IF NOT EXISTS `t_run_playlists` (
 CREATE TABLE IF NOT EXISTS `t_sets` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `id_project` int(11) DEFAULT NULL,
-  `id_creator` int(11) DEFAULT NULL,
-  `id_modifier` int(11) DEFAULT NULL,
-  `id_owner` int(11) DEFAULT NULL,
-  `set_group` varchar(60) DEFAULT NULL,
   `name` varchar(60) NOT NULL,
   `description` longtext,
+  `id_container` int(11) DEFAULT NULL,
   `state` int(11) NOT NULL,
+  `renumber` boolean NOT NULL DEFAULT 0,
+  `id_creator` int(11) DEFAULT NULL,
   `dt_creation` datetime NOT NULL,
+  `id_modifier` int(11) DEFAULT NULL,
   `dt_modified` datetime DEFAULT NULL,
+  `id_owner` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `IDX_2EFB2CA3F12E799E` (`id_project`),
-  KEY `IDX_2EFB2CA3629B4313` (`id_creator`),
-  KEY `IDX_2EFB2CA3FB643568` (`id_modifier`),
-  KEY `IDX_2EFB2CA321E5A74C` (`id_owner`)
+  KEY `FK_SET_TO_PROJECT` (`id_project`),
+  KEY `FK_SET_TO_CONTAINER` (`id_container`),
+  KEY `FK_SET_TO_USER_CREATOR` (`id_creator`),
+  KEY `FK_SET_TO_USER_MODIFIER` (`id_modifier`),
+  KEY `FK_SET_TO_USER_OWNER` (`id_owner`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Test Sets' AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
@@ -407,10 +409,11 @@ ALTER TABLE `t_run_playlists`
 -- Constraints for table `t_sets`
 --
 ALTER TABLE `t_sets`
-  ADD CONSTRAINT `FK_2EFB2CA321E5A74C` FOREIGN KEY (`id_owner`) REFERENCES `t_users` (`id`),
-  ADD CONSTRAINT `FK_2EFB2CA3629B4313` FOREIGN KEY (`id_creator`) REFERENCES `t_users` (`id`),
-  ADD CONSTRAINT `FK_2EFB2CA3F12E799E` FOREIGN KEY (`id_project`) REFERENCES `t_projects` (`id`),
-  ADD CONSTRAINT `FK_2EFB2CA3FB643568` FOREIGN KEY (`id_modifier`) REFERENCES `t_users` (`id`);
+  ADD CONSTRAINT `FK_SET_TO_PROJECT` FOREIGN KEY (`id_project`) REFERENCES `t_projects` (`id`),
+  ADD CONSTRAINT `FK_SET_TO_CONTAINER` FOREIGN KEY (`id_container`) REFERENCES `t_containers` (`id`),
+  ADD CONSTRAINT `FK_SET_TO_USER_CREATOR` FOREIGN KEY (`id_creator`) REFERENCES `t_users` (`id`),
+  ADD CONSTRAINT `FK_SET_TO_USER_MODIFIER` FOREIGN KEY (`id_modifier`) REFERENCES `t_users` (`id`),
+  ADD CONSTRAINT `FK_SET_TO_USER_OWNER` FOREIGN KEY (`id_owner`) REFERENCES `t_users` (`id`);
 
 --
 -- Constraints for table `t_set_tests`

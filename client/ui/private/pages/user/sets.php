@@ -2,52 +2,108 @@
  --- copyright 2015 Paulo Ferreira <pf at sourcenotes.org>
  --- license http://opensource.org/licenses/AGPL-3.0 Affero GNU Public License v3.0
  -->
-<p>
-  Id cillum laborum. Admodum tractavissent ea vidisse, officia 
-  iis deserunt. Quibusdam magna sed laborum coniunctione ne in 
-  quorum domesticarum a singulis sint nescius appellat, ut 
-  duis ullamco, o varias aliquip laboris a aut aute cupidatat 
-  distinguantur est quae vidisse aut quibusdam ea de ut 
-  imitarentur. Duis hic appellat aut nam an sunt voluptate, 
-  consequat eram non litteris despicationes si hic anim 
-  vidisse si ubi nulla de multos, a ne aute doctrina, illum et 
-  offendit ad ne cillum ex noster. Hic expetendis est laborum 
-  iis laborum a legam nostrud, enim an iis aliqua doctrina ea 
-  quo eram labore an laborum. Ullamco te laboris, ullamco 
-  culpa qui nescius transferrem. Non sed duis velit lorem, 
-  laboris cillum ea quibusdam concursionibus e dolor te do 
-  anim incididunt, nam aute varias aut deserunt.
-</p>
-
-<p>
-  Multos ne iis dolore excepteur, in enim aliquip nam ne 
-  eiusmod cohaerescant, eu expetendis e mandaremus ita ullamco 
-  ipsum possumus officia, a et malis ingeniis te ut se illum 
-  dolore summis ab hic ingeniis ab probant. Ab ea magna 
-  proident. Pariatur te ullamco, se in culpa anim lorem ex 
-  cillum iudicem adipisicing quo malis cupidatat id quis quis. 
-  Ad ex summis malis labore, noster officia nescius, officia 
-  nulla summis ita cillum, sed in fugiat irure quem. Varias 
-  quo quo fugiat occaecat, ex aute consectetur o quis non 
-  ingeniis, voluptate sunt appellat tempor e iis in sint 
-  aliqua fore si singulis eram ullamco, ab excepteur 
-  despicationes, incididunt id mentitum. Labore familiaritatem 
-  ullamco elit quamquam, expetendis sint consequat, minim aut 
-  probant aut noster est sunt si excepteur. Aute ut cupidatat.
-</p>
-
-<p>
-  Laborum minim nescius. Lorem ingeniis eu quem malis. 
-  Quibusdam amet lorem ea noster ut consequat an possumus te 
-  aut sint quae summis occaecat non sint se ut quid offendit, 
-  tamen excepteur eu cernantur, offendit sempiternum te 
-  officia si multos arbitror non summis irure, sint vidisse 
-  nam irure dolor. Non quorum malis ex arbitror, nostrud 
-  relinqueret ad incurreret, tamen mentitum ut elit ipsum non 
-  officia sunt incurreret mentitum. Si labore dolore quo 
-  senserit. Laborum sint se mandaremus concursionibus ab 
-  probant malis elit appellat lorem, e irure cupidatat 
-  doctrina sed vidisse an sunt, in eiusmod concursionibus si 
-  dolore senserit deserunt, do eram ne varias est laborum 
-  lorem sint appellat irure.
-</p>
+<!--
+ --- FORMS
+-->
+<!-- CREATE FOLDER FORM -->
+<div id="form_create_folder" class="testcenter ui form hidden">
+  <h4 class="ui dividing header"><?php echo _("FORM:TITLE:FOLDER:CREATE") ?></h4>
+  <div class="required field">
+    <input name="name" placeholder="<?php echo _("FIELD:FOLDER:NAME") ?>" type="text">
+  </div>
+  <div class="ui buttons">
+    <div id="button_create_folder" class="ui positive button"><?php echo _("BUTTON:FOLDER:CREATE") ?></div>
+    <div class="or"></div>
+    <div id="button_cancel" class="ui negative button"><?php echo _("BUTTON:CANCEL") ?></div>
+  </div>
+  <div class="ui error message"></div>
+</div>    
+<!-- RENAME FOLDER FORM -->
+<div id="form_rename_folder" class="testcenter ui form hidden">
+  <h4 class="ui dividing header"><?php echo _("FORM:TITLE:FOLDER:RENAME") ?></h4>
+  <div class="required field">
+    <input name="name" placeholder="<?php echo _("FIELD:FOLDER:NEW-NAME") ?>" type="text">
+  </div>
+  <div class="ui buttons">
+    <div id="button_rename_folder" class="ui positive button"><?php echo _("BUTTON:FOLDER:RENAME") ?></div>
+    <div class="or"></div>
+    <div id="button_cancel" class="ui negative button"><?php echo _("BUTTON:CANCEL") ?></div>
+  </div>
+  <div class="ui error message"></div>
+</div>      
+<!-- DELETE FOLDER FORM -->
+<div id="form_delete_folder" class="testcenter ui form hidden">
+  <h4 class="ui dividing header"><?php echo _("FORM:TITLE:FOLDER:DELETE") ?></h4>
+  <div class="ui header">
+    <?php echo _("TEXT:QUESTION:FOLDER:DELETE:CONFIRMATION") ?>
+  </div>
+  <div class="ui buttons">
+    <div id="button_delete_folder" class="ui negative button"><?php echo _("BUTTON:FOLDER:DELETE") ?></div>
+    <div class="or"></div>
+    <div id="button_cancel" class="ui positive button"><?php echo _("BUTTON:CANCEL") ?></div>
+  </div>
+  <div class="ui error message"></div>
+</div>      
+<!-- CREATE SET FORM -->
+<div id="form_create_set" class="testcenter ui form hidden">
+  <h4 class="ui dividing header"><?php echo _("FORM:TITLE:SET:CREATE") ?></h4>
+  <div class="required field">
+    <input name="set-name" placeholder="<?php echo _("FIELD:SET:NAME") ?>" type="text">
+  </div>
+  <div class="ui buttons">
+    <div id="button_create_set" class="ui positive button"><?php echo _("BUTTON:SET:CREATE") ?></div>
+    <div class="or"></div>
+    <div id="button_cancel" class="ui negative button"><?php echo _("BUTTON:CANCEL") ?></div>
+  </div>
+  <div class="ui error message"></div>
+</div>      
+<!-- MAIN PAGE -->
+<div id="navigator">
+  <h3 class="ui top attached centered inverted header">
+    <?php echo _("PAGE:USER:SETS:NAVIGATOR") ?>
+  </h3>
+  <div class="ui attached segment">
+    <div class="ui divided grid">
+      <div class="four wide column">
+        <h3 class="ui header centered inverted" style="background-color: black">
+          <?php echo _("PAGE:USER:SETS:FOLDERS") ?>
+        </h3>
+        <div id="folders">
+        </div>
+      </div>
+      <div class="twelve wide column">
+        <h3 class="ui header centered inverted" style="background-color: blue">
+          <?php echo _("PAGE:USER:SETS:SETS") ?>
+        </h3>
+        <div id="sets" class="ui four column grid middle aligned internally celled">
+          <div class="tc_set aligned column"><?php echo _("PAGE:USER:SETS:FILLER:SELECT_FOLDER") ?></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <h3 class="ui centered attached inverted header">
+    <?php echo _("PAGE:USER:SETS:SET:DETAILS") ?>
+  </h3>
+  <div class="ui attached segment">
+    <div id="form_update_set" class="ui form">
+      <div class="ui error message"></div>
+      <h4 class="ui dividing header"><?php echo _("PAGE:USER:SETS:SET:DETAILS") ?></h4>
+      <div class="required field">
+        <label><?php echo _("FIELD:TITLE:SET:NAME") ?></label>
+        <input name="set-name" placeholder="<?php echo _("FIELD:PLACEHOLDER:SET:NAME") ?>" type="text">
+      </div>
+      <div class="field">
+        <label><?php echo _("FIELD:TITLE:SET:DESCRIPTION") ?></label>
+        <textarea name="set-description" placeholder="<?php echo _("FIELD:PLACEHOLDER:SET:DESCRIPTION") ?>" type="text"></textarea>
+      </div>
+      <div id="button_update_set" class="ui positive button"><?php echo _("BUTTON:SET:UPDATE") ?></div>
+    </div>
+  </div>
+  <h3 class="ui centered attached inverted header">
+    <?php echo _("PAGE:USER:SETS:SET:TESTS") ?>
+  </h3>
+  <div class="ui bottom attached segment">
+    <div id="list_tests" class="ui divided items">
+    </div>  
+  </div>
+</div>

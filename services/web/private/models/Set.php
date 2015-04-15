@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 namespace models;
 
 /**
@@ -27,6 +28,13 @@ namespace models;
  */
 class Set extends \api\model\AbstractEntity {
 
+  // INITIAL STATE - Test has been Created but Not Modified
+  const STATE_CREATED = 0;
+  // TEST is STILL BEING WRITTEN
+  const STATE_IN_DEVELOPMENT = 1;
+  // TEST is READY for PRODUCTION
+  const STATE_READY = 9;
+  
   /**
    *
    * @var integer
@@ -38,12 +46,6 @@ class Set extends \api\model\AbstractEntity {
    * @var integer
    */
   public $project;
-
-  /**
-   *
-   * @var string
-   */
-  public $group;
 
   /**
    *
@@ -62,6 +64,12 @@ class Set extends \api\model\AbstractEntity {
    * @var integer
    */
   public $state;
+
+  /**
+   *
+   * @var boolean
+   */
+  public $renumber;
 
   /**
    *
@@ -121,9 +129,10 @@ class Set extends \api\model\AbstractEntity {
    * PHALCON per instance Contructor
    */
   public function onConstruct() {
-    // Make sure the Creation Date is Set
-    $now = new \DateTime();
-    $this->date_created = $now->format('Y-m-d H:i:s');
+    // By Default Single Level
+    $this->state = self::STATE_CREATED;
+    // Clear Flag
+    $this->renumber = 0;
   }
 
   /**
@@ -142,17 +151,18 @@ class Set extends \api\model\AbstractEntity {
    */
   public function columnMap() {
     return array(
-        'id' => 'id',
-        'id_project' => 'project',
-        'set_group' => 'group',
-        'name' => 'name',
-        'description' => 'description',
-        'state' => 'state',
-        'id_creator' => 'creator',
-        'dt_creation' => 'date_created',
-        'id_modifier' => 'modifier',
-        'dt_modified' => 'date_modified',
-        'id_owner' => 'owner'
+      'id' => 'id',
+      'id_project' => 'project',
+      'name' => 'name',
+      'description' => 'description',
+      'id_container' => 'container',
+      'state' => 'state',
+      'renumber' => 'renumber',
+      'id_creator' => 'creator',
+      'dt_creation' => 'date_created',
+      'id_modifier' => 'modifier',
+      'dt_modified' => 'date_modified',
+      'id_owner' => 'owner'
     );
   }
 
@@ -161,8 +171,14 @@ class Set extends \api\model\AbstractEntity {
    */
   public function afterFetch() {
     $this->id = (integer) $this->id;
+    $this->project = (integer) $this->project;
+    $this->container = (integer) $this->container;
+    $this->state = (integer) $this->state;
+    $this->renumber = (integer) $this->renumber;
+    $this->creator = (integer) $this->creator;
+    $this->modifier = isset($this->modifier) ? (integer) $this->modifier : null;
   }
-  
+
   /*
    * ---------------------------------------------------------------------------
    * AbstractEntity: Overrides
@@ -187,22 +203,25 @@ class Set extends \api\model\AbstractEntity {
   /**
    * Retrieves a Map representation of the Entities Field Values
    * 
+   * @param boolean $header (DEFAULT = true) Add Entity Header Information?
    * @return array Map of field <--> value tuplets
    */
-  public function toArray() {
-    $array = parent::toArray();
+  public function toArray($header = true) {
+    $array = parent::toArray($header);
 
-    $array = $this->addProperty($array, 'id');
-    $array = $this->addReferencePropertyIfNotNull($array, 'project');
-    $array = $this->addProperty($array, 'name');
-    $array = $this->addPropertyIfNotNull($array, 'group');
-    $array = $this->addPropertyIfNotNull($array, 'description');
-    $array = $this->addProperty($array, 'state');
-    $array = $this->addReferencePropertyIfNotNull($array, 'creator');
-    $array = $this->addProperty($array, 'date_created');
-    $array = $this->addReferencePropertyIfNotNull($array, 'modifier');
-    $array = $this->addPropertyIfNotNull($array, 'date_modified');
-    $array = $this->addReferencePropertyIfNotNull($array, 'owner');
+    $array = $this->addKeyProperty($array, 'id', $header);
+    $array = $this->addReferencePropertyIfNotNull($array, 'project', null, $header);
+    $array = $this->addProperty($array, 'name', null, $header);
+    $array = $this->setDisplayField($array, 'name', $header);
+    $array = $this->addPropertyIfNotNull($array, 'description', null, $header);
+    $array = $this->addReferencePropertyIfNotNull($array, 'container', null, $header);
+    $array = $this->addProperty($array, 'state', null, $header);
+    $array = $this->addProperty($array, 'renumber', null, $header);
+    $array = $this->addReferencePropertyIfNotNull($array, 'creator', null, $header);
+    $array = $this->addProperty($array, 'date_created', null, $header);
+    $array = $this->addReferencePropertyIfNotNull($array, 'modifier', null, $header);
+    $array = $this->addPropertyIfNotNull($array, 'date_modified', null, $header);
+    $array = $this->addReferencePropertyIfNotNull($array, 'owner', null, $header);
     return $array;
   }
 
@@ -254,80 +273,174 @@ class Set extends \api\model\AbstractEntity {
    */
   public static function findInProject($project, $nameid) {
     // Are we able to extract the Project ID from the Parameter?
-    $project_id = \Project::extractProjectID($project);
-    if (isset($project_id)) { // NO
+    $project_id = \models\Project::extractProjectID($project);
+    if (!isset($project_id)) { // NO
       throw new \Exception("Project Parameter is invalid.", 1);
     }
 
-    $conditions = 'project = :project:';
-    $parameters = array('project' => $project_id);
+    $params = [
+      "conditions" => 'project = :project:',
+      "bind" => ['project' => $project_id],
+    ];
+
     // Is the Name/ID Parameters an Integer?
     if (is_int($nameid) && ($nameid >= 0)) { // YES
-      $conditions = 'id = :id: and ' . $conditions;
-      $parameters['id'] = (integer) $nameid;
+      $params['conditions'] .= ' and id = :id:';
+      $params['bind']['id'] = $nameid;
     } else if (is_string($nameid)) { // NO: It's a String
       $nameid = Strings::nullOnEmpty($nameid);
       // Does it have a value?
       if (!isset($nameid)) { // NO
         throw new \Exception("Name/ID Parameter is invalid.", 2);
       }
-      $conditions.= 'name = :name: and ' . $conditions;
-      $parameters['name'] = $nameid;
+      $params['conditions'] .= ' and name = :name:';
+      $params['bind']['name'] = $nameid;
     } else { // UNKNOWN TYPE
       throw new \Exception("Name/ID Parameter is invalid.", 3);
     }
 
-    return self::findFirst(array(
-                "conditions" => $conditions,
-                "bind" => $parameters
-    ));
+    $set = self::findFirst($params);
+    return $set !== FALSE ? $set : null;
   }
 
   /**
    * List the Test Sets Related to the Specified Project
    * 
    * @param mixed $project Project ID or Project Entity
+   * @param array $filter OPTIONAL Filter Condition
+   * @param array $order OPTIONAL Sort Order Condition
    * @return \TestSet[] Related Test Sets
    * @throws \Exception On Any Failure
    */
-  public static function listInProject($project) {
+  public static function listInProject($project, $filter = null, $order = null) {
+    assert('isset($project)');
+    assert('($filter === null) || is_array($filter)');
+    assert('($order === null) || is_string($order)');
+
     // Are we able to extract the Project ID from the Parameter?
-    $project_id = \Project::extractProjectID($project);
-    if (isset($project_id)) { // NO
-      throw new \Exception("Project Parameter is invalid.", 1);
+    $id = \models\Project::extractProjectID($project);
+    if (!isset($id)) { // NO
+      throw new \Exception("Parameter is invalid.", 1);
     }
 
-    return self::find(array(
-                "conditions" => 'project = :project:',
-                "bind" => array('project' => $project_id),
-                "order" => 'id'
-    ));
+    // Build Query Conditions
+    $params = [
+      'conditions' => 'project = :id:',
+      'bind' => ['id' => $id],
+      'order' => isset($order) ? $order : 'id'
+    ];
+
+    // Merge in Filter Conditions
+    if (isset($filter)) {
+      $params['conditions'].=' and (' . $filter['conditions'] . ')';
+      $params['bind'] = array_merge($filter['bind'], $params['bind']);
+    }
+
+    // Search for Matching Projects
+    $sets = self::find($params);
+    return $sets !== FALSE ? $sets : [];
   }
 
   /**
    * Count the Number of Test Sets Related to the Specified Project
    * 
    * @param mixed $project Project ID or Project Entity
+   * @param array $filter Extra Filter conditions to use
    * @return integer Number of Related Test Sets
    * @throws \Exception On Any Failure
    */
-  public static function countInProject($project) {
+  public static function countInProject($project, $filter = null) {
+    assert('isset($project)');
+    assert('($filter === null) || is_array($filter)');
+
     // Are we able to extract the Project ID from the Parameter?
-    $project_id = \Project::extractProjectID($project);
-    if (isset($project_id)) { // NO
-      throw new \Exception("Project Parameter is invalid.", 1);
+    $id = \models\Project::extractProjectID($project);
+    if (!isset($id)) { // NO
+      throw new \Exception("Parameter is invalid.", 1);
     }
 
-    // Instantiate the Query
-    $pqhl = 'SELECT COUNT(*) FROM TestSet WHERE project = :id:';
-    $query = new Phalcon\Mvc\Model\Query($pqhl, \Phalcon\Di::getDefault());
+    // Build Query Conditions
+    $params = [
+      'conditions' => 'project = :id:',
+      'bind' => ['id' => $id]
+    ];
 
-    // Execute the query returning a result if any
-    $result = $query->execute(array('id' => $project_id))->getFirst();
-    return (integer) $result['0'];
+    // Merge in Filter Conditions
+    if (isset($filter)) {
+      $params['conditions'].=' and (' . $filter['conditions'] . ')';
+      $params['bind'] = array_merge($filter['bind'], $params['bind']);
+    }
+
+    // Find Child Entries
+    $count = self::count($params);
+
+    // Return Result Set
+    return (integer) $count;
   }
 
   /**
+   * List the Test Sets Related to the Specified Container
+   * 
+   * @param mixed $container Container ID or Container Entity
+   * @return \models\Set[] Test Set in Project
+   * @throws \Exception On Any Failure
+   */
+  public static function listInFolder($container) {
+    assert('isset($container)');
+
+    // Are we able to extract the Container ID from the Parameter?
+    $id = \models\Container::extractContainerID($container);
+    if (!isset($id)) { // NO
+      throw new \Exception("Container Parameter is invalid.", 1);
+    }
+
+    // Instantiate the Query
+    /* NOTE: The choice of the Entity Used with FROM is important, as it
+     * represents the type of entity that will be created, on rehydration.
+     */
+    $pqhl = 'SELECT s.*' .
+      ' FROM models\Set s' .
+      ' JOIN models\Container c' .
+      ' WHERE c.parent = :id: and c.type = :type: and c.link = s.id' .
+      ' ORDER BY s.id';
+
+    // Execute Query and Return Results
+    $sets = self::selectQuery($pqhl, [
+        'id' => $id,
+        'type' => 'S'
+    ]);
+    return $sets !== FALSE ? $sets : [];
+  }
+
+  /**
+   * Count the Number of Test Sets Related to the Specified Container
+   * 
+   * @param mixed $project Container ID or Container Entity
+   * @return integer Number of Test under Given Conditions
+   * @throws \Exception On Any Failure
+   */
+  public static function countInFolder($container) {
+    assert('isset($container)');
+
+    // Are we able to extract the Container ID from the Parameter?
+    $id = \models\Container::extractContainerID($container);
+    if (!isset($id)) { // NO
+      throw new \Exception("Container Parameter is invalid.", 1);
+    }
+
+    // Find Child Entries
+    $count = \models\Container::count([
+        'conditions' => 'parent = :id: and type = :type:',
+        'bind' => [ 'id' => $id, 'type' => 'S']
+    ]);
+
+    // Return Result Set
+    return (integer) $count;
+  }
+
+  /**
+   * 
+   * TODO: Migrate to PHALCON
    * 
    * @param type $test
    * @return boolean

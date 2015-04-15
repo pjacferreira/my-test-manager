@@ -134,12 +134,13 @@ user:
     title: 'PAGE:TITLE:USER:SETS'
     includes:
       content: 'user/sets.php'
-    required: ['jquery-jstree']
+    required: ['jquery-fancytree-contextmenu', 'jquery-jsrender']
     js:
       files: ['common/session.js', 'common/forms.js', 'user/sets.js']
       scripts:
         on-load: |
           initialize();
+    css: 'user-sets.css'
 
   ##
   # User Runs Management Page
