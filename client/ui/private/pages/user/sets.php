@@ -1,7 +1,7 @@
 <!-- 
  --- copyright 2015 Paulo Ferreira <pf at sourcenotes.org>
  --- license http://opensource.org/licenses/AGPL-3.0 Affero GNU Public License v3.0
- -->
+-->
 <!--
  --- FORMS
 -->
@@ -64,20 +64,15 @@
   </h3>
   <div class="ui attached segment">
     <div class="ui divided grid">
-      <div class="four wide column">
+      <div id="folders_1" class="four wide column">
         <h3 class="ui header centered inverted" style="background-color: black">
           <?php echo _("PAGE:USER:SETS:FOLDERS") ?>
         </h3>
-        <div id="folders">
-        </div>
       </div>
-      <div class="twelve wide column">
+      <div id="items_1" class="twelve wide column">
         <h3 class="ui header centered inverted" style="background-color: blue">
           <?php echo _("PAGE:USER:SETS:SETS") ?>
         </h3>
-        <div id="sets" class="ui four column grid middle aligned internally celled">
-          <div class="tc_set aligned column"><?php echo _("PAGE:USER:SETS:FILLER:SELECT_FOLDER") ?></div>
-        </div>
       </div>
     </div>
   </div>
@@ -103,7 +98,17 @@
     <?php echo _("PAGE:USER:SETS:SET:TESTS") ?>
   </h3>
   <div class="ui bottom attached segment">
-    <div id="list_tests" class="ui divided items">
-    </div>  
+    <div class="ui divided grid">
+      <div id="folders_2" class="four wide column">
+        <h3 class="ui header centered inverted" style="background-color: black">
+          <?php echo _("PAGE:USER:SETS:FOLDERS") ?>
+        </h3>
+      </div>
+      <div id="items_2" class="twelve wide column">
+        <h3 class="ui header centered inverted" style="background-color: blue">
+          <?php echo _("PAGE:USER:SETS:TESTS") ?>
+        </h3>
+      </div>
+    </div>
   </div>
 </div>
