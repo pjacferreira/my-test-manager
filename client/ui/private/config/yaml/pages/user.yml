@@ -117,7 +117,7 @@ user:
     title: 'PAGE:TITLE:USER:TESTS'
     includes:
       content: 'user/tests.php'
-    required: ['jquery-fancytree-contextmenu', 'jquery-jsrender']
+    required: ['jquery-contextmenu', 'tc-folderview', 'tc-gridlist']
     js:
       files: ['common/session.js', 'common/forms.js', 'user/tests.js']
       scripts:
@@ -134,7 +134,7 @@ user:
     title: 'PAGE:TITLE:USER:SETS'
     includes:
       content: 'user/sets.php'
-    required: ['jquery-fancytree-contextmenu', 'jquery-jsrender']
+    required: ['jquery-contextmenu', 'tc-folderview', 'tc-gridlist']
     js:
       files: ['common/session.js', 'common/forms.js', 'user/sets.js']
       scripts:
