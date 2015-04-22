@@ -236,42 +236,44 @@
     }
   };
 
+  var call_defaults = {
+    type: 'GET'
+  };
+  
   var call = services.call = function (action, route_params, request_params, settings) {
-    // Is the AJAX Settings Only a function?
-    if ($.isFunction(settings)) { // YES
-      // Then use that as the OK Callback
-      settings = {
-        call_ok: settings
+  
+    // Process AJAX Call Settings
+    if($.isPlainObject(settings)) {
+      settings = $.extend(true, {}, call_defaults, settings);
+    } else {
+      if ($.isFunction(settings)) { // YES
+        var call_ok = settings;
+        settings = call_defaults;
+        settings.call_ok = call_ok;
+      } else {      
+        settings = call_defaults;
       }
-    } else
-    // Do we have a Settings Object?
-    if ($.type(settings) !== "object") { // NO : Clear Settings
-      settings = null;
+    }
+    
+    var service_url = null;
+    if($.isset(settings.type) && (settings.type === 'POST')) {
+      settings.data = request_params;
+      service_url = url.service(action, route_params, null);
+    } else {
+      service_url = url.service(action, route_params, request_params);
     }
 
-    // Do we have Settings?
-    if (settings !== null) { // YES
+    // Can we build a service url?
+    if (service_url !== null) { // YES
+      // Complete the AJAX Call Context
+      var ajax_context = $.extend({}, services.defaults.ajax, settings);
 
-      var service_url = null;
-      if($.isset(settings.type) && (settings.type === 'POST')) {
-        settings.data = request_params;
-        service_url = url.service(action, route_params, null);
-      } else {
-        service_url = url.service(action, route_params, request_params);
-      }
-      
-      // Can we build a service url?
-      if (service_url !== null) { // YES
-        // Complete the AJAX Call Context
-        var ajax_context = $.extend({}, services.defaults.ajax, settings);
-
-        // Call the Service
-        return $.ajax(service_url, ajax_context);
-      } else { // NO
-        // Do we have a NOK Callback?
-        if ($.isFunction(settings.call_nok)) { // YES: Call it
-          nok(0, "Invalid Service Call");
-        }
+      // Call the Service
+      return $.ajax(service_url, ajax_context);
+    } else { // NO
+      // Do we have a NOK Callback?
+      if ($.isFunction(settings.call_nok)) { // YES: Call it
+        nok(0, "Invalid Service Call");
       }
     }
     
