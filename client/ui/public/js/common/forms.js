@@ -51,9 +51,9 @@ function form_center($form) {
  */
 function form_display_toggle($form) {
   if ($form.hasClass('hidden')) {
-    form_show($form)
+    form_show($form);
   } else {
-    form_hide($form)
+    form_hide($form);
   }
 }
 
