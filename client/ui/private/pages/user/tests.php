@@ -87,26 +87,22 @@
   </div>
   <div class="ui error message"></div>
 </div>      
+<!-- MAIN PAGE -->
 <div id="navigator">
   <h3 class="ui top attached centered inverted header">
     <?php echo _("PAGE:USER:TESTS:TEST_MANAGER") ?>
   </h3>
   <div class="ui attached segment">
     <div class="ui divided grid">
-      <div class="four wide column">
+      <div id="folders_1" class="four wide column">
         <h3 class="ui header centered inverted" style="background-color: black">
           <?php echo _("PAGE:USER:TESTS:FOLDERS") ?>
         </h3>
-        <div id="folders">
-        </div>
       </div>
-      <div class="twelve wide column">
+      <div id="items_1" class="twelve wide column">
         <h3 class="ui header centered inverted" style="background-color: blue">
           <?php echo _("PAGE:USER:TESTS:TESTS") ?>
         </h3>
-        <div id="tests" class="ui four column grid middle aligned internally celled">
-          <div class="tc_test aligned column"><?php echo _("PAGE:USER:TESTS:FILLER:SELECT_FOLDER") ?></div>
-        </div>
       </div>
     </div>
   </div>
