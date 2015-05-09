@@ -484,7 +484,7 @@ class StepsController extends CrudServiceController {
     // Do we have to force a Renumber?
     $step = $context->getParameter('step');
     if ($step % \models\TestStep::SEQUENCE_STEP) { // YES
-      $test->renumber = true;
+      $test->renumber = 1;
     }
 
     // Step Properties
@@ -593,9 +593,6 @@ class StepsController extends CrudServiceController {
           $header = false;
         }
 
-        // Create Base Entity Set Identified
-        $return['__type'] = 'entity-set';
-
         // Do we have entities to display?
         if (count($entities)) { // YES
           // Move the Entity Information to become Result Header
@@ -604,6 +601,9 @@ class StepsController extends CrudServiceController {
         } else {
           $return['entities'] = [];
         }
+
+        // Create Base Entity Set Identified
+        $return['__type'] = 'entity-set';
         break;
       default:
         $return = $results;

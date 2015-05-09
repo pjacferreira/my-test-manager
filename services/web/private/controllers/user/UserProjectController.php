@@ -30,8 +30,7 @@ use common\utility\Strings;
  * @copyright 2015 Paulo Ferreira
  * @author Paulo Ferreira <pf at sourcenotes.org>
  */
-class UserProjectController extends BaseServiceController
-{
+class UserProjectController extends BaseServiceController {
     /*
      * ---------------------------------------------------------------------------
      *  CONTROLLER: Action Entry Points

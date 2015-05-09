@@ -288,7 +288,7 @@ class SetsController extends CrudServiceController {
    * @return \Set[] Outgoing Context for Action
    * @throws \Exception On any type of failure condition
    */
-  protected function doListInProjectAction($context) {
+  protected function doListInSetAction($context) {
     return \Set::listInProject($context->getParameter('project'));
   }
 
@@ -299,7 +299,7 @@ class SetsController extends CrudServiceController {
    * @return integer Number of Test Set's in the Project
    * @throws \Exception On any type of failure condition
    */
-  protected function doCountInProjectAction($context) {
+  protected function doCountInSetAction($context) {
     return \Set::countInProject($context->getParameter('project'));
     ;
   }
