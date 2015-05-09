@@ -39,6 +39,20 @@ use \common\utility\Strings;
 abstract class CrudServiceController extends EntityServiceController {
   /*
    * ---------------------------------------------------------------------------
+   * Abstract Methods
+   * ---------------------------------------------------------------------------
+   */
+
+  /**
+   * Creates an instance of the Entity Managed by the Controller
+   * 
+   * @return \api\model\AbstractEntity An instance of the Entity Managed by the
+   *   Controller
+   */
+  abstract protected function createEntity();
+
+  /*
+   * ---------------------------------------------------------------------------
    * HANDLER: BaseServiceController - do_initAction()
    * ---------------------------------------------------------------------------
    */
@@ -387,7 +401,7 @@ abstract class CrudServiceController extends EntityServiceController {
       // Does this Entity Object Have a Creator Property?
       if (property_exists($entity, 'creator')) { // YES
         // Set Modifier
-        $entity->creator = \models\User::extractUserID($user);
+        $entity->creator = \models\User::extractID($user);
 
         // Set the Modification Date and Time
         $now = new \DateTime();
@@ -412,7 +426,7 @@ abstract class CrudServiceController extends EntityServiceController {
       // Does this Entity Object Have a Modifier Property?
       if (property_exists($entity, 'modifier')) { // YES
         // Set Modifier
-        $entity->modifier = \models\User::extractUserID($user);
+        $entity->modifier = \models\User::extractID($user);
 
         // Set the Modification Date and Time
         $now = new \DateTime();
@@ -780,48 +794,6 @@ abstract class CrudServiceController extends EntityServiceController {
     }
 
     return $conditions;
-  }
-
-  /*
-   * ---------------------------------------------------------------------------
-   * HELPER FUNCTIONS: Entity DB Persistance
-   * ---------------------------------------------------------------------------
-   */
-
-  /**
-   * Save New or Modified Entities to the Database
-   * 
-   * @param \api\model\AbstractEntity $entity Entity to Save
-   * @throws \Exception On failure to save 
-   */
-  protected function _persist($entity) {
-    // Were we able to save the Entity?
-    if ($entity->save() == false) { // NO      
-      $messages = [];
-      foreach ($entity->getMessages() as $message) {
-        $messages[] = $message->getMessage() . '.';
-      }
-
-      throw new \Exception(implode('\n', $messages), 1);
-    }
-  }
-
-  /**
-   * Delete Entry from the Database
-   * 
-   * @param \api\model\AbstractEntity $entity Entity to Save
-   * @throws \Exception On failure to delete 
-   */
-  protected function _delete($entity) {
-    // Were we able to delete the Entity?
-    if ($entity->delete() == false) { // NO
-      $exception = '';
-      foreach ($entity->getMessages() as $message) {
-        $exception+= $message->getMessage() . "\n";
-      }
-
-      throw new \Exception($exception, 1);
-    }
   }
 
 }

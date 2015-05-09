@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Test Center - Compliance Testing Application (Web Services)
  * Copyright (C) 2012-2015 Paulo Ferreira <pf at sourcenotes.org>
@@ -16,6 +17,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 namespace api\controller;
 
 use \common\utility\Strings;
@@ -29,20 +31,6 @@ use \common\utility\Strings;
  * @author Paulo Ferreira <pf at sourcenotes.org>
  */
 abstract class EntityServiceController extends BaseServiceController {
-  /*
-   * ---------------------------------------------------------------------------
-   * Abstract Methods
-   * ---------------------------------------------------------------------------
-   */
-
-  /**
-   * Creates an instance of the Entity Managed by the Controller
-   * 
-   * @return \api\model\AbstractEntity An instance of the Entity Managed by the
-   *   Controller
-   */
-  abstract protected function createEntity();
-
   /*
    * ---------------------------------------------------------------------------
    * Public Static Metadata Related Methods Methods
@@ -267,7 +255,7 @@ abstract class EntityServiceController extends BaseServiceController {
 
     // See if it Applies to this $action
     if (!isset($in_actions) || // Applies to all actions
-            (is_array($in_actions) && (array_search($action, $in_actions) !== FALSE)) // Applies to this action
+      (is_array($in_actions) && (array_search($action, $in_actions) !== FALSE)) // Applies to this action
     ) {
       if (isset($parameters[$parm_in]) || isset($default_value)) {
         $out_value = $function($this, $parameters, isset($parameters[$parm_in]) ? $parameters[$parm_in] : $default_value);
@@ -280,13 +268,55 @@ abstract class EntityServiceController extends BaseServiceController {
         }
       } else
       if (!isset($opt_actions) || // No Optional Actions
-              (array_search($action, $opt_actions) === FALSE) // Action NOT in Optional Actions
+        (array_search($action, $opt_actions) === FALSE) // Action NOT in Optional Actions
       ) { // Okay we can skip this parameter
         throw new \Exception("Missing Required Parameter[$parm_in]", 1);
       }
     }
 
     return $parameters;
+  }
+
+  /*
+   * ---------------------------------------------------------------------------
+   * HELPER FUNCTIONS: Entity DB Persistance
+   * ---------------------------------------------------------------------------
+   */
+
+  /**
+   * Save New or Modified Entities to the Database
+   * 
+   * @param \api\model\AbstractEntity $entity Entity to Save
+   * @throws \Exception On failure to save 
+   */
+  protected function _persist($entity) {
+    // Were we able to save the Entity?
+    if ($entity->save() === FALSE) { // NO      
+      $messages = [];
+      foreach ($entity->getMessages() as $message) {
+        $messages[] = $message->getMessage() . '.';
+      }
+
+      throw new \Exception(implode('\n', $messages), 1);
+    }
+  }
+
+  /**
+   * Delete Entry from the Database
+   * 
+   * @param \api\model\AbstractEntity $entity Entity to Save
+   * @throws \Exception On failure to delete 
+   */
+  protected function _delete($entity) {
+    // Were we able to delete the Entity?
+    if ($entity->delete() == false) { // NO
+      $exception = '';
+      foreach ($entity->getMessages() as $message) {
+        $exception+= $message->getMessage() . "\n";
+      }
+
+      throw new \Exception($exception, 1);
+    }
   }
 
 }
