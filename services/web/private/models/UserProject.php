@@ -165,13 +165,13 @@ class UserProject extends \api\model\AbstractEntity {
    */
   public static function findRelation($user, $project) {
     // Are we able to extract the User ID from the Parameter?
-    $user_id = User::extractUserID($user);
+    $user_id = User::extractID($user);
     if (!isset($user_id)) { // NO
       throw new \Exception("User Parameter is invalid.", 1);
     }
 
     // Are we able to extract the Project ID from the Parameter?
-    $project_id = Project::extractProjectID($project);
+    $project_id = Project::extractID($project);
     if (!isset($project_id)) { // NO
       throw new \Exception("Project Parameter is invalid.", 2);
     }
@@ -210,8 +210,8 @@ class UserProject extends \api\model\AbstractEntity {
     // Does the Link Exist Already?
     if (!isset($link)) { // NO
       $link = new UserProject();
-      $link->user = User::extractUserID($user);
-      $link->project = Project::extractProjectID($project);
+      $link->user = User::extractID($user);
+      $link->project = Project::extractID($project);
       $link->permissions = $permissions;
     } else { // YES
       $link->permissions = $permissions;
@@ -258,7 +258,7 @@ class UserProject extends \api\model\AbstractEntity {
    */
   public static function deleteRelationsUser($user) {
     // Are we able to extract the User ID from the Parameter?
-    $id = User::extractUserID($user);
+    $id = User::extractID($user);
     if (!isset($id)) { // NO
       throw new \Exception("Parameter is invalid.", 1);
     }
@@ -280,7 +280,7 @@ class UserProject extends \api\model\AbstractEntity {
    */
   public static function deleteRelationsProject($project) {
     // Are we able to extract the Project ID from the Parameter?
-    $id = Project::extractProjectID($project);
+    $id = Project::extractID($project);
     if (!isset($id)) { // NO
       throw new \Exception("Parameter is invalid.", 1);
     }
@@ -303,7 +303,7 @@ class UserProject extends \api\model\AbstractEntity {
    */
   public static function listUsers($project) {
     // Are we able to extract the Project ID from the Parameter?
-    $id = Project::extractProjectID($project);
+    $id = Project::extractID($project);
     if (!isset($id)) { // NO
       throw new \Exception("Parameter is invalid.", 1);
     }
@@ -325,7 +325,7 @@ class UserProject extends \api\model\AbstractEntity {
    */
   public static function countUsers($project) {
     // Are we able to extract the Project ID from the Parameter?
-    $id = Project::extractProjectID($project);
+    $id = Project::extractID($project);
     if (!isset($id)) { // NO
       throw new \Exception("Parameter is invalid.", 1);
     }
@@ -348,7 +348,7 @@ class UserProject extends \api\model\AbstractEntity {
    */
   public static function listProjects($user, $organization = null) {
     // Are we able to extract the User ID from the Parameter?
-    $id = User::extractUserID($user);
+    $id = User::extractID($user);
     if (!isset($id)) { // NO
       throw new \Exception("Parameter is invalid.", 1);
     }
@@ -356,7 +356,7 @@ class UserProject extends \api\model\AbstractEntity {
     // Do we have an Organization to Filter for?
     $org_id = null;
     if (isset($organization)) { // YES
-      $org_id = Organization::extractOrganizationID($organization);
+      $org_id = Organization::extractID($organization);
       // Is the Organization ID Valid?
       if (!isset($org_id)) { // NO
         throw new \Exception("Parameter is invalid.", 2);
@@ -385,7 +385,7 @@ class UserProject extends \api\model\AbstractEntity {
    */
   public static function listProjectPermissions($user) {
     // Are we able to extract the User ID from the Parameter?
-    $id = User::extractUserID($user);
+    $id = User::extractID($user);
     if (!isset($id)) { // NO
       throw new \Exception("Parameter is invalid.", 1);
     }
@@ -407,7 +407,7 @@ class UserProject extends \api\model\AbstractEntity {
    */
   public static function countProjects($user) {
     // Are we able to extract the User ID from the Parameter?
-    $id = User::extractUserID($user);
+    $id = User::extractID($user);
     if (!isset($id)) { // NO
       throw new \Exception("Parameter is invalid.", 1);
     }

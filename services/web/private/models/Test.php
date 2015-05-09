@@ -254,7 +254,7 @@ class Test extends \api\model\AbstractEntity {
    * @param mixed $test Test Entity (object) or Test ID (integer)
    * @return mixed Returns the Test ID or 'null' on failure;
    */
-  public static function extractTestID($test) {
+  public static function extractID($test) {
     assert('isset($test)');
 
     // Is the parameter an Test Object?
@@ -283,7 +283,7 @@ class Test extends \api\model\AbstractEntity {
    */
   public static function findInProject($project, $nameid) {
     // Are we able to extract the Project ID from the Parameter?
-    $project_id = \models\Project::extractProjectID($project);
+    $project_id = \models\Project::extractID($project);
     if (!isset($project_id)) { // NO
       throw new \Exception("Project Parameter is invalid.", 1);
     }
@@ -328,7 +328,7 @@ class Test extends \api\model\AbstractEntity {
     assert('($order === null) || is_string($order)');
 
     // Are we able to extract the Project ID from the Parameter?
-    $id = \models\Project::extractProjectID($project);
+    $id = \models\Project::extractID($project);
     if (!isset($id)) { // NO
       throw new \Exception("Parameter is invalid.", 1);
     }
@@ -364,7 +364,7 @@ class Test extends \api\model\AbstractEntity {
     assert('($filter === null) || is_array($filter)');
 
     // Are we able to extract the Project ID from the Parameter?
-    $id = \models\Project::extractProjectID($project);
+    $id = \models\Project::extractID($project);
     if (!isset($id)) { // NO
       throw new \Exception("Parameter is invalid.", 1);
     }

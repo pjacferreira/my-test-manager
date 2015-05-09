@@ -300,7 +300,7 @@ class Run extends \api\model\AbstractEntity {
    */
   public static function findInProject($project, $nameid) {
     // Are we able to extract the Project ID from the Parameter?
-    $project_id = \Project::extractProjectID($project);
+    $project_id = \Project::extractID($project);
     if (isset($project_id)) { // NO
       throw new \Exception("Project Parameter is invalid.", 1);
     }
@@ -338,7 +338,7 @@ class Run extends \api\model\AbstractEntity {
    */
   public static function listInProject($project) {
     // Are we able to extract the Project ID from the Parameter?
-    $project_id = \Project::extractProjectID($project);
+    $project_id = \Project::extractID($project);
     if (isset($project_id)) { // NO
       throw new \Exception("Project Parameter is invalid.", 1);
     }
@@ -359,7 +359,7 @@ class Run extends \api\model\AbstractEntity {
    */
   public static function countInProject($project) {
     // Are we able to extract the Project ID from the Parameter?
-    $project_id = \Project::extractProjectID($project);
+    $project_id = \Project::extractID($project);
     if (isset($project_id)) { // NO
       throw new \Exception("Project Parameter is invalid.", 1);
     }

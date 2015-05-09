@@ -201,7 +201,7 @@ class Project extends \api\model\AbstractEntity {
    * @param mixed $project The Potential Project (object) or Project ID (integer)
    * @return mixed Returns the Project ID or 'null' on failure;
    */
-  public static function extractProjectID($project) {
+  public static function extractID($project) {
     assert('isset($project)');
 
     // Is the parameter an Project Object?
@@ -229,7 +229,7 @@ class Project extends \api\model\AbstractEntity {
    */
   public static function listInOrganization($org) {
     // Are we able to extract the Organization ID from the Parameter?
-    $id = \models\Organization::extractOrganizationID($org);
+    $id = \models\Organization::extractID($org);
     if (!isset($id)) { // NO
       throw new \Exception("Parameter is invalid.", 1);
     }
@@ -254,7 +254,7 @@ class Project extends \api\model\AbstractEntity {
    */
   public static function countInOrganization($org) {
     // Are we able to extract the Organization ID from the Parameter?
-    $id = \models\Organization::extractOrganizationID($org);
+    $id = \models\Organization::extractID($org);
     if (!isset($id)) { // NO
       throw new \Exception("Parameter is invalid.", 1);
     }

@@ -238,7 +238,7 @@ class TestStep extends \api\model\AbstractEntity {
    */
   public static function firstStep($test) {
     // Are we able to extract the Test ID from the Parameter?
-    $id = \models\Test::extractTestID($test);
+    $id = \models\Test::extractID($test);
     if (!isset($id)) { // NO
       throw new \Exception("Test Parameter is invalid.", 1);
     }
@@ -262,7 +262,7 @@ class TestStep extends \api\model\AbstractEntity {
    */
   public static function lastStep($test) {
     // Are we able to extract the Test ID from the Parameter?
-    $id = \models\Test::extractTestID($test);
+    $id = \models\Test::extractID($test);
     if (!isset($id)) { // NO
       throw new \Exception("Test Parameter is invalid.", 1);
     }
@@ -287,7 +287,7 @@ class TestStep extends \api\model\AbstractEntity {
    */
   public static function findStep($test, $sequence) {
     // Are we able to extract the Test ID from the Parameter?
-    $id = \models\Test::extractTestID($test);
+    $id = \models\Test::extractID($test);
     if (!isset($id)) { // NO
       throw new \Exception("Test Parameter is invalid.", 1);
     }
@@ -350,12 +350,20 @@ class TestStep extends \api\model\AbstractEntity {
     return $next !== FALSE ? $next : null;
   }
 
+  /**
+   * Find a Range of Sequence Range that contains the Given Sequence 
+   * 
+   * @param mixed $test Test ID or Test Entity
+   * @param integer $contains Sequence Number
+   * @return type Array start and end sequence that contains the given sequence number
+   * @throws \Exception On Any Failure
+   */
   public static function sequenceRange($test, $contains) {
     assert('isset($test)');
-    assert('isset($test) && is_integer($contains)');
+    assert('isset($contains) && is_integer($contains)');
 
     // Are we able to extract the Test ID from the Parameter?
-    $id = \models\Test::extractTestID($test);
+    $id = \models\Test::extractID($test);
     if (!isset($id)) { // NO
       throw new \Exception("Test Parameter is invalid.", 1);
     }
@@ -383,10 +391,10 @@ class TestStep extends \api\model\AbstractEntity {
         "order" => 'sequence'
       ];
       $next = self::findFirst($params);
-      $start = isset($step) ? $step->sequence : 0;
+      $start = $step !== FALSE ? $step->sequence : 0;
     }
 
-    $end = isset($next) ? $next->sequence : $start;
+    $end = $next !== FALSE ? $next->sequence : $start;
     return [$start, $end];
   }
 
@@ -569,7 +577,7 @@ class TestStep extends \api\model\AbstractEntity {
    * @throws \Exception On Any Failure
    */
   public static function renumberSteps($test) {
-    assert('is_integer($step) && ($step > 0)');
+    assert('isset($test)');
 
     // Get the List of Links for the Set
     $steps = self::listInTest($test, true);
@@ -613,7 +621,7 @@ class TestStep extends \api\model\AbstractEntity {
     assert('isset($test)');
 
     // Are we able to extract the Test ID from the Parameter?
-    $id = \models\Test::extractTestID($test);
+    $id = \models\Test::extractID($test);
     if (!isset($id)) { // NO
       throw new \Exception("Parameter is invalid.", 1);
     }
@@ -641,7 +649,7 @@ class TestStep extends \api\model\AbstractEntity {
     assert('isset($test)');
 
     // Are we able to extract the Test ID from the Parameter?
-    $id = \models\Test::extractTestID($test);
+    $id = \models\Test::extractID($test);
     if (!isset($id)) { // NO
       throw new \Exception("Parameter is invalid.", 1);
     }
@@ -667,7 +675,7 @@ class TestStep extends \api\model\AbstractEntity {
    */
   public function deleteAllTestSteps($test) {
     // Are we able to extract the Test ID from the Parameter?
-    $test_id = \Test::extractTestID($test);
+    $test_id = \models\Test::extractID($test);
     if (isset($test_id)) { // NO
       throw new \Exception("Parameter is invalid.", 1);
     }

@@ -228,7 +228,7 @@ class User extends \api\model\AbstractEntity {
    * @param mixed $user The Potential User (object) or User ID (integer)
    * @return mixed Returns the User ID or 'null' on failure;
    */
-  public static function extractUserID($user) {
+  public static function extractID($user) {
     // Is the parameter an User Object?
     if (is_object($user) && is_a($user, __CLASS__)) { // YES
       return $user->id;

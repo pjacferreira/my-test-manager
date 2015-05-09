@@ -221,13 +221,13 @@ class PlayEntry extends \api\model\AbstractEntity {
    */
   public static function findEntry($run, $test) {
     // Are we able to extract the Run ID from the Parameter?
-    $run_id = \Run::extractSetID($run);
+    $run_id = \Run::extractID($run);
     if (isset($run_id)) { // NO
       throw new \Exception("Run Parameter is invalid.", 1);
     }
 
     // Are we able to extract the Test ID from the Parameter?
-    $test_id = \Test::extractTestID($test);
+    $test_id = \Test::extractID($test);
     if (isset($test_id)) { // NO
       throw new \Exception("Test Parameter is invalid.", 2);
     }
@@ -249,7 +249,7 @@ class PlayEntry extends \api\model\AbstractEntity {
    */
   public function findBySequence($run, $sequence) {
     // Are we able to extract the Run ID from the Parameter?
-    $run_id = \Run::extractSetID($run);
+    $run_id = \Run::extractID($run);
     if (isset($run_id)) { // NO
       throw new \Exception("Run Parameter is invalid.", 1);
     }
@@ -291,7 +291,7 @@ class PlayEntry extends \api\model\AbstractEntity {
     }
 
     // Are we able to extract the Test ID from the Parameter?
-    $test_id = \Test::extractTestID($test);
+    $test_id = \Test::extractID($test);
     if (isset($test_id)) { // NO
       throw new \Exception("Test Parameter is invalid.", 2);
     }
@@ -347,7 +347,7 @@ class PlayEntry extends \api\model\AbstractEntity {
    */
   public function deleteAllRunEntries($run) {
     // Are we able to extract the Run ID from the Parameter?
-    $run_id = \Run::extractSetID($run);
+    $run_id = \Run::extractID($run);
     if (isset($run_id)) { // NO
       throw new \Exception("Run Parameter is invalid.", 1);
     }
@@ -370,7 +370,7 @@ class PlayEntry extends \api\model\AbstractEntity {
    */
   public function nextSequence($run) {
     // Are we able to extract the Run ID from the Parameter?
-    $run_id = \Run::extractSetID($run);
+    $run_id = \Run::extractID($run);
     if (isset($run_id)) { // NO
       throw new \Exception("Run Parameter is invalid.", 1);
     }
@@ -408,7 +408,7 @@ class PlayEntry extends \api\model\AbstractEntity {
    */
   public function lastEntry($run) {
     // Are we able to extract the Run ID from the Parameter?
-    $run_id = \Run::extractSetID($run);
+    $run_id = \Run::extractID($run);
     if (isset($run_id)) { // NO
       throw new \Exception("Run Parameter is invalid.", 1);
     }
@@ -429,7 +429,7 @@ class PlayEntry extends \api\model\AbstractEntity {
    */
   public function listInRun($run) {
     // Are we able to extract the Run ID from the Parameter?
-    $run_id = \Run::extractSetID($run);
+    $run_id = \Run::extractID($run);
     if (isset($run_id)) { // NO
       throw new \Exception("Run Parameter is invalid.", 1);
     }
@@ -450,7 +450,7 @@ class PlayEntry extends \api\model\AbstractEntity {
    */
   public function countInRun($run) {
     // Are we able to extract the Run ID from the Parameter?
-    $run_id = \Run::extractSetID($run);
+    $run_id = \Run::extractID($run);
     if (isset($run_id)) { // NO
       throw new \Exception("Run Parameter is invalid.", 1);
     }

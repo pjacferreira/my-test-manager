@@ -116,13 +116,13 @@ class Set extends \api\model\AbstractEntity {
   public function initialize() {
     // Define Relations
     // A Single User can Be the Creator for Many Other Users
-    $this->hasMany("creator", "User", "id");
+    $this->hasMany("creator", "models\User", "id");
     // A Single User can Be the Modifier for Many Other Users
-    $this->hasMany("modifier", "User", "id");
+    $this->hasMany("modifier", "models\User", "id");
     // A Single User can Be the Owner for Many Runs
-    $this->hasMany("owner", "User", "id");
+    $this->hasMany("owner", "models\User", "id");
     // A Single Projects can Contain Many Sets
-    $this->hasMany("project", "Project", "id");
+    $this->hasMany("project", "models\Project", "id");
   }
 
   /**
@@ -246,7 +246,7 @@ class Set extends \api\model\AbstractEntity {
    * @param mixed $set Test Set Entity (object) or Test Set ID (integer)
    * @return mixed Returns the Test Set ID or 'null' on failure;
    */
-  public static function extractSetID($set) {
+  public static function extractID($set) {
     // Is the parameter an Test Object?
     if (is_object($set) && is_a($set, __CLASS__)) { // YES
       return $set->id;
@@ -273,7 +273,7 @@ class Set extends \api\model\AbstractEntity {
    */
   public static function findInProject($project, $nameid) {
     // Are we able to extract the Project ID from the Parameter?
-    $project_id = \models\Project::extractProjectID($project);
+    $project_id = \models\Project::extractID($project);
     if (!isset($project_id)) { // NO
       throw new \Exception("Project Parameter is invalid.", 1);
     }
@@ -318,7 +318,7 @@ class Set extends \api\model\AbstractEntity {
     assert('($order === null) || is_string($order)');
 
     // Are we able to extract the Project ID from the Parameter?
-    $id = \models\Project::extractProjectID($project);
+    $id = \models\Project::extractID($project);
     if (!isset($id)) { // NO
       throw new \Exception("Parameter is invalid.", 1);
     }
@@ -354,7 +354,7 @@ class Set extends \api\model\AbstractEntity {
     assert('($filter === null) || is_array($filter)');
 
     // Are we able to extract the Project ID from the Parameter?
-    $id = \models\Project::extractProjectID($project);
+    $id = \models\Project::extractID($project);
     if (!isset($id)) { // NO
       throw new \Exception("Parameter is invalid.", 1);
     }

@@ -165,13 +165,13 @@ class UserOrganization extends \api\model\AbstractEntity {
    */
   public static function findRelation($user, $org) {
     // Are we able to extract the User ID from the Parameter?
-    $user_id = User::extractUserID($user);
+    $user_id = User::extractID($user);
     if (!isset($user_id)) { // NO
       throw new \Exception("User Parameter is invalid.", 1);
     }
 
     // Are we able to extract the Organization ID from the Parameter?
-    $org_id = Organization::extractOrganizationID($org);
+    $org_id = Organization::extractID($org);
     if (!isset($org_id)) { // NO
       throw new \Exception("Organization Parameter is invalid.", 2);
     }
@@ -210,8 +210,8 @@ class UserOrganization extends \api\model\AbstractEntity {
     // Does the Link Exist Already?
     if (!isset($link)) { // NO
       $link = new UserOrganization();
-      $link->user = User::extractUserID($user);
-      $link->organization = Organization::extractOrganizationID($org);
+      $link->user = User::extractID($user);
+      $link->organization = Organization::extractID($org);
       $link->permissions = $permissions;
     } else { // YES
       $link->permissions = $permissions;
@@ -257,7 +257,7 @@ class UserOrganization extends \api\model\AbstractEntity {
    */
   public static function deleteRelationsUser($user) {
     // Are we able to extract the User ID from the Parameter?
-    $id = User::extractUserID($user);
+    $id = User::extractID($user);
     if (!isset($id)) { // NO
       throw new \Exception("Parameter is invalid.", 1);
     }
@@ -281,7 +281,7 @@ class UserOrganization extends \api\model\AbstractEntity {
    */
   public static function deleteRelationsOrganization($org) {
     // Are we able to extract the Organization ID from the Parameter?
-    $id = Organization::extractOrganizationID($org);
+    $id = Organization::extractID($org);
     if (!isset($id)) { // NO
       throw new \Exception("Parameter is invalid.", 1);
     }
@@ -306,7 +306,7 @@ class UserOrganization extends \api\model\AbstractEntity {
    */
   public static function listUsers($org) {
     // Are we able to extract the Organization ID from the Parameter?
-    $id = Organization::extractOrganizationID($org);
+    $id = Organization::extractID($org);
     if (!isset($id)) { // NO
       throw new \Exception("Parameter is invalid.", 1);
     }
@@ -331,7 +331,7 @@ class UserOrganization extends \api\model\AbstractEntity {
    */
   public static function countUsers($org) {
     // Are we able to extract the Organization ID from the Parameter?
-    $id = Organization::extractOrganizationID($org);
+    $id = Organization::extractID($org);
     if (!isset($id)) { // NO
       throw new \Exception("Parameter is invalid.", 1);
     }
@@ -353,7 +353,7 @@ class UserOrganization extends \api\model\AbstractEntity {
    */
   public static function listOrganizations($user) {
     // Are we able to extract the User ID from the Parameter?
-    $id = User::extractUserID($user);
+    $id = User::extractID($user);
     if (!isset($id)) { // NO
       throw new \Exception("Parameter is invalid.", 1);
     }
@@ -379,7 +379,7 @@ class UserOrganization extends \api\model\AbstractEntity {
    */
   public static function listOrganizationPermissions($user) {
     // Are we able to extract the User ID from the Parameter?
-    $id = User::extractUserID($user);
+    $id = User::extractID($user);
     if (!isset($id)) { // NO
       throw new \Exception("Parameter is invalid.", 1);
     }
@@ -401,7 +401,7 @@ class UserOrganization extends \api\model\AbstractEntity {
    */
   public static function countOrganizations($user) {
     // Are we able to extract the User ID from the Parameter?
-    $id = User::extractUserID($user);
+    $id = User::extractID($user);
     if (!isset($id)) { // NO
       throw new \Exception("Parameter is invalid.", 1);
     }

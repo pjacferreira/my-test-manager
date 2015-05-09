@@ -190,7 +190,7 @@ class Organization extends \api\model\AbstractEntity {
    * @param mixed $organization The Potential Organization (object) or Organization ID (integer)
    * @return mixed Returns the Organization ID or 'null' on failure;
    */
-  public static function extractOrganizationID($organization) {
+  public static function extractID($organization) {
     // Is the parameter an Organization Object?
     if (is_object($organization) && is_a($organization, __CLASS__)) { // YES
       return $organization->id;
