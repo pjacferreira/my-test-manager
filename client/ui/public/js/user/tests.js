@@ -32,8 +32,15 @@ function initialize() {
 
   $('#folders_1').on('folder-view.folder-selected', function(event, id) {
     console.log('load-folder [' + id + ']');
-    $('#items_1').gridlist('clear');
-    $('#items_1').gridlist('load', id);
+    // Clear the Form
+    form_reset($('#form_update_test'));
+    // Update Test List
+    var $list = $('#items_1');
+    $list.gridlist('clear').
+      data('folder.parent', id).
+      gridlist('load', id);
+
+
   });
 
   $('#items_1').on('gridlist.item-selected', function(event, node) {
@@ -54,15 +61,17 @@ function initialize_folders_list() {
       title: 'ROOT'
     },
     callbacks: {
-      data_url: folder_url,
+      data_promise: folder_loader,
       data_to_nodes: folders_to_nodes,
       menu: contextmenu_folder,
       menu_handlers: menu_folder_action
     }
   });
 }
-function folder_url(id) {
-  return window.testcenter.services.url.service(['folders', 'list'], [id, 'F'], null);
+
+function folder_loader(id) {
+  // SEE NT-001
+  return testcenter.services.call(['folders', 'list'], [id, 'F']);
 }
 
 function folders_to_nodes(response) {
@@ -93,7 +102,7 @@ function select_node(event, data) {
     form_hide(window.$form_displayed);
   }
 
-// Set the Current Selected Node
+  // Set the Current Selected Node
   window.$selected_node = data.node;
   // fire event
   var id = data.node.key.split(':');
@@ -131,8 +140,10 @@ function contextmenu_folder(node) {
   var items = {
     'rename': {'name': 'Rename', 'icon': 'edit'},
     'create': {'name': 'New Folder..', 'icon': 'add'},
-    'seperator': '---------',
-    'delete': {'name': 'Delete', 'icon': 'delete'}
+    'seperator1': '---------',
+    'delete': {'name': 'Delete', 'icon': 'delete'},
+    'seperator2': '---------',
+    'create-test': {'name': 'Create Test...', 'icon': 'add'}
   };
   /* NOTE: The Node we created as 'ROOT' is not the Root Node but the
    * 1st and only child of the Fancy Tree Root Node.
@@ -149,10 +160,19 @@ function contextmenu_folder(node) {
 
 function menu_folder_action(node, action, options) {
   console.log('Selected action "' + action + '" on node ' + node.key);
-  var $form = $('#form_' + action + '_folder');
+  var $form = [];
+  switch (action) {
+    case 'create-test':
+      $form = $('#form_create_test');
+      $form.data('folder.parent', node.data.id);
+      break;
+    default:
+      $form = $('#form_' + action + '_folder');
+      $form.data('fv.container', $('#folders_1'));
+      $form.data('fv.node.selected', node);
+  }
+
   if ($form.length) {
-    $form.data('fv.container', $('#folders_1'));
-    $form.data('fv.node.selected', node);
     form_show($form);
   } else {
     console.log('Missing Form for action[' + action + ']');
@@ -211,7 +231,7 @@ function tests_to_node(response) {
 
 function menu_items_tests($node) {
   var items = {
-    'create': {'name': 'New Set..', 'icon': 'add'},
+    'create': {'name': 'New Test..', 'icon': 'add'},
     'seperator': '---------',
     'delete': {'name': 'Delete', 'icon': 'delete'}
   };
@@ -230,12 +250,130 @@ function menu_handlers_tests($node, action, options) {
   } else {
     console.log('Selected action "' + action + '"');
   }
-  var $form = $('#form_' + action + '_set');
+  var $form = $('#form_' + action + '_test');
   if ($form.length) {
+    // NOTE: Handler Called in the Context of Grid List Object
+    $form.data('folder.parent', this.data('folder.parent'));
     form_show($form);
   } else {
     console.log('Missing Form for action[' + action + ']');
   }
+}
+
+function steps_to_nodes(response) {
+  var response = response['return'];
+  var nodes = [];
+  var defaults = {
+  };
+
+  switch (response.__type) {
+    case 'entity-set':
+      var entities = response.entities;
+      // Build Nodes
+      $.each(entities, function(i, entity) {
+        var node = $.extend(true, {}, defaults, {
+          id: entity.sequence,
+          test: entity['test'],
+          key: entity[response.__key],
+          title: entity[response.__display],
+          description: entity['description']
+        });
+        nodes.push(node);
+      });
+      break;
+    case 'entity':
+      var node = $.extend(true, {}, defaults, {
+        id: response.sequence,
+        test: response['test'],
+        key: response[response.__key],
+        title: response[response.__display],
+        description: response['description']
+      });
+      nodes.push(node);
+      break;
+    default:
+      console.log('Invalid Response');
+  }
+  return nodes;
+}
+
+function load_steps(test_id) {
+  return testcenter.services.call(['steps', 'list'], test_id);
+}
+
+function do_nothing($node, node) {
+  console.log('Clicked [' + $node.attr('id') + '] - Step [' + node.title + ']');
+}
+
+function step_move_up($node, node) {
+  var $list = this;
+  // Load the Test Steps
+  testcenter.services.call(['step', 'move', 'up'], [node.test, node.id]).
+    then(function(response) {
+      $list.orderedlist('node.update', $node, response);
+      $list.orderedlist('node.up', $node);
+    }, function(code, message) {
+      console.log('ERROR: Failed to Move Step [' + code + ':' + message + ']');
+    });
+  return true;
+}
+
+function step_move_down($node, node) {
+  var $list = this;
+  // Load the Test Steps
+  testcenter.services.call(['step', 'move', 'down'], [node.test, node.id]).
+    then(function(response) {
+      $list.orderedlist('node.update', $node, response);
+      $list.orderedlist('node.down', $node);
+    }, function(code, message) {
+      console.log('ERROR: Failed to Move Step [' + code + ':' + message + ']');
+    });
+  return true;
+}
+
+function step_create($node, node) {
+  var $form = $('#form_create_step');
+  $form.data('list', this);
+  $form.data('after.node', $node);
+  $form.data('after.item', node);
+  form_show($form);
+  return true;
+}
+
+function step_edit($node, node) {
+  // Display Create Step Form
+  var $form = $('#form_edit_step');
+  $form.data('list', this);
+  $form.data('node', $node);
+  $form.data('item', node);
+  $form.addClass('loading');
+  form_show($form);
+
+  // Load the Test Steps
+  testcenter.services.call(['step', 'read'], [node.test, node.id], null, {
+    call_ok: function(step) {
+      form_load($form, step, 'step');
+    },
+    call_nok: function(code, message) {
+      console.log('ERROR: Failed to Delete Step [' + code + ':' + message + ']');
+    }
+  });
+}
+
+function step_delete($node, node) {
+  var $list = this;
+  // Load the Test Steps
+  testcenter.services.call(['step', 'delete'], [node.test, node.id], null, {
+    call_ok: function(result) {
+      if (result) {
+        $list.orderedlist('node.remove', $node);
+      }
+    },
+    call_nok: function(code, message) {
+      console.log('ERROR: Failed to Delete Step [' + code + ':' + message + ']');
+    }
+  });
+  return true;
 }
 
 function load_test(id) {
@@ -258,343 +396,33 @@ function load_test(id) {
     }
   });
 
-  // Load the Test Steps
-  testcenter.services.call(['steps', 'list'], id, null, {
-    call_ok: function(steps) {
-      var $list = $('#list_steps');
-
-      // Clear the Current List
-      $list.empty();
-
-      var entities = steps['entities'];
-      var entity = null;
-      var $entity = null;
-      var first = true;
-      var last = false;
-
-      for (var i = 0, count = entities.length; i < count; ++i) {
-        last = i == (count - 1);
-        entity = entities[i];
-        $entity = create_step(id, entity.sequence, entity[steps.__display], entity.description, first, last);
-        $list.append($entity);
-        first = false;
-      }
-
-      // Finished Loading
-      $form.removeClass('loading');
+  var settings = {
+    callbacks: {
+      loader: load_steps,
+      data_to_nodes: steps_to_nodes
     },
-    call_nok: function(code, code) {
-      console.log('ERROR: Failed to List Steps [' + code + ':' + code + ']');
-    }
-  });
-}
-
-function create_step_button(name, icon) {
-  var $button = $('<div name="' + name + '" class="ui button"><i class="' + icon + ' icon"></i></div>')
-
-  $button.click(function(event) {
-    var $button = $(event.target).closest('.button');
-    var $step = $button.closest('.item');
-    if ($step.length) {
-      var id = step_key($step.attr('id'));
-      do_click_step($button.attr('name'), id[0], id[1]);
-    }
-  });
-
-  return $button;
-}
-
-function add_button_after($buttons, $button, list_ltr) {
-  var $list = $buttons.find('> .button');
-
-  // Do we have atleast one Button?
-  if ($list.length === 0) { // NO: Simply Add
-    $buttons.after($button)
-  } else {
-    if (!$.isArray(list_ltr)) {
-      list_ltr = [list_ltr];
-    }
-
-    var matched = -1, button;
-    for (var i = 0, j = 0; (i < $buttons.lenght) && (j < list_ltr.length); i++) {
-      button = $buttons.get(i);
-      if (button.name === list_ltr[j]) {
-        matched = i;
-        j++;
+    buttons: {
+      'up': {
+        callback: step_move_up
+      },
+      'edit': {
+        callback: step_edit
+      },
+      'add': {
+        callback: step_create
+      },
+      'delete': {
+        callback: step_delete
+      },
+      'down': {
+        callback: step_move_down
       }
     }
+  };
 
-    if (matched >= 0) {
-      $($buttons.get(matched)).after($button);
-    } else {
-      $buttons.prepend($button);
-    }
-  }
-}
-
-function step_key(step_id) {
-  step_id = $.strings.nullOnEmpty(step_id);
-  if ($.isset(step_id)) {
-    var elements = step_id.split('-');
-    if (elements.length >= 3) {
-      var test = parseInt(elements[1]);
-      var sequence = parseInt(elements[2]);
-      return [test, sequence];
-    }
-  }
-
-  return null;
-}
-
-function add_step_button(button, $item) {
-  var $buttons = $item.find('.extra > .buttons');
-
-  var $button = $buttons.find('[name="' + button + '"]');
-  if ($button.length === 0) {
-    var id = step_key($item.attr('id'));
-    switch (button) {
-      case 'up':
-        $button = create_step_button('up', 'arrow up');
-        $buttons.prepend($button);
-        break;
-      case 'edit':
-        $button = create_step_button('edit', 'write');
-        add_button_after($buttons, $button, 'up');
-        break;
-      case 'new':
-        $button = create_step_button('new', 'plus');
-        add_button_after($buttons, $button, ['up', 'edit']);
-        break;
-      case 'delete':
-        $button = create_step_button('delete', 'erase');
-        add_button_after($buttons, $button, ['up', 'edit', 'new']);
-        break;
-      case 'down':
-        $button = create_step_button('down', 'arrow down');
-        $buttons.append($button);
-        break;
-    }
-  }
-}
-
-function remove_step_button(button, $item) {
-  var $buttons = $item.find('.extra > .buttons');
-
-  var $button = $buttons.find('[name="' + button + '"]');
-  if ($button.length) {
-    $button.remove();
-    return true;
-  }
-
-  return false;
-}
-
-function move_step_up(test, sequence, new_sequence) {
-  if (sequence > new_sequence) {
-    var $steps = $('#list_steps > .item');
-
-    var was_top = false, to_bottom = false;
-    var id = 'step-' + test + '-' + sequence;
-    var $step = null, $prev = null;
-    for (var i = 0; i < $steps.length; ++i) {
-      if ($steps.get(i).id === id) {
-        to_bottom = i === 1;
-        was_top = i === ($steps.length - 1);
-        $step = $($steps.get(i));
-        break;
-      }
-    }
-    $prev = $($steps.get(i - 1));
-
-    // Detach and Modify the Step
-    $step.detach();
-    $step.attr('id', 'step-' + test + '-' + new_sequence);
-
-    if (to_bottom) {
-      add_step_button('up', $prev);
-      remove_step_button('up', $step);
-    }
-
-    if (was_top) {
-      remove_step_button('down', $prev);
-      add_step_button('down', $step);
-    }
-
-    // Re-attach Step
-    $prev.before($step);
-    return true;
-  }
-
-  return false;
-}
-
-function move_step_down(test, sequence, new_sequence) {
-  if (sequence < new_sequence) {
-    var $steps = $('#list_steps > .item');
-
-    var was_bottom = false, to_top = false;
-    var id = 'step-' + test + '-' + sequence;
-    var $step = null, $next = null;
-    for (var i = 0; i < $steps.length; ++i) {
-      if ($steps.get(i).id === id) {
-        was_bottom = i === 0;
-        to_top = i === ($steps.length - 2);
-        $step = $($steps.get(i));
-        $next = $($steps.get(i + 1));
-        break;
-      }
-    }
-
-    // Detach Step
-    $step.detach();
-    $step.attr('id', 'step-' + test + '-' + new_sequence);
-
-    if (was_bottom) {
-      add_step_button('up', $step);
-      remove_step_button('up', $next);
-    }
-
-    if (to_top) {
-      remove_step_button('down', $step);
-      add_step_button('down', $next);
-    }
-
-    // Re-attach Step
-    $next.after($step);
-    return true;
-  }
-
-  return false;
-}
-
-function get_step(test, sequence) {
-  var $step = $('#list_steps > #step-' + test + '-' + sequence);
-  return $step.length ? $step : null;
-}
-
-function delete_step(test, sequence) {
-  var $step = $('#list_steps > #step-' + test + '-' + sequence);
-  if ($step.length) {
-    $step.remove();
-
-    var $items = $('#list_steps > item');
-    if ($items.length) {
-      var $first, $last;
-      if ($items.length === 1) {
-        $first = $last = $items.first();
-      } else {
-        $first = $items.first();
-        $last = $items.last();
-      }
-      remove_step_button('up', $items.first())
-      remove_step_button('down', $items.last());
-    }
-    return true;
-  }
-
-  return false;
-}
-
-function do_click_step(action, test, sequence) {
-  console.log('Do [' + action + '] on Step [' + test + ':' + sequence + ']');
-  switch (action) {
-    case 'up':
-      // Load the Test Steps
-      testcenter.services.call(['step', 'move', 'up'], [test, sequence], null, {
-        call_ok: function(step) {
-          move_step_up(test, sequence, step['sequence']);
-        },
-        call_nok: function(code, message) {
-          console.log('ERROR: Failed to Move Step [' + code + ':' + message + ']');
-        }
-      });
-      break;
-    case 'down':
-      // Load the Test Steps
-      testcenter.services.call(['step', 'move', 'down'], [test, sequence], null, {
-        call_ok: function(step) {
-          move_step_down(test, sequence, step['sequence']);
-        },
-        call_nok: function(code, message) {
-          console.log('ERROR: Failed to Move Step [' + code + ':' + message + ']');
-        }
-      });
-      break;
-    case 'new':
-      // Display Create Step Form
-      var $form = $('#form_create_step');
-      $form.data('test', test);
-      $form.data('after', sequence);
-      form_show($form);
-      break;
-    case 'edit':
-      // Display Create Step Form
-      var $form = $('#form_edit_step');
-      $form.data('test', test);
-      $form.data('step', sequence);
-      $form.addClass('loading');
-      form_show($form);
-
-      // Load the Test Steps
-      testcenter.services.call(['step', 'read'], [test, sequence], null, {
-        call_ok: function(step) {
-          form_load($form, step, 'step');
-        },
-        call_nok: function(code, message) {
-          console.log('ERROR: Failed to Delete Step [' + code + ':' + message + ']');
-        }
-      });
-      break;
-    case 'delete':
-      // Load the Test Steps
-      testcenter.services.call(['step', 'delete'], [test, sequence], null, {
-        call_ok: function(result) {
-          if (result) {
-            delete_step(test, sequence);
-          }
-        },
-        call_nok: function(code, message) {
-          console.log('ERROR: Failed to Delete Step [' + code + ':' + message + ']');
-        }
-      });
-      break;
-  }
-}
-
-function create_step(test, sequence, title, description, first, last) {
-  description = $.isset(description) ? description : 'No Step Description';
-
-  var $step = $('<div id="step-' + test + '-' + sequence + '" class="item">' +
-    '<div class="tc_step ui tiny image">' +
-    '<i class="inverted circular big terminal icon"></i>' +
-    '</div>' +
-    '<div class="middle aligned content">' +
-    '<div class="header">' + title + '</div>' +
-    '<div class="description">' +
-    '<p>' + description + '</p>' +
-    '</div>' +
-    '<div class="extra">' +
-    '<div class="ui right floated buttons">' +
-    '</div>' +
-    '</div>' +
-    '</div>' +
-    '</div>');
-
-  var $buttons = $step.find('.extra .buttons');
-
-  if (!first) {
-    $buttons.append(create_step_button('up', 'arrow up'));
-  }
-
-  $buttons.append(create_step_button('edit', 'write'));
-  $buttons.append(create_step_button('new', 'plus'));
-  $buttons.append(create_step_button('delete', 'erase').addClass('negative'));
-
-  if (!last) {
-    $buttons.append(create_step_button('down', 'arrow down'));
-  }
-
-  return $step;
+  var $steps = $('#list_steps');
+  $steps.orderedlist(settings);
+  $steps.orderedlist('load', id);
 }
 
 /*******************************
@@ -984,10 +812,14 @@ function __do_create_test() {
 
   // Build Route Parameters
   var params = [values['test:name']];
+  var folder = $form.data('folder.parent');
+  if ($.isset(folder)) {
+    params.push(folder);
+  }
 
   // Add the Node to the Grid
   var $grid = $('#items_1');
-  $grid.gridlist('load',
+  $grid.gridlist('add',
     testcenter.services.call(['test', 'create'], params, null, {
       call_ok: function(entity) {
         form_hide($form);
@@ -1039,57 +871,47 @@ function __do_update_test() {
 function __do_create_step() {
   var $form = $('#form_create_step');
 
+  // Get Parameters Associated with the Form
+  var $list = $form.data('list');
+  var $after = $form.data('after.node');
+  var after = $form.data('after.item');
+
   // Extract Field Values
   var values = {};
   $form.find('.field > :input').each(function() {
     values[this.name] = $(this).val();
   });
 
-  // Get the Test Associated with the Form
-  var test = $form.data('test');
-  var after = $form.data('after');
-
   // Create Service to Call and Parameters
   var service, params;
   if ($.isset(after)) {
     service = ['step', 'create', 'after'];
-    params = [test, after, values['title']];
+    params = [after.test, after.id, values['title']];
   } else {
     service = ['step', 'create'];
-    params = [test, values['title']];
+    params = [after.test, values['title']];
   }
 
-  testcenter.services.call(service, params, null, {
-    call_ok: function(entity) {
-      var $list = $('#list_steps');
-      var first = false, last = false;
-      if ($.isset(after)) {
-        var $previous = $list.find('#step-' + test + '-' + after);
-        last = $previous.next().length === 0;
-        var $step = create_step(entity.test, entity.sequence, entity.title, entity.description, false, last);
-        $previous.after($step);
-      } else {
-        first = $list.find('> .item').length === 0;
-        var $step = create_step(entity.test, entity.sequence, entity.title, entity.description, first, true);
-        $list.append($step);
-      }
-
+  testcenter.services.call(service, params).
+    then(function(response) {
+      // Add the New Entry
+      $list.orderedlist('node.add', response, $after);
       // Hide the Form 
       form_hide($form);
-    },
-    call_nok: function(code, message) {
+    }, function(code, message) {
       form_show_errors($form, message);
-    }
-  });
+    });
+
   return values;
 }
 
 function __do_update_step() {
   var $form = $('#form_edit_step');
 
-  // Get the Test Associated with the Form
-  var test = $form.data('test');
-  var step = $form.data('step');
+  // Get Parameters Associated with the Form
+  var $list = $form.data('list');
+  var $node = $form.data('node');
+  var node = $form.data('item');
 
   // Extract Field Values
   var values = {};
@@ -1105,21 +927,15 @@ function __do_update_step() {
     }
   });
 
-  testcenter.services.call(['step', 'update'], [test, step], values, {
-    type: 'POST',
-    call_ok: function(entity) {
-      var $step = $('#list_steps > #step-' + entity.test + '-' + entity.sequence);
-      $step.find('.header').html(entity.title);
-      $step.find('.description').html($.isset(entity.description) ? entity.description : "No Descrption Set");
+  testcenter.services.call(['step', 'update'], [node.test, node.id], values, {type: 'POST'}).
+    then(function(response) {
+      // Update Entry
+      $list.orderedlist('node.update', $node, response);
       // Hide the Form 
       form_hide($form);
-      // Log
-      console.log("Updated Step [" + test + ":" + step + "]");
-    },
-    call_nok: function(code, message) {
+    }, function(code, message) {
       form_show_errors($form, message);
-    }
-  });
+    });
 
   return values;
 }
@@ -1263,7 +1079,8 @@ function create_navigator(selector) {
  * 1. On Capturing the event we could do:
  * a) Destroy/Clear the Tests Navigation Page.
  * b) Place Dimmer over the Navigation Pane.
- * 
+ */
+/* TODO: 
  * 2. We need to be able to handle changge of project (i.e. the event is
  * fired when the project is changed in the dropdown).
  * 
@@ -1272,8 +1089,21 @@ function create_navigator(selector) {
  * a) Clear the Test Pane Window (Replace it with the filler it had at the
  * beginning).
  * b) Create/Reset the fancytree.
+ */
+/* TODO: BUG
+ * 3. Delete Test Menu Action doesn't Work.
+ */
+/* TODO: BUG
+ * 4. When a Folder is Empty (i.e. Contains No Tests) there is no way
+ * to display the Test Menu (to Create  a Test). This occurs because the
+ * <div> that contains the ordered list has no heigth (since it has no items)
+ * so there is nothing to click on!?
  * 
- * 3. Currently, when the Test Navigator is created, no folder is selected
+ * POSSIBLE SOLUTION:
+ * 1. Force the height (minimum) to take up the avaliable space in the cell.
+ */
+/* TODO: 
+ * 5. Currently, when the Test Navigator is created, no folder is selected
  * (i.e. nothing is loaded in the tests part of the window), therefore it
  * does not make sense to display the test context-menu since we can't really
  * do anything.
@@ -1283,4 +1113,8 @@ function create_navigator(selector) {
  * for the project.
  * 2. Don't display / create the Context Menun until the root folder has been
  * selected.
+ */
+/* TODO: BUG
+ * 5. When a we create a Test in a Sub-Folder, it is being created in the
+ * ROOT Folder Instead?
  */

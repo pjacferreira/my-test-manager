@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 namespace common\utility;
 
 /**
@@ -43,11 +44,25 @@ class Strings {
     return null;
   }
 
+  /**
+   * Trims a String and verifies if it is empty. If the string is empty, returns
+   * default value instead.
+   * 
+   * @param string $string String Value to trim, validate
+   * @param string $default String Value to trim, validate
+   * @return string Value or NULL
+   */
+  public static function defaultOnEmpty($string, $default) {
+    $string = self::nullOnEmpty($string);
+    return $string === null ? $default : null;
+  }
+
   public static function startsWith($haystack, $needle) {
-    if(!isset($needle) || !is_string($needle)  || ($needle === '')) {
+    if (!isset($needle) || !is_string($needle) || ($needle === '')) {
       return true;
     }
-    
+
     return strpos($haystack, $needle) === 0;
   }
+
 }

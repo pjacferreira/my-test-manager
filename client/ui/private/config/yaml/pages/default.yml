@@ -134,6 +134,16 @@ default:
       cache: true
       i18n: true
     libraries:
+      google-tag:
+        js:
+          scripts:
+            on-load: |
+              // Google TAG
+              (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+              new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+              j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+              '//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+              })(window,document,'script','dataLayer','XXXXXXXX');            
       semantic-css:
         css: '/semantic/semantic.css'
       semantic-js:
@@ -216,6 +226,9 @@ default:
         required: ['jquery.utils.js','jquery-fancytree-contextmenu']
       tc-gridlist: 
         js: 'user/tc.gridlist.js'
+        required: ['jquery.utils.js']
+      tc-orderedlist: 
+        js: 'user/tc.orderedlist.js'
         required: ['jquery.utils.js']
     content:
       copyright: 'Copyright &copy; 2012-2015 TESTCENTER All Rights Reserved'

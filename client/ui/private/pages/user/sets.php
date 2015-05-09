@@ -97,7 +97,7 @@
   <h3 class="ui centered attached inverted header">
     <?php echo _("PAGE:USER:SETS:SET:TESTS") ?>
   </h3>
-  <div class="ui bottom attached segment">
+  <div class="ui attached segment">
     <div class="ui divided grid">
       <div id="folders_2" class="four wide column">
         <h3 class="ui header centered inverted" style="background-color: black">
@@ -110,5 +110,7 @@
         </h3>
       </div>
     </div>
+  </div>
+  <div id='list_tests' class="ui bottom attached segment">
   </div>
 </div>

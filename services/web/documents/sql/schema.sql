@@ -109,6 +109,100 @@ CREATE TABLE IF NOT EXISTS `t_projects` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `t_tests`
+--
+
+CREATE TABLE IF NOT EXISTS `t_tests` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id_project` int(11) DEFAULT NULL,
+  `name` varchar(60) NOT NULL,
+  `description` longtext,
+  `id_container` int(11) DEFAULT NULL,
+  `state` int(11) NOT NULL,
+  `renumber` boolean NOT NULL DEFAULT 0,
+  `id_creator` int(11) NOT NULL,
+  `dt_creation` datetime NOT NULL,
+  `id_modifier` int(11) DEFAULT NULL,
+  `dt_modified` datetime DEFAULT NULL,
+  `id_owner` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `FK_TEST_TO_PROJECT` (`id_project`),
+  KEY `FK_TEST_TO_CONTAINER` (`id_container`),
+  KEY `FK_TEST_TO_USER_CREATOR` (`id_creator`),
+  KEY `FK_TEST_TO_USER_MODIFIER` (`id_modifier`),
+  KEY `FK_TEST_TO_USER_OWNER` (`id_owner`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Tests' AUTO_INCREMENT=1 ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `t_test_steps`
+--
+
+CREATE TABLE IF NOT EXISTS `t_test_steps` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id_test` int(11) DEFAULT NULL,
+  `sequence` int(11) NOT NULL,
+  `title` varchar(80) NOT NULL,
+  `description` longtext,
+  `id_creator` int(11) NOT NULL,
+  `dt_creation` datetime NOT NULL,
+  `id_modifier` int(11) DEFAULT NULL,
+  `dt_modified` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `IU_TEST_SEQUENCE` (`id_test`,`sequence`),
+  KEY `FK_STEP_TO_TEST` (`id_test`),
+  KEY `FK_STEP_TO_USER_CREATOR` (`id_creator`),
+  KEY `FK_STEP_TO_USER_MODIFIER` (`id_modifier`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Test Steps' AUTO_INCREMENT=1 ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `t_sets`
+--
+
+CREATE TABLE IF NOT EXISTS `t_sets` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id_project` int(11) DEFAULT NULL,
+  `name` varchar(60) NOT NULL,
+  `description` longtext,
+  `id_container` int(11) DEFAULT NULL,
+  `state` int(11) NOT NULL,
+  `renumber` boolean NOT NULL DEFAULT 0,
+  `id_creator` int(11) DEFAULT NULL,
+  `dt_creation` datetime NOT NULL,
+  `id_modifier` int(11) DEFAULT NULL,
+  `dt_modified` datetime DEFAULT NULL,
+  `id_owner` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `FK_SET_TO_PROJECT` (`id_project`),
+  KEY `FK_SET_TO_CONTAINER` (`id_container`),
+  KEY `FK_SET_TO_USER_CREATOR` (`id_creator`),
+  KEY `FK_SET_TO_USER_MODIFIER` (`id_modifier`),
+  KEY `FK_SET_TO_USER_OWNER` (`id_owner`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Test Sets' AUTO_INCREMENT=1 ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `t_set_tests`
+--
+
+CREATE TABLE IF NOT EXISTS `t_set_tests` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id_set` int(11) DEFAULT NULL,
+  `id_test` int(11) DEFAULT NULL,
+  `sequence` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `FK_ST_TO_SET` (`id_set`),
+  KEY `FK_ST_TO_TEST` (`id_test`),
+  UNIQUE KEY `IU_SET_TEST` (`id_set`, `id_test`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Link Test Set<-->Test' AUTO_INCREMENT=1 ;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `t_runs`
 --
 
@@ -165,49 +259,6 @@ CREATE TABLE IF NOT EXISTS `t_run_playlists` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `t_sets`
---
-
-CREATE TABLE IF NOT EXISTS `t_sets` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `id_project` int(11) DEFAULT NULL,
-  `name` varchar(60) NOT NULL,
-  `description` longtext,
-  `id_container` int(11) DEFAULT NULL,
-  `state` int(11) NOT NULL,
-  `renumber` boolean NOT NULL DEFAULT 0,
-  `id_creator` int(11) DEFAULT NULL,
-  `dt_creation` datetime NOT NULL,
-  `id_modifier` int(11) DEFAULT NULL,
-  `dt_modified` datetime DEFAULT NULL,
-  `id_owner` int(11) DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `FK_SET_TO_PROJECT` (`id_project`),
-  KEY `FK_SET_TO_CONTAINER` (`id_container`),
-  KEY `FK_SET_TO_USER_CREATOR` (`id_creator`),
-  KEY `FK_SET_TO_USER_MODIFIER` (`id_modifier`),
-  KEY `FK_SET_TO_USER_OWNER` (`id_owner`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Test Sets' AUTO_INCREMENT=1 ;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `t_set_tests`
---
-
-CREATE TABLE IF NOT EXISTS `t_set_tests` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `id_set` int(11) DEFAULT NULL,
-  `id_test` int(11) DEFAULT NULL,
-  `sequence` int(11) NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `IDX_DFB59CE78B0CD86` (`id_set`),
-  KEY `IDX_DFB59CE535F620E` (`id_test`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Link Test Set<-->Test' AUTO_INCREMENT=1 ;
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `t_statecodes`
 --
 
@@ -247,56 +298,6 @@ CREATE TABLE IF NOT EXISTS `t_states` (
   KEY `IDX_18A50FB3629B4313` (`id_creator`),
   KEY `IDX_18A50FB3FB643568` (`id_modifier`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='States' AUTO_INCREMENT=1 ;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `t_tests`
---
-
-CREATE TABLE IF NOT EXISTS `t_tests` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `id_project` int(11) DEFAULT NULL,
-  `name` varchar(60) NOT NULL,
-  `description` longtext,
-  `id_container` int(11) DEFAULT NULL,
-  `state` int(11) NOT NULL,
-  `renumber` boolean NOT NULL DEFAULT 0,
-  `id_creator` int(11) NOT NULL,
-  `dt_creation` datetime NOT NULL,
-  `id_modifier` int(11) DEFAULT NULL,
-  `dt_modified` datetime DEFAULT NULL,
-  `id_owner` int(11) DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `FK_TEST_TO_PROJECT` (`id_project`),
-  KEY `FK_TEST_TO_CONTAINER` (`id_container`),
-  KEY `FK_TEST_TO_USER_CREATOR` (`id_creator`),
-  KEY `FK_TEST_TO_USER_MODIFIER` (`id_modifier`),
-  KEY `FK_TEST_TO_USER_OWNER` (`id_owner`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Tests' AUTO_INCREMENT=1 ;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `t_test_steps`
---
-
-CREATE TABLE IF NOT EXISTS `t_test_steps` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `id_test` int(11) DEFAULT NULL,
-  `sequence` int(11) NOT NULL,
-  `title` varchar(80) NOT NULL,
-  `description` longtext,
-  `id_creator` int(11) NOT NULL,
-  `dt_creation` datetime NOT NULL,
-  `id_modifier` int(11) DEFAULT NULL,
-  `dt_modified` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `IU_TEST_SEQUENCE` (`id_test`,`sequence`),
-  KEY `FK_STEP_TO_TEST` (`id_test`),
-  KEY `FK_STEP_TO_USER_CREATOR` (`id_creator`),
-  KEY `FK_STEP_TO_USER_MODIFIER` (`id_modifier`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Test Steps' AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
@@ -419,16 +420,15 @@ ALTER TABLE `t_sets`
 -- Constraints for table `t_set_tests`
 --
 ALTER TABLE `t_set_tests`
-  ADD CONSTRAINT `FK_DFB59CE535F620E` FOREIGN KEY (`id_test`) REFERENCES `t_tests` (`id`),
-  ADD CONSTRAINT `FK_DFB59CE78B0CD86` FOREIGN KEY (`id_set`) REFERENCES `t_sets` (`id`);
+  ADD CONSTRAINT `FK_ST_TO_TEST` FOREIGN KEY (`id_test`) REFERENCES `t_tests` (`id`),
+  ADD CONSTRAINT `FK_ST_TO_SET` FOREIGN KEY (`id_set`) REFERENCES `t_sets` (`id`);
 
 --
 -- Constraints for table `t_statecodes`
 --
 ALTER TABLE `t_statecodes`
   ADD CONSTRAINT `FK_783E05E04D1693CB` FOREIGN KEY (`id_state`) REFERENCES `t_states` (`id`),
-  ADD CONSTRAINT `FK_783E05E0629B4313` FOREIGN KEY (`id_creator`) REFERENCES `t_users` (`id`),
-  ADD CONSTRAINT `FK_783E05E0FB643568` FOREIGN KEY (`id_modifier`) REFERENCES `t_users` (`id`);
+  ADD CONSTRAINT `FK_783E05E0629B4313` FOREIGN KEY (`id_creator`) REFERENCES `t_users` (`id`);
 
 --
 -- Constraints for table `t_states`

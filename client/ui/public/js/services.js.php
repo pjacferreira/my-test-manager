@@ -237,7 +237,11 @@
   };
 
   var call_defaults = {
-    type: 'GET'
+    type: 'GET',
+    // SEE NT-001
+    xhrFields: {    
+      withCredentials: true
+    }
   };
   
   var call = services.call = function (action, route_params, request_params, settings) {

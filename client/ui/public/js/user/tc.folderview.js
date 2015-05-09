@@ -10,7 +10,6 @@
   // Defaults for Folder Tree
   var defaults = {
     classes: {
-      header: "ui centered header",
       tree: null
     },
     root: {
@@ -25,7 +24,7 @@
         var elements = $.isString(encoded_id) ? encoded_id.split(':') : null;
         return (elements !== null) && (elements.length > 1) ? elements[1] : null;
       },
-      data_url: null,
+      data_promise: null,
       data_to_nodes: null,
       menu: null,
       menu_handlers: null
@@ -38,24 +37,56 @@
     return $container;
   }
 
-  function data_postprocess(event, data) {
-    // Get Navigator Parent from the Element
-    var $container = getContainer(event.target);
-    var settings = $container.data('fv.settings');
+  function transform_nodes(settings, response) {
     var id_encoder = $.objects.get('callbacks.id_encoder', settings);
     var transform = $.objects.get('callbacks.data_to_nodes', settings);
     var nodes = null;
     if (transform && id_encoder) {
-      nodes = transform(data.response);
+      nodes = transform(response);
       $.each(nodes, function(i, node) {
         node.folder = true;
         node.lazy = true;
         node.key = id_encoder(node.id);
       });
     }
-    data.result = nodes;
+    return nodes;
   }
 
+  function data_postprocess(event, data) {
+    // Get Navigator Parent from the Element
+    var $container = getContainer(event.target);
+    var settings = $container.data('fv.settings');
+    data.result = transform_nodes(settings, data.response);
+  }
+
+  /**
+   * 
+   * SEE NT-001
+   * 
+   * @param {type} settings
+   * @param {type} id
+   * @returns {unresolved}
+   */
+  function build_loader_promise(settings, id) {
+    var build_promise = $.objects.get('callbacks.data_promise', settings);
+    if (build_promise) {
+      var promise = id ? build_promise(id) : null;
+      if (promise) {
+        promise = promise.pipe(function(response) {
+          return transform_nodes(settings, response);
+        });
+      }
+      return promise;
+    }
+    return null;
+  }
+
+  /**
+   * 
+   * @param {type} event
+   * @param {type} data
+   * @returns {undefined}
+   */
   function lazy_loader(event, data) {
     data.result = null;
 
@@ -64,16 +95,10 @@
     if ($container) {
       var settings = $container.data('fv.settings');
       var decode_id = $.objects.get('callbacks.id_decoder', settings);
-      var build_url = $.objects.get('callbacks.data_url', settings);
-      if (decode_id && build_url) {
+      if (decode_id) {
         var id = decode_id(data.node.key);
-        if (id) {
-          var url = build_url(id);
-          data.result = {
-            url: build_url(id),
-            cache: false
-          };
-        }
+        // SEE NT-001
+        data.result = id ? build_loader_promise(settings, id) : null;
       }
     }
   }

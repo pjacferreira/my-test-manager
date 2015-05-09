@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Test Center - Compliance Testing Application (Client UI)
  * Copyright (C) 2012 - 2015 Paulo Ferreira <pf at sourcenotes.org>
@@ -16,7 +17,6 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 /*
  * @license http://opensource.org/licenses/AGPL-3.0 Affero GNU Public License v3.0
  * @copyright 2015 Paulo Ferreira
@@ -51,7 +51,17 @@ $di['view'] = function () use ($config) {
  */
 $di->setShared('url', function () use ($config) {
   $url = new api\services\SiteURL($config->application->baseJS, $config->application->baseCSS, $config->application->baseAssets);
-  $url->setBaseUri($config->application->baseUri);
+
+  // Try to Build a Base URI
+  $base = key_exists('serverUrl', $config->application) ? $config->application->serverUrl : null;
+  if (isset($base) && key_exists('baseUri', $config->application)) {
+    $base = ltrim($base . $config->application->baseUri);
+  }
+
+  // Do we have a base URI?
+  if (isset($base) && count($base)) { // YES
+    $url->setBaseUri($base);
+  }
 
   return $url;
 });

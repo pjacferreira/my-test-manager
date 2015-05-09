@@ -127,8 +127,6 @@
   <h3 class="ui centered attached inverted header">
     <?php echo _("PAGE:USER:TESTS:TEST:STEPS") ?>
   </h3>
-  <div class="ui bottom attached segment">
-    <div id="list_steps" class="ui divided items">
-    </div>  
+  <div id='list_steps' class="ui bottom attached segment">
   </div>
 </div>

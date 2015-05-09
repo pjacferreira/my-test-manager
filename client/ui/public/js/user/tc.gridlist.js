@@ -11,7 +11,6 @@
     // Number of Columns in the Grid
     columns: 4,
     classes: {
-      header: "ui inverted centered header",
       grid: "ui four column grid middle aligned internally celled"
     },
     callbacks: {
@@ -277,7 +276,8 @@
             var item = options.items[action];
             var handler = item.hasOwnProperty('callback') ? item.callback : menu_handlers;
             if ($.isFunction(handler)) {
-              $.proxy(handler, this)($node, action, options);
+              // Menu Handler is Called in the Context of the Grid List
+              $.proxy(handler, $grid.data('gl.container'))($node, action, options);
             }
           }
         };
@@ -336,6 +336,33 @@
         if ($container.data('gl.grid')) { // YES
           $container.data('gl.grid').empty();
         }
+      }
+    },
+    'add': function(parameter) {
+      // Do we have a container to initialize?
+      var $container = this.first();
+      if ($container.length) { // YES
+        if ($container.data('gl.grid')) { // YES
+          if ($.isset(parameter)) {
+            // Is the Parameter a Function?
+            if ($.isFunction(parameter)) { // YES: Call Function
+              parameter = $.proxy(parameter, this)();
+            }
+          }
+
+          if (__is_promise(parameter)) {
+            __lazy_load($container, parameter);
+            return;
+          }
+
+          if ($.isArray(parameter)) {
+            __load_data($container, parameter);
+          }
+        } else {
+          console.log("Grid hasn't been initialized.");
+        }
+      } else {
+        console.log("Nothing to load nodes into.");
       }
     },
     'load': function(parameter) {

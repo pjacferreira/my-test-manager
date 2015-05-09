@@ -53,7 +53,7 @@ class SiteURL extends \Phalcon\Mvc\Url {
    * @throws \Exception On any type of failure condition
    */
   public function __construct($js, $css, $assets = null) {
-    $this->m_sBaseAssets = Strings::nullOnEmpty($assets);
+    $this->m_sBaseAssets = Strings::defaultOnEmpty($assets, '/');
     $this->m_sBaseJS = Strings::nullOnEmpty($js);
     $this->m_sBaseCSS = Strings::nullOnEmpty($css);
 

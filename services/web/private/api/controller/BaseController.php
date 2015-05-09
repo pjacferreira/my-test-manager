@@ -434,6 +434,9 @@ class BaseController extends Controller {
 
     // Set Content Type to JSON
     $this->response->setContentType('application/json');
+    // TODO TD-042
+//    $this->response->setHeader('Access-Control-Allow-Origin','*');
+//    $this->response->setHeader('Access-Control-Allow-Credentials','true');
     return $response;
   }
 
@@ -466,6 +469,9 @@ class BaseController extends Controller {
 
     // Set Content Type to JSON
     $this->response->setContentType('application/json');
+    // TODO TD-042
+//    $this->response->setHeader('Access-Control-Allow-Origin','*');
+//    $this->response->setHeader('Access-Control-Allow-Credentials','true');
     return $response;
   }
 
