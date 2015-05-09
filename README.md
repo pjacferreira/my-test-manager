@@ -12,7 +12,7 @@ Requirements
     PHALCON 1.3.x 
     SEMANTIC-UI 1.10.x
     
-# NEW
+# LATEST NEWS
 
 I have setup a test site, so that you can view a more or less what the application currently looks like
 [TestCenter Site](http://test-to.com:8080/).
