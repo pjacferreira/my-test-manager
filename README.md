@@ -1,3 +1,8 @@
+# LATEST NEWS
+
+I have setup a test site, so that you can view a more or less what the application currently looks like
+[TestCenter Site](http://test-to.com:8080/).
+
 # TestCenter : Structured Testing
 Open Source Project, licensed under the [AGPL](http://www.gnu.org/licenses/agpl-3.0.html), directed towards organizing and simplifying the Management of [User Acceptance Testing](http://en.wikipedia.org/wiki/Acceptance_testing) or [Functional Testing](http://en.wikipedia.org/wiki/Functional_testing).
 
@@ -11,8 +16,3 @@ Requirements
     MySQL 5.x
     PHALCON 1.3.x 
     SEMANTIC-UI 1.10.x
-    
-# LATEST NEWS
-
-I have setup a test site, so that you can view a more or less what the application currently looks like
-[TestCenter Site](http://test-to.com:8080/).
