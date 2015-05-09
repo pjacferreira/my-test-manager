@@ -48,14 +48,14 @@ landing:
     title: 'PAGE:TITLE:LANDING:HOME'
     includes:
       menu: 
-        file: 'landing/content/menu.php'
+        file: 'landing/menus/home.php'
         required: ['semantic-sidebar', 'jquery-utils']
         js:
           files: 'common/menu.js'
           scripts:
             on-load: |
               initialize_menu('sb_menu','btn_menu');
-      content: 'landing/content/content.php'
+      content: 'landing/home.php'
     required: ['site-js', 'crypto-js', 'jquery', 'jquery-transform', 'jquery-toaster', 'jquery-utils', 'services-js']
     js:
       files: ['common/session.js', 'common/forms.js', 'landing/home.js']
@@ -67,4 +67,48 @@ landing:
           initialize();
     css: 'landing-home.css'
 
+  ##
+  # Default Settings for Logged In Pages
+  ##
+  left-menu:
+    inherit: landing
+    template: true
+    includes:
+      body: 'left-sidebar.php'
+      lsidebar: 
+        file: 'landing/menus/menu.php'
+        required: ['site-js', 'semantic-sidebar', 'jquery-utils', 'services-js']
+        js:
+          files: 'common/menu.js'
+          scripts:
+            on-load: |
+              initialize_menu('sb_menu','btn_menu');
+
+  ##
+  # Introduction Page
+  ##
+  introduction:
+    inherit: 'landing:left-menu'
+    template: false
+    title: 'PAGE:TITLE:INSTITUTIONAL:INTRO'
+    includes:
+      content: 'landing/introduction.php'
+    required: ['site-js', 'jquery', 'jquery-transform', 'jquery-toaster', 'jquery-utils', 'services-js']
+    js:
+      files: ['common/session.js']
+#    css: 'landing-home.css'
+
+  ##
+  # Help Page
+  ##
+  help:
+    inherit: 'landing:left-menu'
+    template: false
+    title: 'PAGE:TITLE:INSTITUTIONAL:HELP'
+    includes:
+      content: 'landing/help.php'
+    required: ['site-js', 'crypto-js', 'jquery', 'jquery-transform', 'jquery-toaster', 'jquery-utils', 'services-js']
+    js:
+      files: ['common/session.js']
+#    css: 'landing-home.css'
       
