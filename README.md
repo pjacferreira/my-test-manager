@@ -2,6 +2,7 @@
 
 I have setup a test site, so that you can view a more or less what the application currently looks like
 [TestCenter Site](http://test-to.com:8080/).
+Please consult the [Introduction](http://test-to.com:8080/page/landing:introduction) page to see how to use the site.
 
 # TestCenter : Structured Testing
 Open Source Project, licensed under the [AGPL](http://www.gnu.org/licenses/agpl-3.0.html), directed towards organizing and simplifying the Management of [User Acceptance Testing](http://en.wikipedia.org/wiki/Acceptance_testing) or [Functional Testing](http://en.wikipedia.org/wiki/Functional_testing).
