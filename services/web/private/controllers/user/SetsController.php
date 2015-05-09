@@ -541,9 +541,13 @@ class SetsController extends CrudServiceController {
         if (count($entities)) { // YES
           // Move the Entity Information to become Result Header
           $this->moveEntityHeader($entities[0], $return);
-          $return['__type'] = 'entity-set';
           $return['entities'] = $entities;
+        } else {
+          $return['entities'] = [];
         }
+
+        // Create Base Entity Set Identified
+        $return['__type'] = 'entity-set';
         break;
       default:
         $return = $results;

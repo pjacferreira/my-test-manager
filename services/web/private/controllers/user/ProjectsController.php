@@ -482,9 +482,6 @@ class ProjectsController extends CrudServiceController {
           $header = false;
         }
 
-        // Create Base Entity Set Identified
-        $return['__type'] = 'entity-set';
-
         // Do we have entities to display?
         if (count($entities)) { // YES
           // Move the Entity Information to become Result Header
@@ -493,6 +490,9 @@ class ProjectsController extends CrudServiceController {
         } else {
           $return['entities'] = [];
         }
+
+        // Create Base Entity Set Identified
+        $return['__type'] = 'entity-set';
         break;
       default:
         $return = $results;

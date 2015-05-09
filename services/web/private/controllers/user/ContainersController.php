@@ -600,10 +600,13 @@ class ContainersController extends BaseServiceController {
         if (count($entities)) { // YES
           // Move the Entity Information to become Result Header
           $this->moveEntityHeader($entities[0], $return);
+          $return['entities'] = $entities;
+        } else {
+          $return['entities'] = [];
         }
 
+        // Create Base Entity Set Identified
         $return['__type'] = 'entity-set';
-        $return['entities'] = $entities;
         break;
       default:
         $return = $results;
@@ -632,7 +635,7 @@ class ContainersController extends BaseServiceController {
       // Does this Entity Object Have a Creator Property?
       if (property_exists($entity, 'creator')) { // YES
         // Set Modifier
-        $entity->creator = \models\User::extractUserID($user);
+        $entity->creator = \models\User::extractID($user);
 
         // Set the Modification Date and Time
         $now = new \DateTime();
@@ -657,7 +660,7 @@ class ContainersController extends BaseServiceController {
       // Does this Entity Object Have a Modifier Property?
       if (property_exists($entity, 'modifier')) { // YES
         // Set Modifier
-        $entity->modifier = \models\User::extractUserID($user);
+        $entity->modifier = \models\User::extractID($user);
 
         // Set the Modification Date and Time
         $now = new \DateTime();
