@@ -14,5 +14,5 @@ Requirements
     
 # NEW
 
-I have setup a test site, so that you can view a more or less what the application currently looks like.
-[TestCenter Site](http://test-to.com:8080/)
+I have setup a test site, so that you can view a more or less what the application currently looks like
+[TestCenter Site](http://test-to.com:8080/).
