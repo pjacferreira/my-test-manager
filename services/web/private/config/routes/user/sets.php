@@ -57,3 +57,49 @@ $app->map($prefix . '/list/{folder:[0-9]+}/{filter}', array($controller, 'listIn
 $app->map($prefix . '/list/{folder:[0-9]+}/{filter}/{sort}', array($controller, 'listInFolder'));
 $app->map($prefix . '/count/{folder:[0-9]+}', array($controller, 'countInFolder'));
 $app->map($prefix . '/count/{folder:[0-9]+}/{filter}', array($controller, 'countInFolder'));
+
+
+/*
+ * Set<-->Test Controller
+ */
+$controller = new controllers\user\SetTestsController();
+
+/*
+ * Set<->Test Actions
+ */
+
+$prefix = '/set/{set:[0-9]+}/test/{test:[0-9]+}';
+
+$app->map($prefix . '/add', array($controller, 'link'));
+$app->map($prefix . '/add/bol', array($controller, 'linkBOL'));
+$app->map($prefix . '/add/after/{sequence:[0-9]+}', array($controller, 'linkAFTER'));
+$app->map($prefix . '/delete', array($controller, 'unlink'));
+$app->map($prefix . '/move/up', array($controller, 'moveTestUp'));
+$app->map($prefix . '/move/up/{before:[0-9]+}', array($controller, 'moveTestUp'));
+$app->map($prefix . '/move/down', array($controller, 'moveTestDown'));
+$app->map($prefix . '/move/down/{after:[0-9]+}', array($controller, 'moveTestDown'));
+
+/*
+ * Set<->Test Actions by Sequence
+ */
+
+$prefix = '/set/{set:[0-9]+}';
+
+$app->map($prefix . '/delete/{sequence:[0-9]+}', array($controller, 'delete'));
+$app->map($prefix . '/move/{sequence:[0-9]+}/{position:[0-9]+}', array($controller, 'moveDown'));
+$app->map($prefix . '/move/up/{sequence:[0-9]+}', array($controller, 'moveUp'));
+$app->map($prefix . '/move/up/{sequence:[0-9]+}/{before:[0-9]+}', array($controller, 'moveUp'));
+$app->map($prefix . '/move/down/{sequence:[0-9]+}', array($controller, 'moveDown'));
+$app->map($prefix . '/move/down/{sequence:[0-9]+}/{after:[0-9]+}', array($controller, 'moveDown'));
+$app->map($prefix . '/list', array($controller, 'listLinks'));
+$app->map($prefix . '/count', array($controller, 'count'));
+$app->map($prefix . '/renumber', array($controller, 'renumber'));
+
+/*
+ * List All Tests attached to a Set
+ */
+$prefix = '/set/{set:[0-9]+}/tests';
+
+$app->map($prefix . '/list', array($controller, 'listTests'));
+$app->map($prefix . '/count', array($controller, 'count'));
+$app->map($prefix . '/renumber', array($controller, 'renumberTests'));

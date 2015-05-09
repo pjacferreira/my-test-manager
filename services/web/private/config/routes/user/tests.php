@@ -57,3 +57,18 @@ $app->map($prefix . '/list/{folder:[0-9]+}/{filter}', array($controller, 'listIn
 $app->map($prefix . '/list/{folder:[0-9]+}/{filter}/{sort}', array($controller, 'listInFolder'));
 $app->map($prefix . '/count/{folder:[0-9]+}', array($controller, 'countInFolder'));
 $app->map($prefix . '/count/{folder:[0-9]+}/{filter}', array($controller, 'countInFolder'));
+
+/*
+ * List Sets associated with a Test
+ */
+
+/*
+ * Set<-->Test Controller
+ */
+$controller = new controllers\user\SetTestsController();
+
+$prefix = '/test/{test:[0-9]+}/sets';
+
+$app->map($prefix . '/list', array($controller, 'listSets'));
+$app->map($prefix . '/count', array($controller, 'countSets'));
+
