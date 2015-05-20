@@ -39,7 +39,7 @@
   };
 
   function fire_event($container, name, data) {
-    console.log("Event [" + name + "] -  Node [" + data + "]");
+    console.log("Event [" + name + "] -  Node [" + data.id + "]");
     $container.trigger('gridlist.' + name, data);
   }
 
@@ -200,7 +200,7 @@
       return __load_nodes($grid, nodes, settings);
     }
 
-    console.log("Inivalid System State.");
+    console.log("Invalid System State.");
     return false;
   }
 

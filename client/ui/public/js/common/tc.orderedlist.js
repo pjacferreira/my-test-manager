@@ -652,7 +652,7 @@
     'destroy': function() {
       // Do we already have a Grid List in this Spot?
       if (this.data('ol.list')) { // YES: Remove It
-        this.remove('ol.list');
+        this.remove(this.data('ol.list'));
         this.removeData('ol.list');
       }
     },
@@ -747,7 +747,7 @@
           // Build Arguments Array
           $.each(arguments, function(i, v) {
             if (i) {
-              args.push(v)
+              args.push(v);
             }
           });
           if ($.isFunction(command)) { // YES: Then the result of the call will be the tree settings
