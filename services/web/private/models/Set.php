@@ -34,7 +34,7 @@ class Set extends \api\model\AbstractEntity {
   const STATE_IN_DEVELOPMENT = 1;
   // TEST is READY for PRODUCTION
   const STATE_READY = 9;
-  
+
   /**
    *
    * @var integer
@@ -58,6 +58,12 @@ class Set extends \api\model\AbstractEntity {
    * @var string
    */
   public $description;
+
+  /**
+   *
+   * @var integer
+   */
+  public $container;
 
   /**
    *
@@ -123,6 +129,8 @@ class Set extends \api\model\AbstractEntity {
     $this->hasMany("owner", "models\User", "id");
     // A Single Projects can Contain Many Sets
     $this->hasMany("project", "models\Project", "id");
+    // A Single Set has a Single Container
+    $this->hasOne("container", "models\Container", "id");
   }
 
   /**
@@ -177,6 +185,7 @@ class Set extends \api\model\AbstractEntity {
     $this->renumber = (integer) $this->renumber;
     $this->creator = (integer) $this->creator;
     $this->modifier = isset($this->modifier) ? (integer) $this->modifier : null;
+    $this->owner = (integer) $this->owner;
   }
 
   /*
@@ -309,7 +318,7 @@ class Set extends \api\model\AbstractEntity {
    * @param mixed $project Project ID or Project Entity
    * @param array $filter OPTIONAL Filter Condition
    * @param array $order OPTIONAL Sort Order Condition
-   * @return \TestSet[] Related Test Sets
+   * @return \models\Set[] Test Set in Project
    * @throws \Exception On Any Failure
    */
   public static function listInProject($project, $filter = null, $order = null) {
@@ -382,7 +391,7 @@ class Set extends \api\model\AbstractEntity {
    * List the Test Sets Related to the Specified Container
    * 
    * @param mixed $container Container ID or Container Entity
-   * @return \models\Set[] Test Set in Project
+   * @return \models\Set[] Test Set in Container
    * @throws \Exception On Any Failure
    */
   public static function listInFolder($container) {
@@ -416,7 +425,7 @@ class Set extends \api\model\AbstractEntity {
    * Count the Number of Test Sets Related to the Specified Container
    * 
    * @param mixed $project Container ID or Container Entity
-   * @return integer Number of Test under Given Conditions
+   * @return integer Number of Sets under Given Conditions
    * @throws \Exception On Any Failure
    */
   public static function countInFolder($container) {

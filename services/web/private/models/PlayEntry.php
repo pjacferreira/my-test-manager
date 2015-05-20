@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 namespace models;
 
 /**
@@ -67,7 +68,7 @@ class PlayEntry extends \api\model\AbstractEntity {
    *
    * @var integer
    */
-  public $state_code;
+  public $run_code;
 
   /**
    *
@@ -98,23 +99,10 @@ class PlayEntry extends \api\model\AbstractEntity {
    */
   public function initialize() {
     // Define Relations
-    // A Single Run can have Many Play List Entries
-    $this->hasMany("run", "Run", "id");
+    // Each Play List Entry belongs to a Single Run
+    $this->belongsTo("run", "models\Run", "id");
     // A Single User can Be the Modifier for Many Other Users
-    $this->hasMany("modifier", "User", "id");
-  }
-
-  /**
-   * PHALCON per instance Contructor
-   */
-  public function onConstruct() {
-    // Initialize Status Code to 0 (Not Run)
-    $this->status = 0;
-    $this->code = 0;  // Depends on Status
-    //
-    // Make sure the Modification Date is Set
-    $now = new \DateTime();
-    $this->date_modified = $now->format('Y-m-d H:i:s');
+    $this->hasMany("modifier", "models\User", "id");
   }
 
   /**
@@ -123,7 +111,7 @@ class PlayEntry extends \api\model\AbstractEntity {
    * @return string Play Lists Table Name
    */
   public function getSource() {
-    return "t_run_playlists";
+    return "t_playlists";
   }
 
   /**
@@ -133,16 +121,15 @@ class PlayEntry extends \api\model\AbstractEntity {
    */
   public function columnMap() {
     return array(
-        'id' => 'id',
-        'id_run' => 'run',
-        'sequence' => 'sequence',
-        'id_test' => 'test',
-        'id_step' => 'step',
-        'status' => 'state',
-        'code' => 'state_code',
-        'comment' => 'comment',
-        'id_modifier' => 'modifier',
-        'dt_modified' => 'date_modified'
+      'id' => 'id',
+      'id_run' => 'run',
+      'sequence' => 'sequence',
+      'id_test' => 'test',
+      'id_step' => 'step',
+      'run_code' => 'run_code',
+      'comment' => 'comment',
+      'id_modifier' => 'modifier',
+      'dt_modified' => 'date_modified'
     );
   }
 
@@ -151,8 +138,13 @@ class PlayEntry extends \api\model\AbstractEntity {
    */
   public function afterFetch() {
     $this->id = (integer) $this->id;
+    $this->sequence = (integer) $this->sequence;
+    $this->test = (integer) $this->test;
+    $this->step = (integer) $this->step;
+    $this->code = (integer) $this->run_code;
+    $this->modifier = isset($this->modifier) ? (integer) $this->modifier : null;
   }
-  
+
   /*
    * ---------------------------------------------------------------------------
    * AbstractEntity: Overrides
@@ -177,21 +169,21 @@ class PlayEntry extends \api\model\AbstractEntity {
   /**
    * Retrieves a Map representation of the Entities Field Values
    * 
+   * @param boolean $header (DEFAULT = true) Add Entity Header Information?
    * @return array Map of field <--> value tuplets
    */
-  public function toArray() {
-    $array = parent::toArray();
+  public function toArray($header = true) {
+    $array = parent::toArray($header);
 
-    $array = $this->addProperty($array, 'id');
-    $array = $this->addReferencePropertyIfNotNull($array, 'run');
-    $array = $this->addProperty($array, 'sequence');
-    $array = $this->addReferencePropertyIfNotNull($array, 'test');
-    $array = $this->addReferencePropertyIfNotNull($array, 'step');
-    $array = $this->addProperty($array, 'state');
-    $array = $this->addProperty($array, 'state_code');
-    $array = $this->addPropertyIfNotNull($array, 'comment');
-    $array = $this->addReferencePropertyIfNotNull($array, 'modifier');
-    $array = $this->addPropertyIfNotNull($array, 'date_modified');
+    $array = $this->addKeyProperty($array, 'id', $header);
+    $array = $this->addReferencePropertyIfNotNull($array, 'run', null, $header);
+    $array = $this->addProperty($array, 'sequence', null, $header);
+    $array = $this->addReferencePropertyIfNotNull($array, 'test', null, $header);
+    $array = $this->addReferencePropertyIfNotNull($array, 'step', null, $header);
+    $array = $this->addPropertyIfNotNull($array, 'run_code', null, $header);
+    $array = $this->addPropertyIfNotNull($array, 'comment', null, $header);
+    $array = $this->addReferencePropertyIfNotNull($array, 'modifier', null, $header);
+    $array = $this->addPropertyIfNotNull($array, 'date_modified', null, $header);
 
     return $array;
   }
@@ -210,6 +202,48 @@ class PlayEntry extends \api\model\AbstractEntity {
    * PHALCON Model Extensions
    * ---------------------------------------------------------------------------
    */
+
+  /**
+   * Create a Play List from a Run
+   * 
+   * @param models\Run $run Run Entity
+   * @throws \Exception On Any Failure
+   */
+  public static function createPlayList(Run $run) {
+    $id_run = $run->id;
+
+    // Instantiate the Query
+    $pqhl = 'SELECT s.test, t.name, ts.id as step, ts.title, ts.description
+             FROM models\Run r
+             JOIN models\SetTest s ON r.[set] = s.[set]
+             JOIN models\Test t ON s.test = t.id
+             JOIN models\TestStep ts ON t.id = ts.test
+             WHERE r.id = :id:
+             ORDER BY s.sequence, ts.sequence';
+    $query = new \Phalcon\Mvc\Model\Query($pqhl, \Phalcon\Di::getDefault());
+
+    // Did we get any results from the Query?
+    $entries = $query->execute(array('id' => $id_run));
+    if ($entries === FALSE) { // NO
+      throw new \Exception("Invalid Run Definition.", 1);
+    }
+
+    // Cycle through entries
+    $playlist = [];
+    $sequence = 1;
+    foreach ($entries as $entry) {
+      // Create a Basic Entry
+      $playentry = new PlayEntry;
+      $playentry->sequence = $sequence++;
+      $playentry->run = $id_run;
+      $playentry->test = $entry->test;
+      $playentry->step = $entry->step;
+      // Add to Play List
+      $playlist[] = $playentry;
+    }
+
+    return $playlist;
+  }
 
   /**
    * Find the Play Entry that associates the Run and Test
@@ -233,8 +267,8 @@ class PlayEntry extends \api\model\AbstractEntity {
     }
 
     $entry = self::findFirst(array(
-                "conditions" => 'run = :run: and test = :test:',
-                "bind" => array('run' => $run_id, 'test' => $test_id))
+        "conditions" => 'run = :run: and test = :test:',
+        "bind" => array('run' => $run_id, 'test' => $test_id))
     );
     return $entry !== FALSE ? $entry : null;
   }
@@ -256,8 +290,8 @@ class PlayEntry extends \api\model\AbstractEntity {
 
     // Try to Find the Relation
     $entry = self::findFirst(array(
-                "conditions" => 'run = :run: and sequence = :sequence:',
-                "bind" => array('run' => $run_id, 'sequence' => $sequence))
+        "conditions" => 'run = :run: and sequence = :sequence:',
+        "bind" => array('run' => $run_id, 'sequence' => $sequence))
     );
     return $entry !== FALSE ? $entry : null;
   }
@@ -414,9 +448,9 @@ class PlayEntry extends \api\model\AbstractEntity {
     }
 
     return self::findFirst(array(
-                "conditions" => 'run = :id:',
-                "bind" => array('id' => $run_id),
-                "order" => 'sequence DESC')
+        "conditions" => 'run = :id:',
+        "bind" => array('id' => $run_id),
+        "order" => 'sequence DESC')
     );
   }
 
@@ -435,9 +469,9 @@ class PlayEntry extends \api\model\AbstractEntity {
     }
 
     return self::find(array(
-                "conditions" => 'run = :id:',
-                "bind" => array('id' => $test_id),
-                "order" => "sequence"
+        "conditions" => 'run = :id:',
+        "bind" => array('id' => $test_id),
+        "order" => "sequence"
     ));
   }
 

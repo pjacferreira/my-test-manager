@@ -124,13 +124,17 @@ class Test extends \api\model\AbstractEntity {
   public function initialize() {
     // Define Relations
     // A Single User can Be the Creator for Many Other Users
-    $this->hasMany("creator", "User", "id");
+    $this->hasMany("creator", "models\User", "id");
     // A Single User can Be the Modifier for Many Other Users
-    $this->hasMany("modifier", "User", "id");
+    $this->hasMany("modifier", "models\User", "id");
     // A Single User can Be the Owner for Many Runs
-    $this->hasMany("owner", "User", "id");
+    $this->hasMany("owner", "models\User", "id");
     // A Single Projects can Contain Many Runs
-    $this->hasMany("project", "Project", "id");
+    $this->hasMany("project", "models\Project", "id");
+    // A Single Project is Linked to a Single Container
+    $this->hasOne("container", "models\Container", "id");
+    // A Single Test has a Single Container
+    $this->hasOne("container", "models\Container", "id");
   }
 
   /**

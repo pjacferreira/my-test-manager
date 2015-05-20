@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 namespace models;
 
 /**
@@ -49,12 +50,6 @@ class Run extends \api\model\AbstractEntity {
    *
    * @var string
    */
-  public $group;
-
-  /**
-   *
-   * @var string
-   */
   public $name;
 
   /**
@@ -67,7 +62,13 @@ class Run extends \api\model\AbstractEntity {
    *
    * @var integer
    */
-  public $is_open;
+  public $container;
+
+  /**
+   *
+   * @var integer
+   */
+  public $current_ple;
 
   /**
    *
@@ -79,19 +80,13 @@ class Run extends \api\model\AbstractEntity {
    *
    * @var integer
    */
-  public $code;
+  public $run_code;
 
   /**
    *
    * @var string
    */
   public $comment;
-
-  /**
-   *
-   * @var integer
-   */
-  public $playlist_position;
 
   /**
    *
@@ -135,28 +130,25 @@ class Run extends \api\model\AbstractEntity {
   public function initialize() {
     // Define Relations
     // A Single User can Be the Creator for Many Other Users
-    $this->hasMany("creator", "User", "id");
+    $this->hasMany("creator", "models\User", "id");
     // A Single User can Be the Modifier for Many Other Users
-    $this->hasMany("modifier", "User", "id");
+    $this->hasMany("modifier", "models\User", "id");
     // A Single User can Be the Owner for Many Runs
-    $this->hasMany("owner", "User", "id");
-    // A Single Projects can Contain Many Runs
-    $this->hasMany("project", "Project", "id");
+    $this->hasMany("owner", "models\User", "id");
+    // A Run Belongs To a Single Project
+    $this->belongsTo("project", "models\Project", "id");
+    // A Single Set has a Single Container
+    $this->hasOne("container", "models\Container", "id");
     // A Single Test Set can be Runned Many Times
-    $this->hasMany("set", "Set", "id");
+    $this->hasMany("set", "models\Set", "id");
     // A Single Run can have Point at a Single Play Entry
-    $this->hasOne("playlist_position", "PlayEntry", "id");
+    $this->hasOne("current_ple", "models\PlayEntry", "id");
   }
 
   /**
    * PHALCON per instance Contructor
    */
   public function onConstruct() {
-    // Set the Initial State for the Run
-    $this->is_open = true;
-    $this->state = 0;
-    $this->state_code = 0;
-
     // Make sure the Creation Date is Set
     $now = new \DateTime();
     $this->date_created = $now->format('Y-m-d H:i:s');
@@ -178,22 +170,21 @@ class Run extends \api\model\AbstractEntity {
    */
   public function columnMap() {
     return array(
-        'id' => 'id',
-        'id_project' => 'project',
-        'id_set' => 'set',
-        'run_group' => 'group',
-        'name' => 'name',
-        'description' => 'description',
-        'open' => 'is_open',
-        'state' => 'state',
-        'state_code' => 'code',
-        'comment' => 'comment',
-        'id_playlist_pos' => 'playlist_position',
-        'id_creator' => 'creator',
-        'dt_creation' => 'date_created',
-        'id_modifier' => 'modifier',
-        'dt_modified' => 'date_modified',
-        'id_owner' => 'owner'
+      'id' => 'id',
+      'id_project' => 'project',
+      'id_set' => 'set',
+      'name' => 'name',
+      'description' => 'description',
+      'id_container' => 'container',
+      'id_current_ple' => 'current_ple',
+      'state' => 'state',
+      'run_code' => 'run_code',
+      'comment' => 'comment',
+      'id_creator' => 'creator',
+      'dt_creation' => 'date_created',
+      'id_modifier' => 'modifier',
+      'dt_modified' => 'date_modified',
+      'id_owner' => 'owner'
     );
   }
 
@@ -202,8 +193,17 @@ class Run extends \api\model\AbstractEntity {
    */
   public function afterFetch() {
     $this->id = (integer) $this->id;
+    $this->project = (integer) $this->project;
+    $this->set = (integer) $this->set;
+    $this->container = (integer) $this->container;
+    $this->current_ple = isset($this->current_ple) ? (integer) $this->current_ple : null;
+    $this->state = (integer) $this->state;
+    $this->run_code = (integer) $this->run_code;
+    $this->creator = (integer) $this->creator;
+    $this->modifier = isset($this->modifier) ? (integer) $this->modifier : null;
+    $this->owner = (integer) $this->owner;
   }
-  
+
   /*
    * ---------------------------------------------------------------------------
    * AbstractEntity: Overrides
@@ -228,27 +228,28 @@ class Run extends \api\model\AbstractEntity {
   /**
    * Retrieves a Map representation of the Entities Field Values
    * 
+   * @param boolean $header (DEFAULT = true) Add Entity Header Information?
    * @return array Map of field <--> value tuplets
    */
-  public function toArray() {
-    $array = parent::toArray();
+  public function toArray($header = true) {
+    $array = parent::toArray($header);
 
-    $array = $this->addProperty($array, 'id');
-    $array = $this->addReferencePropertyIfNotNull($array, 'project');
-    $array = $this->addReferencePropertyIfNotNull($array, 'set');
-    $array = $this->addPropertyIfNotNull($array, 'group');
-    $array = $this->addProperty($array, 'name');
-    $array = $this->addPropertyIfNotNull($array, 'description');
-    $array = $this->addProperty($array, 'is_open');
-    $array = $this->addProperty($array, 'state');
-    $array = $this->addProperty($array, 'state_code');
-    $array = $this->addPropertyIfNotNull($array, 'comment');
-    $array = $this->addReferencePropertyIfNotNull($array, 'playlist_position');
-    $array = $this->addReferencePropertyIfNotNull($array, 'creator');
-    $array = $this->addProperty($array, 'date_created');
-    $array = $this->addReferencePropertyIfNotNull($array, 'modifier');
-    $array = $this->addPropertyIfNotNull($array, 'date_modified');
-    $array = $this->addReferencePropertyIfNotNull($array, 'owner');
+    $array = $this->addKeyProperty($array, 'id', $header);
+    $array = $this->addReferencePropertyIfNotNull($array, 'project', null, $header);
+    $array = $this->addReferencePropertyIfNotNull($array, 'set', null, $header);
+    $array = $this->addProperty($array, 'name', null, $header);
+    $array = $this->setDisplayField($array, 'name', $header);
+    $array = $this->addPropertyIfNotNull($array, 'description', null, $header);
+    $array = $this->addReferencePropertyIfNotNull($array, 'container', null, $header);
+    $array = $this->addReferencePropertyIfNotNull($array, 'current_ple', null, $header);
+    $array = $this->addProperty($array, 'state', null, $header);
+    $array = $this->addPropertyIfNotNull($array, 'run_code', null, $header);
+    $array = $this->addPropertyIfNotNull($array, 'comment', null, $header);
+    $array = $this->addReferencePropertyIfNotNull($array, 'creator', null, $header);
+    $array = $this->addProperty($array, 'date_created', null, $header);
+    $array = $this->addReferencePropertyIfNotNull($array, 'modifier', null, $header);
+    $array = $this->addPropertyIfNotNull($array, 'date_modified', null, $header);
+    $array = $this->addReferencePropertyIfNotNull($array, 'owner', null, $header);
     return $array;
   }
 
@@ -273,7 +274,7 @@ class Run extends \api\model\AbstractEntity {
    * @param mixed $run Run Entity (object) / ID (integer)
    * @return mixed Returns the Run ID or 'null' on failure;
    */
-  public static function extractRunID($run) {
+  public static function extractID($run) {
     // Is the parameter an Test Object?
     if (is_object($run) && is_a($run, __CLASS__)) { // YES
       return $run->id;
@@ -300,111 +301,234 @@ class Run extends \api\model\AbstractEntity {
    */
   public static function findInProject($project, $nameid) {
     // Are we able to extract the Project ID from the Parameter?
-    $project_id = \Project::extractID($project);
-    if (isset($project_id)) { // NO
+    $project_id = \models\Project::extractID($project);
+    if (!isset($project_id)) { // NO
       throw new \Exception("Project Parameter is invalid.", 1);
     }
 
-    $conditions = 'project = :project:';
-    $parameters = array('project' => $project_id);
+    $params = [
+      "conditions" => 'project = :project:',
+      "bind" => ['project' => $project_id],
+    ];
+
     // Is the Name/ID Parameters an Integer?
     if (is_int($nameid) && ($nameid >= 0)) { // YES
-      $conditions = 'id = :id: and ' . $conditions;
-      $parameters['id'] = (integer) $nameid;
+      $params['conditions'] .= ' and id = :id:';
+      $params['bind']['id'] = $nameid;
     } else if (is_string($nameid)) { // NO: It's a String
       $nameid = Strings::nullOnEmpty($nameid);
       // Does it have a value?
       if (!isset($nameid)) { // NO
         throw new \Exception("Name/ID Parameter is invalid.", 2);
       }
-      $conditions.= 'name = :name: and ' . $conditions;
-      $parameters['name'] = $nameid;
+      $params['conditions'] .= ' and name = :name:';
+      $params['bind']['name'] = $nameid;
     } else { // UNKNOWN TYPE
       throw new \Exception("Name/ID Parameter is invalid.", 3);
     }
 
-    return self::findFirst(array(
-                "conditions" => $conditions,
-                "bind" => $parameters
-    ));
+    $set = self::findFirst($params);
+    return $set !== FALSE ? $set : null;
   }
 
   /**
    * List the Runs Related to the Specified Project
    * 
    * @param mixed $project Project ID or Project Entity
-   * @return \Run[] Related Runs
+   * @param array $filter OPTIONAL Filter Condition
+   * @param array $order OPTIONAL Sort Order Condition
+   * @return \models\Run[] Runs in Project
    * @throws \Exception On Any Failure
    */
-  public static function listInProject($project) {
+  public static function listInProject($project, $filter = null, $order = null) {
+    assert('isset($project)');
+    assert('($filter === null) || is_array($filter)');
+    assert('($order === null) || is_string($order)');
+
     // Are we able to extract the Project ID from the Parameter?
-    $project_id = \Project::extractID($project);
-    if (isset($project_id)) { // NO
-      throw new \Exception("Project Parameter is invalid.", 1);
+    $id = \models\Project::extractID($project);
+    if (!isset($id)) { // NO
+      throw new \Exception("Parameter is invalid.", 1);
     }
 
-    return self::find(array(
-                "conditions" => 'project = :project:',
-                "bind" => array('project' => $project_id),
-                "order" => 'id'
-    ));
+    // Build Query Conditions
+    $params = [
+      'conditions' => 'project = :id:',
+      'bind' => ['id' => $id],
+      'order' => isset($order) ? $order : 'id'
+    ];
+
+    // Merge in Filter Conditions
+    if (isset($filter)) {
+      $params['conditions'].=' and (' . $filter['conditions'] . ')';
+      $params['bind'] = array_merge($filter['bind'], $params['bind']);
+    }
+
+    // Search for Matching Projects
+    $runs = self::find($params);
+    return $runs !== FALSE ? $runs : [];
   }
 
   /**
    * Count the Number of Runs Related to the Specified Project
    * 
    * @param mixed $project Project ID or Project Entity
+   * @param array $filter Extra Filter conditions to use
    * @return integer Number of Related Runs
    * @throws \Exception On Any Failure
    */
-  public static function countInProject($project) {
+  public static function countInProject($project, $filter = null) {
+    assert('isset($project)');
+    assert('($filter === null) || is_array($filter)');
+
     // Are we able to extract the Project ID from the Parameter?
-    $project_id = \Project::extractID($project);
-    if (isset($project_id)) { // NO
-      throw new \Exception("Project Parameter is invalid.", 1);
+    $id = \models\Project::extractID($project);
+    if (!isset($id)) { // NO
+      throw new \Exception("Parameter is invalid.", 1);
     }
 
-    // Instantiate the Query
-    $pqhl = 'SELECT COUNT(*) FROM Run WHERE project = :id:';
-    $query = new Phalcon\Mvc\Model\Query($pqhl, \Phalcon\Di::getDefault());
+    // Build Query Conditions
+    $params = [
+      'conditions' => 'project = :id:',
+      'bind' => ['id' => $id]
+    ];
 
-    // Execute the query returning a result if any
-    $result = $query->execute(array('id' => $project_id))->getFirst();
-    return (integer) $result['0'];
+    // Merge in Filter Conditions
+    if (isset($filter)) {
+      $params['conditions'].=' and (' . $filter['conditions'] . ')';
+      $params['bind'] = array_merge($filter['bind'], $params['bind']);
+    }
+
+    // Find Child Entries
+    $count = self::count($params);
+
+    // Return Result Set
+    return (integer) $count;
   }
 
   /**
-   * Create a Link's Based on a Test Set
+   * List the Runs Related to the Specified Container
    * 
-   * @param mixed $run Run Set ID / Entity
-   * @param mixed $set Test Set ID / Entity
-   * @return integer Number of Links Created
+   * @param mixed $container Container ID or Container Entity
+   * @return \models\Run[] Runs in Container
    * @throws \Exception On Any Failure
    */
-  public function cloneSetLinks($run, $set) {
-    assert('isset($run) && is_object($run)');
-    assert('isset($set) && is_object($set)');
+  public static function listInFolder($container) {
+    assert('isset($container)');
 
-    // Get the Set of Links in the Test Set
-    $test_links = \SetTest::listInSet($set);
-
-    // Enumerate All the Tests in the Set
-    $run_links = array();
-    foreach ($test_links as $set_link) {
-
-      // Enumerate all the Steps in the Test
-      $test = $set_link->test;
-
-      // Clone Test Set Link Information
-      $link = \RunLink::createLink($run, $test, $set_link->sequence);
-
-      // Save the Link
-      $run_links[] = $link;
+    // Are we able to extract the Container ID from the Parameter?
+    $id = \models\Container::extractContainerID($container);
+    if (!isset($id)) { // NO
+      throw new \Exception("Container Parameter is invalid.", 1);
     }
 
-    // Save the Changes Back to the Database
-    $this->getEntityManager()->flush();
-    return count($run_links);
+    // Instantiate the Query
+    /* NOTE: The choice of the Entity Used with FROM is important, as it
+     * represents the type of entity that will be created, on rehydration.
+     */
+    $pqhl = 'SELECT r.*
+               FROM models\Run r
+               JOIN models\Container c ON c.link = r.id
+               WHERE c.parent = :id: and c.type = :type:
+               ORDER BY s.id';
+
+    // Execute Query and Return Results
+    $runs = self::selectQuery($pqhl, [
+        'id' => $id,
+        'type' => 'R'
+    ]);
+    return $runs !== FALSE ? $runs : [];
+  }
+
+  /**
+   * Count the Number of Runs Related to the Specified Container
+   * 
+   * @param mixed $project Container ID or Container Entity
+   * @return integer Number of Runs under Given Conditions
+   * @throws \Exception On Any Failure
+   */
+  public static function countInFolder($container) {
+    assert('isset($container)');
+
+    // Are we able to extract the Container ID from the Parameter?
+    $id = \models\Container::extractContainerID($container);
+    if (!isset($id)) { // NO
+      throw new \Exception("Container Parameter is invalid.", 1);
+    }
+
+    // Find Child Entries
+    $count = \models\Container::count([
+        'conditions' => 'parent = :id: and type = :type:',
+        'bind' => [ 'id' => $id, 'type' => 'R']
+    ]);
+
+    // Return Result Set
+    return (integer) $count;
+  }
+
+  /**
+   * List the Tests Related to the Specified Run in Play Order
+   * 
+   * @param mixed $run Run ID or Run Entity
+   * @return \models\Test[] Tests in Container
+   * @throws \Exception On Any Failure
+   */
+  public static function listTestsInRun($run) {
+    assert('isset($run)');
+
+    // Are we able to extract the Run ID from the Parameter?
+    $id = self::extractID($run);
+    if (!isset($id)) { // NO
+      throw new \Exception("Run Parameter is invalid.", 1);
+    }
+
+    // Instantiate the Query
+    /* NOTE: The choice of the Entity Used with FROM is important, as it
+     * represents the type of entity that will be created, on rehydration.
+     */
+    $pqhl = 'SELECT t.*
+               FROM models\Test t
+               JOIN models\SetTest s ON s.test = t.id
+               JOIN models\Run r ON r.[set] = s.[set]
+               WHERE r.id = :id: 
+               ORDER BY s.sequence';
+
+    // Execute Query and Return Results
+    $tests = self::selectQuery($pqhl, [
+        'id' => $id
+    ]);
+    return $tests !== FALSE ? $tests : [];
+  }
+
+  /**
+   * Count the Number of Test Related to the Specified Run
+   * 
+   * @param mixed $run Run ID or Run Entity
+   * @return integer Number of Test used in a Given Run
+   * @throws \Exception On Any Failure
+   */
+  public static function countTestsInRun($run) {
+    assert('isset($run)');
+
+    // Are we able to extract the Run ID from the Parameter?
+    $id = self::extractID($run);
+    if (!isset($id)) { // NO
+      throw new \Exception("Run Parameter is invalid.", 1);
+    }
+
+    // Instantiate the Query
+    $pqhl = 'SELECT COUNT(*)
+               FROM models\SetTest s
+               JOIN models\Run r ON r.[set] = s.[set]
+               WHERE r.id = :id:';
+
+    // Execute Query and Return Results
+    $count = self::countQuery($pqhl, [
+        'id' => $id
+    ]);
+
+    // Return Result Set
+    return  $count;
   }
 
   /**
