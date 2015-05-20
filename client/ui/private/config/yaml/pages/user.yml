@@ -46,6 +46,25 @@ user:
     requirements:
       session: 
         start: true       
+
+  ##
+  # Default Settings for Logged In Pages
+  ##
+  menu-nologin:
+    inherit: user
+    template: true
+    includes:
+      body: 'left-sidebar.php'
+      lsidebar: 
+        file: 'user/menus/main.php'
+        required: ['site-js', 'semantic-sidebar', 'jquery-utils', 'services-js']
+        js:
+          files: 'common/menu.js'
+    js:
+      files: 'user/menus/main.js'
+      scripts:
+        on-ready: |
+          initialize_menu('sb_menu','btn_menu');
         
   ##
   # Default Settings for Logged In Pages
@@ -98,9 +117,6 @@ user:
     template: false
     title: 'PAGE:TITLE:USER:HOME'
     includes:
-      body: 'dual-sidebar.php'
-      rsidebar: 
-        file: 'user/menus/context-home.php'
       content: 'user/home.php'
     js:
       files: ['common/session.js', 'user/home.js', 'user/menus/context-home.js']
@@ -159,6 +175,24 @@ user:
         on-load: |
           initialize();
     css: 'user-runs.css'
+
+  ##
+  # User Run Player Page
+  ##
+  player:
+    inherit: 'user:menu'
+    template: false
+    title: 'PAGE:TITLE:USER:PLAYER'
+    includes:
+      content: 'user/player.php'
+    required: ['jquery-jstree']
+    required: ['jquery-contextmenu', 'tc-folderview', 'tc-gridlist', 'tc-cardview']
+    js:
+      files: ['common/session.js', 'common/forms.js', 'user/player.js']
+      scripts:
+        on-load: |
+          initialize();
+    css: 'user-player.css'
 
   ##
   # User Profile Page

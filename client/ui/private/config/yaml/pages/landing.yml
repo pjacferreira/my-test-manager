@@ -32,7 +32,7 @@ landing:
     group: landing
     page: 'page.php'
     includes:
-      head: 'head.php'
+      head: 'landing/head.php'
       body: 'landing/body.php'
     css:
       styles:

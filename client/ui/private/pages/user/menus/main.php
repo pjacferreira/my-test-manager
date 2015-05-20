@@ -13,10 +13,13 @@
         <i class="file text icon"></i><?php echo _("MENU:PAGE:TESTS") ?>
       </a>
       <a class="active item" <?php $this->pageLink('user:sets', 'href') ?> >
-        <i class="list ol icon"></i><?php echo _("MENU:PAGE:SETS") ?>
+        <i class="book ol icon"></i><?php echo _("MENU:PAGE:SETS") ?>
       </a>
       <a class="active item" <?php $this->pageLink('user:runs', 'href') ?> >
-        <i class="play icon"></i><?php echo _("MENU:PAGE:RUNS") ?>
+        <i class="tasks icon"></i><?php echo _("MENU:PAGE:RUNS") ?>
+      </a>
+      <a class="item" <?php $this->pageLink('user:player', 'href') ?> >
+        <i class="play icon"></i><?php echo _("MENU:PAGE:PLAYER") ?>
       </a>
       <a class="item" <?php $this->pageLink('user:profile', 'href') ?> >
         <i class="settings icon"></i><?php echo _("MENU:PAGE:PROFILE") ?>
