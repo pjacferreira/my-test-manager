@@ -438,6 +438,27 @@ abstract class CrudServiceController extends EntityServiceController {
   }
 
   /**
+   * If the Entity Manages it, this sets the User and Timestamp of when the
+   * Entity was modified
+   * 
+   * @param \api\model\AbstractEntity $entity Entity to Base Query on
+   * @param \User $user User to set as the Objects Modifier
+   * @return \api\model\AbstractEntity Modified Entity
+   */
+  protected function setOwner($entity, $user) {
+    // Is the User Set?
+    if (isset($user)) { // YES
+      // Does this Entity Object Have a Modifier Property?
+      if (property_exists($entity, 'owner')) { // YES
+        // Set Modifier
+        $entity->owner = \models\User::extractID($user);
+      }
+    }
+
+    return $entity;
+  }
+  
+  /**
    * Build a PHQL 'SELECT *' Query based on the given conditions
    * 
    * @param \api\model\AbstractEntity $entity Entity to Base Query on
