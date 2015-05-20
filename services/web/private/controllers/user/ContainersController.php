@@ -32,6 +32,22 @@ use api\controller\BaseServiceController;
  * @author Paulo Ferreira <pf at sourcenotes.org>
  */
 class ContainersController extends BaseServiceController {
+
+  protected static $instance = null;
+
+  /**
+   * Singleton Pattern - Get Instance of the Controller
+   * 
+   * @return ContainersController Instance of Controller
+   */
+  public static function getInstance() {
+    if (!isset(self::$instance)) {
+      self::$instance = new ContainersController();
+    }
+
+    return self::$instance;
+  }
+
   /*
    * ---------------------------------------------------------------------------
    *  CONTROLLER: Action Entry Points

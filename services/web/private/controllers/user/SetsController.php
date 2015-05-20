@@ -32,6 +32,22 @@ use api\controller\CrudServiceController;
  * @author Paulo Ferreira <pf at sourcenotes.org>
  */
 class SetsController extends CrudServiceController {
+
+  protected static $instance = null;
+
+  /**
+   * Singleton Pattern - Get Instance of the Controller
+   * 
+   * @return SetsController Instance of Controller
+   */
+  public static function getInstance() {
+    if (!isset(self::$instance)) {
+      self::$instance = new SetsController();
+    }
+
+    return self::$instance;
+  }
+
   /*
    * ---------------------------------------------------------------------------
    *  CONTROLLER: Action Entry Points
@@ -45,7 +61,7 @@ class SetsController extends CrudServiceController {
    * default values for the remaining fields.
    * 
    * @param string $name Test Set name
-   * @param integer $folder Folder ID in which to create the test
+   * @param integer $folder [OPTIONAL] Folder ID in which to create the Set
    * @return string HTTP Body Response
    */
   public function create($name, $folder = null) {
@@ -164,7 +180,7 @@ class SetsController extends CrudServiceController {
   }
 
   /**
-   * Count the Number of Test Setss for the Session Project and in a specific Project 
+   * Count the Number of Test Set for the Session Project and in a specific Project 
    * Container.
    * 
    * @param integer $folder Container ID to List Tests For
@@ -425,7 +441,7 @@ class SetsController extends CrudServiceController {
     $context = $this->preAction($context);
 
     // Remove All Set<-->Test Relations
-    \SetTest::deleteBySet($context->getParameter('entity'));
+    \models\SetTest::deleteBySet($context->getParameter('entity'));
     return $context;
   }
 
@@ -482,7 +498,7 @@ class SetsController extends CrudServiceController {
         // Project
         $project = $context->getParameter('project');
 
-        // Does the Organization with the given ID exist?
+        // Does the Set with the given ID exist?
         $set = \models\Set::findFirst([
             'conditions' => 'project = :project: and id = :id:',
             'bind' => [ 'project' => $project->id, 'id' => $value]
@@ -491,7 +507,7 @@ class SetsController extends CrudServiceController {
           throw new \Exception("Test Set [$value] not found in Current Session Project", 4);
         }
 
-        // Save the Test for the Action
+        // Save the Set for the Action
         $context
           ->setParameter('entity', $set)
           ->setParameter('set', $set);
@@ -558,7 +574,7 @@ class SetsController extends CrudServiceController {
 
   /*
    * ---------------------------------------------------------------------------
-   * OVERRIDE : EntityServiceController
+   * OVERRIDE : CrudServiceController
    * ---------------------------------------------------------------------------
    */
 

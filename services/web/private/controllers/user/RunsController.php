@@ -17,6 +17,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 namespace controllers\user;
 
 use api\controller\ActionContext;
@@ -31,6 +32,22 @@ use api\controller\CrudServiceController;
  * @author Paulo Ferreira <pf at sourcenotes.org>
  */
 class RunsController extends CrudServiceController {
+
+  protected static $instance = null;
+
+  /**
+   * Singleton Pattern - Get Instance of the Controller
+   * 
+   * @return RunsController Instance of Controller
+   */
+  public static function getInstance() {
+    if (!isset(self::$instance)) {
+      self::$instance = new RunsController();
+    }
+
+    return self::$instance;
+  }
+
   /*
    * ---------------------------------------------------------------------------
    *  CONTROLLER: Action Entry Points
@@ -43,15 +60,22 @@ class RunsController extends CrudServiceController {
    * default values for the remaining fields.
    *
    * @param string $name Run Name (Unique within the Project it belongs to)
-   * @param integer $set_id Test Set to create Run From
+   * @param integer $set Test Set on which to base Run
+   * @param integer $folder [OPTIONAL] Folder ID in which to create Run
    * @return string HTTP Body Response
    */
-  public function create($set_id, $name) {
+  public function create($name, $set, $folder = NULL) {
     // Create Action Context
     $context = new ActionContext('create');
-    $context = $context->
-            setIfNotNull('run:name', Strings::nullOnEmpty($name))->
-            setParameter('set:id', (integer) $id);
+
+    // Clean Up Parameter
+    $folder = Strings::nullOnEmpty($folder);
+
+    // Extract Clean (Security) URL Parameters (Overwriting with route parameters where necessary)
+    $context = $context
+      ->setIfNotNull('run:name', Strings::nullOnEmpty($name))
+      ->setIfNotNull('set:id', (integer) $set)
+      ->setIfNotNull('folder:id', isset($folder) ? (integer) $folder : null);
     // Call Action
     return $this->doAction($context);
   }
@@ -65,21 +89,11 @@ class RunsController extends CrudServiceController {
   public function read($id) {
     // Create Action Context
     $context = new ActionContext('read');
+    // Extract Clean (Security) URL Parameters (Overwriting with route parameters where necessary)
+    $context = $context
+      ->setParameter('run:id', (integer) $id);
     // Call Action
-    return $this->doAction($context->setParameter('run:id', (integer) $id));
-  }
-
-  /**
-   * Retrieve the Run with the Given Name.
-   * 
-   * @param string $name Run's Unique Name
-   * @return string HTTP Body Response
-   */
-  public function readByName($name) {
-    // Create Action Context
-    $context = new ActionContext('read');
-    // Call Action
-    return $this->doAction($context->setIfNotNull('run:name', Strings::nullOnEmpty($name)));
+    return $this->doAction($context);
   }
 
   /**
@@ -91,8 +105,11 @@ class RunsController extends CrudServiceController {
   public function update($id) {
     // Create Action Context
     $context = new ActionContext('update');
+    // Extract Clean (Security) URL Parameters (Overwriting with route parameters where necessary)
+    $context = $context
+      ->setParameter('run:id', (integer) $id);
     // Call Action
-    return $this->doAction($context->setParameter('run:id', (integer) $id));
+    return $this->doAction($context);
   }
 
   /**
@@ -104,36 +121,117 @@ class RunsController extends CrudServiceController {
   public function delete($id) {
     // Create Action Context
     $context = new ActionContext('delete');
+    // Extract Clean (Security) URL Parameters (Overwriting with route parameters where necessary)
+    $context = $context
+      ->setParameter('run:id', (integer) $id);
     // Call Action
-    return $this->doAction($context->setParameter('run:id', (integer) $id));
+    return $this->doAction($context);
   }
 
   /**
-   * List of Runs belonging to the Specified/Session Project.
+   * List Run Entities in the Database, in the Specified Session Project.
    * 
-   * @param integer $project_id OPTIONAL Project ID (if not given Session 
-   *   Project is Used)
+   * @param string $filter OPTIONAL Used to filter the list of Runs
+   * @param string $sort OPTIONAL Used to organize the sort order of the list
    * @return string HTTP Body Response
    */
-  public function listProject($project_id = null) {
+  public function listInProject($filter = null, $sort = null) {
     // Create Action Context
-    $context = new ActionContext('list_project');
+    $context = new ActionContext('list');
+    // Build Parameters
+    $context = $context
+      ->setIfNotNull('filter', Strings::nullOnEmpty($filter))
+      ->setIfNotNull('sort', Strings::nullOnEmpty($sort));
     // Call Action
-    return $this->doAction($context->setIfNotNull('project:id', isset($id) ? (integer) $project_id : null));
+    return $this->doAction($context);
   }
 
   /**
-   * Count of Runs belonging to the Specified/Session Project.
+   * List Run Entities in the Database for the Session Project and in a specific 
+   * Project Container.
    * 
-   * @param integer $project_id OPTIONAL Project ID (if not given Session 
-   *   Project is Used)
+   * @param integer $folder Folder ID for Which we want to list the Contained Runs
+   * @param string $filter OPTIONAL Used to filter the list of Runs
+   * @param string $sort OPTIONAL Used to organize the sort order of the list
    * @return string HTTP Body Response
    */
-  public function countProject($project_id = null) {
+  public function listInFolder($folder, $filter = null, $sort = null) {
     // Create Action Context
-    $context = new ActionContext('count_project');
+    $context = new ActionContext('list');
+    // Build Parameters
+    $context = $context
+      ->setParameter('folder:id', (integer) $folder)
+      ->setIfNotNull('filter', Strings::nullOnEmpty($filter))
+      ->setIfNotNull('sort', Strings::nullOnEmpty($sort));
     // Call Action
-    return $this->doAction($context->setIfNotNull('project:id', isset($id) ? (integer) $project_id : null));
+    return $this->doAction($context);
+  }
+
+  /**
+   * List Tests Entities in the Database, for the Specified Run.
+   * 
+   * @param integer $id Run's Unique Identifier
+   * @return string HTTP Body Response
+   */
+  public function listTests($id) {
+    // Create Action Context
+    $context = new ActionContext('list_tests');
+    // Build Parameters
+    $context = $context
+      ->setParameter('run:id', (integer) $id);
+    // Call Action
+    return $this->doAction($context);
+  }
+
+  /**
+   * Count the Number of Runs Entities in the Database, in the Session Project.
+   * 
+   * @param string $filter OPTIONAL Used to filter the list of Runs
+   * @return string HTTP Body Response
+   */
+  public function countInProject($filter = null) {
+    // Create Action Context
+    $context = new ActionContext('count');
+    // Build Parameters
+    $context = $context
+      ->setIfNotNull('filter', Strings::nullOnEmpty($filter));
+    // Call Action
+    return $this->doAction($context);
+  }
+
+  /**
+   * Count the Number of Runs for the Session Project and in a specific Project 
+   * Container.
+   * 
+   * @param integer $folder Container ID to List Tests For
+   * @param string $filter OPTIONAL Filter String
+   * @return string HTTP Body Response
+   */
+  public function countInFolder($folder, $filter = null) {
+    // Create Action Context
+    $context = new ActionContext('count');
+    // Build Parameters
+    $context = $context
+      ->setParameter('folder:id', (integer) $folder)
+      ->setIfNotNull('filter', Strings::nullOnEmpty($filter));
+    // Call Action
+    return $this->doAction($context);
+  }
+
+  /**
+   * Count the Number of Tests for the Given Run.
+   * 
+   * @param integer $id Run's Unique Identifier
+   * @return string HTTP Body Response
+   */
+  public function countTests($id) {
+    // Create Action Context
+    $context = new ActionContext('count_tests');
+    // Build Parameters
+    $context = $context
+      ->setParameter('run:id', (integer) $id);
+    // Call Action
+    return $this->doAction($context);
   }
 
   /*
@@ -143,25 +241,92 @@ class RunsController extends CrudServiceController {
    */
 
   /**
-   * List the Runs in a Specific Project.
+   * List Run Entities
    * 
-   * @param \api\controller\ActionContext $context Incoming Context for Action
-   * @return \Run[] Action Result
-   * @throws \Exception On any type of failure condition
+   * @param \api\controller\ActionContext $context Context for Action
+   * @return \models\Set[] Container Entries
+   * @throws \Exception On failure to perform the action
    */
-  protected function doListProjectAction($context) {
-    return \Run::listRuns($context->getParameter('project'));
+  protected function doListAction($context) {
+    $runs = [];
+    if ($context->hasParameter('folder:id')) {
+      $container = $context->getParameter('folder');
+
+      // List Runs in Folder
+      $runs = \models\Run::listInFolder($container);
+    } else {
+      $project = $context->getParameter('project');
+
+      // List Runs in Project
+      $filter = $this->_buildFilter($context->getParameter('filter'));
+      $order = $this->_buildOrderBy($context->getParameter('sort'), 'name');
+      $runs = \models\Run::listInProject($project, $filter, $order);
+    }
+
+    // Return Result Set
+    return $runs;
   }
 
   /**
-   * Count the Number of Runs in a Specific Project.
+   * List Run Entities
    * 
-   * @param \api\controller\ActionContext $context Incoming Context for Action
-   * @return integer Action Result
-   * @throws \Exception On any type of failure condition
+   * @param \api\controller\ActionContext $context Context for Action
+   * @return \models\Set[] Container Entries
+   * @throws \Exception On failure to perform the action
    */
-  protected function doCountProjectAction($context) {
-    return \Run::countRuns($context->getParameter('project'));
+  protected function doListTestsAction($context) {
+    // Get the Run to List the Tests for
+    $run = $context->getParameter('run');
+
+    // List Tests in Folder
+    $tests = \models\Run::listTestsInRun($run);
+
+    // Return Result Set
+    return $tests;
+  }
+
+  /**
+   * Count Run Entries
+   * 
+   * @param \api\controller\ActionContext $context Context for Action
+   * @return integer Number of TestsSets
+   * @throws \Exception On failure to perform the action
+   */
+  protected function doCountAction($context) {
+    $count = 0;
+    if ($context->hasParameter('folder:id')) {
+      $container = $context->getParameter('folder');
+
+      // Count Runs in Folder
+      $count = \models\Run::countInFolder($container);
+    } else {
+      $project = $context->getParameter('project');
+
+      // Count Runs in Project
+      $filter = $this->_buildFilter($context->getParameter('filter'));
+      $count = \models\Run::countInProject($project, $filter);
+    }
+
+    // Return Result Set
+    return $count;
+  }
+
+  /**
+   * Count Run Entries
+   * 
+   * @param \api\controller\ActionContext $context Context for Action
+   * @return integer Number of TestsSets
+   * @throws \Exception On failure to perform the action
+   */
+  protected function doCountTestsAction($context) {
+    // Get the Run to List the Tests for
+    $run = $context->getParameter('run');
+
+    // Countr Number of Unique Tests in a Run
+    $tests = \models\Run::countTestsInRun($run);
+
+    // Return Result Set
+    return $tests;
   }
 
   /*
@@ -178,16 +343,154 @@ class RunsController extends CrudServiceController {
    * @throws \Exception On any type of failure condition
    */
   protected function sessionChecks($context) {
+    // TODO Required Verification that User Has Required Permission against this Organization and/or Project for the Actions
     // Parameter Validation
     assert('isset($context) && is_object($context)');
 
-    // TODO Required Verification that User Has Required Permission against this Organization and/or Project for the Actions
     // Need a Session for all the Session Commands
     $this->sessionManager->checkInSession();
     $this->sessionManager->checkLoggedIn();
+    $this->sessionManager->checkOrganization();
     $this->sessionManager->checkProject();
 
     return $context;
+  }
+
+  /**
+   * Perform checks the Context for the Action Before it is called.
+   * 
+   * @param \api\controller\ActionContext $context Incoming Context for Action
+   * @return \api\controller\ActionContext Outgoing Context for Action
+   * @throws \Exception On any type of failure condition
+   */
+  protected function contextChecks($context) {
+    // (IF SPECIFIED) Verify that the Folder Belongs to the Project
+    $context = $this->onParameterDo($context, 'folder', function($controller, $context, $action, $value) {
+      // Get Working Project
+      $project = $context->getParameter('project');
+
+      // Does the Folder Belong to the Project?
+      if (($value->type_owner != 'P') || ($value->owner !== $project->id)) { // NO
+        throw new \Exception("Container [{$value->id}] is invalid", 1);
+      }
+
+      return $context;
+    }, ['Create', 'List', 'Count'], null);
+
+    // Verify if the Test Set Name is UNIQUE in the PROJECT and FOLDER
+    $context = $this->onParameterDo($context, 'run:name', function($controller, $context, $action, $value) {
+      // Is the Run Name Unique for the Project?
+      $project = $context->getParameter('project');
+      $run = \models\Run::findFirstByName($project, $value);
+      // Did we find an existing Test Set with the same name?
+      if ($run !== FALSE) { // YES
+        throw new \Exception("Run [$name] already exists in Project.", 2);
+      }
+
+      // Does the Folder already contain an Entity with the same name?
+      $folder = $context->getParameter('folder');
+      if (\models\Container::existsName($folder, $value)) { // YES
+        throw new \Exception("Duplicate Name [{$value}] in Folder.", 3);
+      }
+
+      return $context;
+    }, null, 'Create');
+
+    return $context;
+  }
+
+  /*
+   * ---------------------------------------------------------------------------
+   * CREATE ACTION STAGES Functions
+   * ---------------------------------------------------------------------------
+   */
+
+  /**
+   * Initializes the Entity
+   * 
+   * @param \api\controller\ActionContext $context Context for Action
+   * @param \api\model\AbstractEntity $entity Entity to be Updated
+   * @return \api\model\AbstractEntity Updated Entity
+   * @throws \Exception On failure to create the entity (for any reason)
+   */
+  protected function stageInitializeEntity($context, $entity) {
+    $entity = parent::stageInitializeEntity($context, $entity);
+
+    // Get the Project
+    $project = $context->getParameter('project');
+
+    // Get the Set to Base On
+    $set = $context->getParameter('set');
+
+    // Get the Project Settings
+    $settings = $context->getParameter('project-settings');
+
+    // Get the Container
+    $container = $context->getParameter('run:container');
+
+    // Link the Run to the Project/Set/Container
+    $entity->project = $project->id;
+    $entity->set = $set->id;
+    $entity->container = $container->id;
+
+    // Run set Default State and Run Codes
+    $entity->state = $settings->run_state_create;
+    $entity->run_code = $settings->run_code_create;
+    return $entity;
+  }
+
+  /**
+   * Saves Changes back to the Backend Data Store
+   * 
+   * @param \api\controller\ActionContext $context Context for Action
+   * @param \api\model\AbstractEntity $entity Entity to be Saved
+   * @return \api\model\AbstractEntity Saved Entity
+   * @throws \Exception On failure to create the entity (for any reason)
+   */
+  protected function stagePersistEntity($context, $entity) {
+    // Set the Owner for the Run
+    $this->setOwner($entity, $context->getParameter('cm_user'));
+
+    $entity = parent::stagePersistEntity($context, $entity);
+
+    // Are we creating a new Run?
+    if ($context->getAction() === 'Create') { // YES
+      // Create Play List for Run
+      $playlist = \models\PlayEntry::createPlayList($entity);
+      if (count($playlist)) {
+        // Get the Project Settings
+        $settings = $context->getParameter('project-settings');
+
+        // Initializa and Save each Play List Entry
+        foreach ($playlist as $entry) {
+          $entry->run_code = $settings->run_code_create;
+          $this->_persist($entry);
+        }
+      } else {
+        throw new \Exception("Invalid Test Set [{$id->set}].", 1);
+      }
+
+      // Get the Container
+      $run_container = $context->getParameter('run:container');
+      $run_container->setOwner($entity->id, 'R');
+
+      // Save the Container
+      $this->_persist($run_container);
+
+      // Get the Parent Folder in Which to Create the Run Link
+      $parent = $context->getParameter('folder');
+
+      // Create Folder Link to the Run
+      $run_link = \models\Container::newContainerEntry($parent, $entity->id, $entity->name, 'R');
+
+      // If the Entity Allows it Set the Creation User and Date
+      $this->setCreator($run_link, $context->getParameter('cm_user'));
+
+      // Save the Container
+      $this->_persist($run_link);
+    }
+
+    return $entity;
   }
 
   /*
@@ -195,6 +498,35 @@ class RunsController extends CrudServiceController {
    * BaseController: STAGES
    * ---------------------------------------------------------------------------
    */
+
+  /**
+   * Perform any required preparation, before the Create Action Handler is Called.
+   * 
+   * @param \api\controller\ActionContext $context Incoming Context for Action
+   * @return \api\controller\ActionContext Outgoing Context for Action
+   * @throws \Exception On any type of failure condition
+   */
+  protected function preActionCreate($context) {
+    // Parameter Validation
+    assert('isset($context) && is_object($context)');
+
+    // Call the General Handler 1st (to Setup Context)
+    $context = $this->preAction($context);
+
+    // Name for Container
+    $name = $context->getParameter('run:name');
+
+    // Create the Container for the Organization
+    $container = \models\Container::newRootContainer($name, 'R', true);
+
+    // If the Entity Allows it Set the Creation User and Date
+    $this->setCreator($container, $context->getParameter('user'));
+
+    // Save the Container
+    $this->_persist($container);
+    $context->setParameter('run:container', $container);
+    return $context;
+  }
 
   /**
    * Perform any required preparation, before the Delete Action Handler is Called.
@@ -208,7 +540,7 @@ class RunsController extends CrudServiceController {
     $context = $this->preAction($context);
 
     // Remove Relations to Run
-    \Run::removeRelations($context->getParameter('entity'));
+    \models\Run::removeRelations($context->getParameter('entity'));
     return $context;
   }
 
@@ -223,94 +555,89 @@ class RunsController extends CrudServiceController {
     // Parameter Validation
     assert('isset($context) && is_object($context)');
 
-    // Get the Project for the Active Session
-    $id = $this->sessionManager->getProject();
-    $project = \Project::findFirst($id);
-
-    // Did we find the project?
-    if ($user === FALSE) { // NO
-      throw new \Exception("Project [$id] not found", 1);
-    }
-    $context->setParameter('project', $project);
-
-    // Process 'run:name' Parameter (if it exists)
-    $context = $this->onParameterDo($context, 'run:name', function($controller, $context, $action, $value) {
-      // Try to Find the Run by Name
-      $run = \Run::findFirstByName($context->getParameter('project'), $value);
-
-      // Are we trying to 'create' a new run?
-      if ($action === 'Create') { // YES
-        // Did we find an existing run with the same name?
-        if ($run !== FALSE) { // YES
-          throw new \Exception("Run [$value] already exists.", 2);
-        }
-      } else { // NO: Some other action
-        // Did we find an existing run?
-        if ($run === FALSE) { // NO
-          throw new \Exception("Run [$value] not found", 3);
-        }
-
-        $context->setParameter('entity', $run);
-        $context->setParameter('run', $run);
-      }
-
-      return $context;
-    }, 'Read', 'Create');
-
-    // Process 'set:id' Parameter (if it exists)
-    $context = $this->onParameterDo($context, 'set:id', function($controller, $context, $action, $value) {
-      // Try to Find the Test Set
-      $set = \Set::findFirstByName($context->getParameter('project'), $value);
-
-      // Did we find an existing Test Set?
-      if ($set === FALSE) { // NO
-        throw new \Exception("Set [$value] not found", 4);
-      }
-
-      $context->setParameter('set', $set);
-
-      return $context;
-    }, null, 'Create');
-
     // Get the User for the Active Session
-    $id = $this->sessionManager->getUser();
-    $user = \User::findFirst($id);
+    $user = $this->sessionManager->getUser();
+    $user = \models\User::findFirst($user['id']);
 
     // Did we find the user?
     if ($user === FALSE) { // NO
-      throw new \Exception("User [$id] not found", 5);
+      throw new \Exception("User [$id] not found", 1);
+    }
+    $context = $context
+      ->setParameter('user', $user)
+      ->setParameter('cm_user', $user);
+
+    // Get Project for Session
+    $project = $this->sessionManager->getProject();
+    $project = \models\Project::findFirst($project['id']);
+    if ($project === FALSE) { // NO
+      throw new \Exception("Session Project [$id] is invalid.", 2);
+    }
+    $context = $context->setParameter('project', $project);
+
+    // Are we performing a Create Action?
+    if ($context->getAction() === 'Create') { // YES: Get the Project Settings
+      $settings = \models\ProjectSettings::findFirstByProject($project->id);
+      $context = $context->setParameter('project-settings', $settings);
     }
 
-    return $context->setParameter('user', $user);
-  }
+    // Process 'folder:id' Parameter (if it exists)
+    $context = $this->onParameterDo($context, 'folder:id', function($controller, $context, $action, $value) {
+      // Did we find the Container with the Given ID?
+      $container = \models\Container::findFirst($value);
+      if ($container === FALSE) { // NO
+        throw new \Exception("Container [$value] not found", 3);
+      }
 
-  /**
-   * Perform cleanup, after the Action Handler is Called.
-   * 
-   * @param \api\controller\ActionContext $context Incoming Context for Action
-   * @return \Run Modified Run Entity
-   * @throws \Exception On any type of failure condition
-   */
-  protected function postActionCreate($context) {
-    // Parameter Validation
-    assert('isset($context) && is_object($context)');
+      // TODO: Verify the Folder belongs the Session Project
+      return $context->setParameter('folder', $container);
+    }, ['List', 'Count'], ['Create'], function($controller, $context, $action) {
+      // Get the ROOT Container for the Context Project
+      $project = $context->getParameter('project');
+      return $project->container;
+    });
 
-    // Get the Run that was Previously Created
-    $run = $context->getActionResult();
-    assert('isset($run)');
+    // Process 'set:id' Parameter (if it exists)
+    $context = $this->onParameterDo($context, 'set:id', function($controller, $context, $action, $value) {
+      // Project
+      $project = $context->getParameter('project');
 
-    // Get the Set from Which we want to build the RunLinks
-    \Run::cloneSetLinks($run, $run->set);
+      // Does the Run with the given ID exist?
+      $set = \models\Set::findFirst([
+          'conditions' => 'project = :project: and id = :id:',
+          'bind' => [ 'project' => $project->id, 'id' => $value]
+      ]);
+      if ($set === FALSE) { // NO
+        throw new \Exception("Set [$value] not found in Current Session Project", 4);
+      }
 
-    // Create the Container for the Organization
-    $container = \Container::createContainer("ROOT ORG[{$run->id}]", $run);
-    $container->setSingleLevel(1);
-    if ($container->save() === FALSE) {
-      throw new \Exception("Failed to Create Container for Run [{$run->name}].", 1);
+      return $context->setParameter('set', $set);
+    }, null, ['Create']);
+
+    // Process 'run:id' Parameter (if it exists)
+    if (!$context->hasParameter('entity')) {
+      $context = $this->onParameterDo($context, 'run:id', function($controller, $context, $action, $value) {
+        // Project
+        $project = $context->getParameter('project');
+
+        // Does the Run with the given ID exist?
+        $run = \models\Run::findFirst([
+            'conditions' => 'project = :project: and id = :id:',
+            'bind' => [ 'project' => $project->id, 'id' => $value]
+        ]);
+        if ($run === FALSE) { // NO
+          throw new \Exception("Run [$value] not found in Current Session Project", 4);
+        }
+
+        // Save the Run for the Action
+        $context
+          ->setParameter('entity', $run)
+          ->setParameter('run', $run);
+
+        return $context;
+      }, null, ['Read', 'Update', 'Delete', 'ListTests', 'CountTests']);
     }
-    $run->container = $container;
 
-    // No change to the context
     return $context;
   }
 
@@ -336,27 +663,33 @@ class RunsController extends CrudServiceController {
       case 'Create':
       case 'Read':
       case 'Update':
-      case 'LinkAdd':
-        if (isset($results)) {
-          $return = $results->toArray();
-        }
+        assert('isset($results)');
+        $return = $results->toArray();
         break;
-      case 'ListProject':
-        $return = array();
-        foreach ($results as $set) {
-          $id = $set->getId();
-          $return[$id] = $set->toArray();
-          unset($return[$id]['id']);
+      case 'List':
+      case 'ListTests':
+        $return = [];
+        $entities = [];
+        $header = true;
+        foreach ($results as $project) {
+          $entities[] = $project->toArray($header);
+          $header = false;
         }
-        break;
-      case 'ListContainer':
-        $return = array();
-        foreach ($results as $entries) {
-          $id = $entries->getId();
-          $return[$id] = $entries->toArray();
-          unset($return[$id]['id']);
+
+        // Do we have entities to display?
+        if (count($entities)) { // YES
+          // Move the Entity Information to become Result Header
+          $this->moveEntityHeader($entities[0], $return);
+          $return['entities'] = $entities;
+        } else {
+          $return['entities'] = [];
         }
+
+        // Create Base Entity Set Identified
+        $return['__type'] = 'entity-set';
         break;
+      default:
+        $return = $results;
     }
 
     return $return;
@@ -364,7 +697,7 @@ class RunsController extends CrudServiceController {
 
   /*
    * ---------------------------------------------------------------------------
-   * OVERRIDE : EntityServiceController
+   * OVERRIDE : CrudServiceController
    * ---------------------------------------------------------------------------
    */
 
@@ -374,7 +707,75 @@ class RunsController extends CrudServiceController {
    * @return \Run An instance of a Run Entity, managed by this controller
    */
   protected function createEntity() {
-    return new \Run();
+    return new \models\Run();
+  }
+
+  /*
+   * ---------------------------------------------------------------------------
+   * HELPER FUNCTIONS: Entity DB Persistance
+   * ---------------------------------------------------------------------------
+   */
+
+  /**
+   * 
+   * @param type $filter
+   * @return type
+   */
+  protected function _buildFilter($filter) {
+    $condition = null;
+    if (isset($filter)) {
+      $filter = strtoupper($filter);
+      $filter = str_split($filter);
+      $filter = array_map(function($type) {
+        return "'{$type}'";
+      }, $filter);
+
+      return 'type IN (' . implode(',', $filter) . ')';
+    }
+
+    return null;
+  }
+
+  /**
+   * 
+   * @param type $sort
+   * @param type $default
+   * @return type
+   */
+  protected function _buildOrderBy($sort, $default) {
+    // Do we have Sort Condition Set?
+    if (!isset($sort)) { // NO: User Default
+      return $default;
+    }
+
+    // Explode the Sort Condition into Seperate Fields
+    $fields = explode(',', $sort);
+
+    // Process Each Field Extracting Sort Condition
+    $condition = '';
+    $comma = false;
+    $descdending = false;
+    foreach ($fields as $field) {
+      $field = Strings::nullOnEmpty($field);
+      if (!isset($field)) {
+        continue;
+      }
+
+      $descending = false;
+      if ($field[0] === '!') {
+        $descdending = true;
+        $field = Strings::nullOnEmpty(substr($field, 1));
+      }
+
+      if (isset($field) && property_exists('\models\Container', $field)) {
+        $condition .= $comma ? ", {$field}" : $field;
+        if ($descdending) {
+          $condition.=' DESC';
+        }
+      }
+    }
+
+    return $condition === '' ? $default : $condition;
   }
 
 }

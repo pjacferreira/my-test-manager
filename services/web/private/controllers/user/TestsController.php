@@ -32,6 +32,22 @@ use api\controller\CrudServiceController;
  * @author Paulo Ferreira <pf at sourcenotes.org>
  */
 class TestsController extends CrudServiceController {
+
+  protected static $instance = null;
+
+  /**
+   * Singleton Pattern - Get Instance of the Controller
+   * 
+   * @return TestsController Instance of Controller
+   */
+  public static function getInstance() {
+    if (!isset(self::$instance)) {
+      self::$instance = new TestsController();
+    }
+
+    return self::$instance;
+  }
+
   /*
    * ---------------------------------------------------------------------------
    *  CONTROLLER: Action Entry Points
