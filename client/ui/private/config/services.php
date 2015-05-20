@@ -47,6 +47,13 @@ $di['view'] = function () use ($config) {
 };
 
 /**
+ * Shared Flag : Are we in degug mode
+ */
+$di->setShared('debug',function () use ($config) {
+  return key_exists('debug', $config->application) ? $config->application->debug : false;
+});
+
+/**
  * Shared Service : The URL component is used to generate all kind of urls in the application
  */
 $di->setShared('url', function () use ($config) {

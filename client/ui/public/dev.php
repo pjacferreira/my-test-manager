@@ -41,9 +41,11 @@ function include_with_dev($file) {
   $result = include __DIR__ . "/../private/config/{$file}.php";
 
   // If a Development File Exists - Include it as well
-  file_exists(__DIR__ . "/../private/config/{$file}_dev.php") && include __DIR__ . "/../private/config/{$file}_dev.php";
+  if(file_exists(__DIR__ . "/../private/config/{$file}_dev.php")) {
+    $result_dev = include __DIR__ . "/../private/config/{$file}_dev.php";
+  }
 
-  return $result;
+  return isset($result_dev) ? $result_dev : $result;
 }
 
 try {

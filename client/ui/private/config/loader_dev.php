@@ -42,4 +42,5 @@ $loader->setEventsManager($eventsManager);
 */
 
 // Ready Loader
-$loader->register();
+// $loader->register();
+return null;

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Test Center - Compliance Testing Application (Client UI)
  * Copyright (C) 2012 - 2015 Paulo Ferreira <pf at sourcenotes.org>
@@ -16,6 +17,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 namespace api\templates;
 
 use common\utility\Strings;
@@ -77,8 +79,8 @@ class PageTemplates extends \Phalcon\DI\Injectable {
     if (isset($page)) {
       if (count($page) > 0) {
         return count($page) > 1 ?
-                [Strings::nullOnEmpty($page[0]), Strings::nullOnEmpty($page[1])] :
-                [Strings::nullOnEmpty($page[0]), 'default'];
+          [Strings::nullOnEmpty($page[0]), Strings::nullOnEmpty($page[1])] :
+          [Strings::nullOnEmpty($page[0]), 'default'];
       }
     }
 
@@ -161,14 +163,27 @@ class PageTemplates extends \Phalcon\DI\Injectable {
   protected function normalize_template($group, $id, &$templates) {
     $template = $templates[$id];
 
-    // 1st: Normalize Template (Why? Because an Inherited Template should already come normalized)
-    $template = $this->normalize_libraries($template);
-    $template = $this->normalize_includes($template);
-    $template = $this->normalize_css($template);
-    $template = $this->normalize_js($template);
-    $template = $this->flatten_requirements($template);
+    // Are we in Debug Mode ?
+    $debug = null;
+    if ($this->getDI()->get('debug') && key_exists('debug', $template)) { // YES
+      // Get the Templates Debug Feature?
+      $debug = $template['debug'];
+      unset($template['debug']);
 
-    // 2nd: Expand Inheritance
+      // Normalize Debug Properties
+      $debug = $this->normalize_properties($debug);
+    }
+
+    // 1st: Normalize Template (Why? Because an Inherited Template should already come normalized)
+    $template = $this->normalize_properties($template);
+
+    // 2nd: [OPTIONAL] Merge Debug Parameters
+    if (isset($debug)) {
+      // TODO Implement this correctly (i.e. we need a special recursive merge function).
+      $template = isset($template) ? array_merge($template, $debug) : $debug;
+    }
+
+    // 3rd: Expand Inheritance
     $inherit = Strings::nullOnEmpty(Arrays::get('inherit', $template));
     if (isset($inherit)) {
       list($inherit_group, $inherit_page) = $this->explodeID($inherit);
@@ -186,6 +201,16 @@ class PageTemplates extends \Phalcon\DI\Injectable {
     }
 
     return count($template) ? $template : null;
+  }
+
+  protected function normalize_properties($source) {
+    // Normalize Page/Template Properties
+    $source = $this->normalize_libraries($source);
+    $source = $this->normalize_includes($source);
+    $source = $this->normalize_css($source);
+    $source = $this->normalize_js($source);
+    $source = $this->flatten_requirements($source);
+    return count($source) ? $source : null;
   }
 
   protected function normalize_libraries($template) {
@@ -208,6 +233,29 @@ class PageTemplates extends \Phalcon\DI\Injectable {
   }
 
   protected function normalize_library($library) {
+    // Are we in Debug Mode ?
+    $debug = null;
+    if ($this->getDI()->getShared('debug') && key_exists('debug', $library)) { // YES
+      // Get the Debug Overlay
+      $debug = $library['debug'];
+      unset($library['debug']);
+
+      // Normalize Debug Properties
+      $debug = $this->_normalize_library($debug);
+    }
+
+    // Normalize the Library
+    $library = $this->_normalize_library($library);
+
+    // Do we have a Debug Overlay?
+    if (isset($debug)) { // YES
+      $library = isset($library) ? array_merge($library, $debug) : $debug;
+    }
+
+    return $library;
+  }
+
+  protected function _normalize_library($library) {
     // Normalize 'css'
     $library = $this->normalize_string_array('css', $library);
     if (key_exists('css', $library)) {
@@ -239,6 +287,17 @@ class PageTemplates extends \Phalcon\DI\Injectable {
     if (isset($template)) {
       $includes = Arrays::get('includes', $template);
       if (isset($includes)) {
+        // Are we in Debug Mode ?
+        $debug = null;
+        if ($this->getDI()->getShared('debug') && key_exists('debug', $includes)) { // YES
+          // Get the Debug Overlay
+          $debug = $includes['debug'];
+          unset($includes['debug']);
+
+          // Normalize Debug Properties
+          $debug = $this->normalize_include($debug);
+        }
+
         foreach ($includes as $include => $settings) {
           $settings = $this->normalize_include($settings);
           if (isset($settings)) {
@@ -246,6 +305,11 @@ class PageTemplates extends \Phalcon\DI\Injectable {
           } else {
             unset($includes[$include]);
           }
+        }
+
+        // Do we have a Debug Overlay?
+        if (isset($debug)) { // YES
+          $includes = isset($includes) ? array_merge($includes, $debug) : $debug;
         }
       }
     }
@@ -255,22 +319,20 @@ class PageTemplates extends \Phalcon\DI\Injectable {
   }
 
   protected function normalize_include($include) {
-    if (isset($include)) {
-      if (is_string($include)) {
-        $include = Strings::nullOnEmpty($include);
-        if (isset($include)) {
-          $include = ['file' => $include];
-        }
-      } else if (Arrays::is_map($include)) {
-        $include = $this->normalize_css($include);
-        $include = $this->normalize_js($include);
-        $include = $this->normalize_string_array('required', $include);
-        if (key_exists('file', $include)) {
-          $include = $this->set_or_remove('file', $include, Strings::nullOnEmpty($include['file']));
-        }
-
-        $include = count($include) ? $include : null;
+    if (is_string($include)) {
+      $include = Strings::nullOnEmpty($include);
+      if (isset($include)) {
+        $include = ['file' => $include];
       }
+    } else if (Arrays::is_map($include)) {
+      $include = $this->normalize_css($include);
+      $include = $this->normalize_js($include);
+      $include = $this->normalize_string_array('required', $include);
+      if (key_exists('file', $include)) {
+        $include = $this->set_or_remove('file', $include, Strings::nullOnEmpty($include['file']));
+      }
+
+      $include = count($include) ? $include : null;
     }
 
     return $include;

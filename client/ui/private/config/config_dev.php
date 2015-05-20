@@ -1,7 +1,7 @@
 <?php
 /**
  * Test Center - Compliance Testing Application (Client UI)
- * Copyright (C) 2012 - 2015 Paulo Ferreira <pf at sourcenotes.org>
+ * Copyright (C) 2012-2015 Paulo Ferreira <pf at sourcenotes.org>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -22,27 +22,8 @@
  * @copyright 2015 Paulo Ferreira
  * @author Paulo Ferreira <pf at sourcenotes.org>
  */
-/**
- * Registering an autoloader
- */
-$loader = new \Phalcon\Loader();
 
-// Register Namespace Directories for Search
-if (isset($config->namespaces)) {
-  $loader->registerNamespaces(
-          $config->namespaces->toArray()
-  );
-}
+$config['application']['debug'] = true;
 
-// Register Individual Directories for Search
-$loader->registerDirs(
-        array(
-            $config->application->controllersDir,
-            $config->application->cacheDir,
-            $config->application->viewsDir
-        )
-);
-
-// Ready Loader
-$loader->register();
-return $loader;
+// Return Configuration Container
+return new \Phalcon\Config($config);
