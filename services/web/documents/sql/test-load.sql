@@ -47,13 +47,13 @@ INSERT INTO `t_projects` (`id`, `id_organization`, `name`, `description`, `id_co
 -- Dumping data for table `t_projects_settings`
 --
 
-INSERT INTO `t_projects_settings` (`id_project`, `id_test_dc_state`, `id_test_dud_state`, `id_test_dr_state`, `id_set_dc_state`, `id_set_dud_state`, `id_set_dr_state`, `id_run_dc_state`, `id_run_dud_state`, `id_run_dr_state`, `id_run_drns_state`, `id_run_drip_state`, `id_run_drc_state`) VALUES
-(1, 1, 2, 3, 1, 2, 3, 1, 2, 3, 4, 5, 6),
-(2, 1, 2, 3, 1, 2, 3, 1, 2, 3, 4, 5, 6),
-(3, 1, 2, 3, 1, 2, 3, 1, 2, 3, 4, 5, 6),
-(4, 1, 2, 3, 1, 2, 3, 1, 2, 3, 4, 5, 6),
-(5, 1, 2, 3, 1, 2, 3, 1, 2, 3, 4, 5, 6),
-(6, 1, 2, 3, 1, 2, 3, 1, 2, 3, 4, 5, 6);
+INSERT INTO `t_projects_settings` (`id_project`, `id_run_pass`, `id_run_incomplete`, `id_run_fail`, `id_step_pass`, `id_step_fail`) VALUES
+(1, 1, 3, 4, 5, 6),
+(2, 1, 3, 4, 5, 6),
+(3, 1, 3, 4, 5, 6),
+(4, 1, 3, 4, 5, 6),
+(5, 1, 3, 4, 5, 6),
+(6, 1, 3, 4, 5, 6);
 
 --
 -- Dumping data for table `t_user_orgs`

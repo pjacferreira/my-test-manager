@@ -42,10 +42,12 @@ INSERT INTO `t_i18n` (`id`, `language`, `language3`, `country`, `country3`, `cou
 -- Dumping data for table `t_states`
 --
 
-INSERT INTO `t_states` (`id`, `id_i18n`, `type`, `code`, `s_description`, `l_description`, `id_creator`, `dt_creation`, `id_modifier`, `dt_modified`) VALUES
-(1, 1, 1, 0, 'Created', NULL, 1, '2014-01-01 00:00:00', NULL, NULL),
-(2, 1, 1, 100, 'Under Development', NULL, 1, '2014-01-01 00:00:00', NULL, NULL),
-(3, 1, 1, 900, 'Ready', NULL, 1, '2014-01-01 00:00:00', NULL, NULL),
-(4, 1, 2, 0, 'Not Started', NULL, 1, '2014-01-01 00:00:00', NULL, NULL),
-(5, 1, 2, 100, 'Run in Progress ', NULL, 1, '2014-01-01 00:00:00', NULL, NULL),
-(6, 1, 2, 900, 'Completed', NULL, 1, '2014-01-01 00:00:00', NULL, NULL);
+INSERT INTO `t_states` (`id`, `id_i18n`, `group`, `code`, `s_description`, `l_description`, `id_creator`, `dt_creation`, `id_modifier`, `dt_modified`) VALUES
+(1, 1, 1, 0, 'Passed', NULL, 1, '2014-01-01 00:00:00', NULL, NULL),
+(2, 1, 1, 1, 'Pass with Warnings', NULL, 1, '2014-01-01 00:00:00', NULL, NULL),
+(3, 1, 1, 100, 'Incomplete', NULL, 1, '2014-01-01 00:00:00', NULL, NULL),
+(4, 1, 1, 900, 'Failed', NULL, 1, '2014-01-01 00:00:00', NULL, NULL),
+(5, 1, 2, 0, 'Passed', NULL, 1, '2014-01-01 00:00:00', NULL, NULL),
+(6, 1, 2, 100, 'Passed with Warnings', NULL, 1, '2014-01-01 00:00:00', NULL, NULL),
+(7, 1, 2, 200, 'Passed with Errors', NULL, 1, '2014-01-01 00:00:00', NULL, NULL),
+(8, 1, 2, 900, 'Failed', NULL, 1, '2014-01-01 00:00:00', NULL, NULL);
