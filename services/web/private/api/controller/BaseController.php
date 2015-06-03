@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Test Center - Compliance Testing Application (Web Services)
  * Copyright (C) 2012-2015 Paulo Ferreira <pf at sourcenotes.org>
@@ -16,6 +17,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 namespace api\controller;
 
 use Phalcon\Mvc\Controller;
@@ -50,7 +52,7 @@ class BaseController extends Controller {
     // Is the Header Requesting a Specific Locale?
     $locale = \Locale::acceptFromHttp($_SERVER['HTTP_ACCEPT_LANGUAGE']);
     I18N::initialize($locale, $path, null, $default);
-    
+
     try {
       // Initialize Action/Checks
       $context = $this->do_initAction($context);
@@ -464,8 +466,8 @@ class BaseController extends Controller {
     $error_code = $error_code != 0 ? $error_code : -1;
 
     $response = $this->view->render('service-response.json', array(
-        'error' => array('code' => $error_code, 'message' => $exception->getMessage()),
-        'results' => array('action' => $action, 'parameters' => isset($parameters) ? $parameters : array())));
+      'error' => array('code' => $error_code, 'message' => $exception->getMessage()),
+      'results' => array('action' => $action, 'parameters' => isset($parameters) ? $parameters : array())));
 
     // Set Content Type to JSON
     $this->response->setContentType('application/json');
@@ -530,7 +532,7 @@ class BaseController extends Controller {
 
     return $parameters;
   }
-  
+
   /* ---------------------------------------------------------------------------
    * UTILITY FUNCTIONS
    * ---------------------------------------------------------------------------
@@ -557,16 +559,28 @@ class BaseController extends Controller {
     if (isset($actions) && !is_array($actions)) {
       $actions = $this->arrayOfString((string) $actions);
     }
-    if (isset($reqActions) && !is_array($reqActions)) {
-      $reqActions = $this->arrayOfString((string) $reqActions);
+    if (isset($reqActions)) {
+      if (is_string($reqActions)) {
+        if ($reqActions !== '*') {
+          $reqActions = $this->arrayOfString((string) $reqActions);
+        }
+      } else if (!is_array($reqActions)) {
+        $reqActions = null;
+      }
     }
 
     // Get the Context Action
     $action = $context->getAction();
     assert('isset($action)');
 
-    // See if we have to call the function for 
-    $required = isset($reqActions) && (array_search($action, $reqActions) !== FALSE);
+    // Is the Value Required for the Action?
+    $required = false;
+    if ($reqActions === '*') {
+      $required = true;
+    } else {
+      $required = isset($reqActions) && (array_search($action, $reqActions) !== FALSE);
+    }
+
     $process = true;
     if (!$required) {
       if (isset($actions)) {
@@ -583,13 +597,13 @@ class BaseController extends Controller {
       // If no Value is Set, then see if we have a function that can get an alternative value
       if (!isset($value) && isset($functionOnMissing)) {
         $value = $functionOnMissing($this, $context, $action);
-/* Don't Set the Parameter Value. Why? Because this way we can see if the parameter
- * actually had a value, or a default was used.
-        if (isset($value)) {
+        /* Don't Set the Parameter Value. Why? Because this way we can see if the parameter
+         * actually had a value, or a default was used.
+          if (isset($value)) {
           $context->setParameter($parameter, $value);
-        }
- *
- */
+          }
+         *
+         */
       }
 
       if (isset($value)) {
@@ -600,6 +614,43 @@ class BaseController extends Controller {
     }
 
     return $context;
+  }
+
+  /**
+   * @param $action
+   * @param $in_actions
+   * @param $parameters
+   * @param $function
+   * @return bool
+   */
+  protected function onActionDo($context, $in_actions, $function) {
+    // Parameter Validation
+    assert('isset($context) && is_object($context)');
+    assert('!isset($in_actions) || is_array($in_actions)');
+    assert('isset($function) && is_callable($function)');
+
+    $action = $context->getAction();
+    assert('isset($action)');
+
+    // Process Incoming Parameters
+    if (isset($in_actions)) {
+      if (is_string($in_actions)) {
+        if ($in_actions !== '*') {
+          $in_actions = $this->arrayOfString((string) $in_actions);
+        }
+      } else if (!is_array($in_actions)) {
+        $in_actions = null;
+      }
+    }
+
+    $call_function = false;
+    if (!isset($in_actions)) {
+      $call_function = false;
+    } else {
+      $call_function = ($in_actions === '*') || (array_search($action, $in_actions) !== FALSE);
+    }
+
+    return $call_function ? $function($this, $context, $action) : $context;
   }
 
   /**
@@ -630,38 +681,6 @@ class BaseController extends Controller {
     }
 
     return $results;
-  }
-
-  /**
-   * @param $action
-   * @param $in_actions
-   * @param $parameters
-   * @param $function
-   * @return bool
-   */
-  protected function onActionDo($context, $in_actions, $function) {
-    // Parameter Validation
-    assert('isset($context) && is_object($context)');
-    assert('!isset($in_actions) || is_array($in_actions)');
-    assert('isset($function) && is_callable($function)');
-
-    $action = $context->getAction();
-    assert('isset($action)');
-
-    $call_function = false;
-    if (!isset($in_actions)) {
-      $call_function = true;
-    } else if (is_array($in_actions)) {
-      if (array_search($action, $in_actions) !== FALSE) {
-        $call_function = true;
-      }
-    } else if (is_string($in_actions)) {
-      if ($action === $in_actions) {
-        $call_function = true;
-      }
-    }
-
-    return $call_function ? $function($this, $context, $action) : $context;
   }
 
   /**
