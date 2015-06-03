@@ -64,7 +64,7 @@ class ContainersController extends BaseServiceController {
     // Create and Initialize Action Context
     $context = new ActionContext('root');
     $context = $context
-      ->setParameter('entry:id', (integer) $entry);
+      ->setRequiredInteger('entry:id', $entry);
 
     // Call Action
     return $this->doAction($context);
@@ -80,7 +80,7 @@ class ContainersController extends BaseServiceController {
     // Create and Initialize Action Context
     $context = new ActionContext('parent');
     $context = $context
-      ->setParameter('entry:id', (integer) $entry);
+      ->setRequiredInteger('entry:id', $entry);
 
     // Call Action
     return $this->doAction($context);
@@ -99,8 +99,8 @@ class ContainersController extends BaseServiceController {
 
     // Initialize Context
     $context = $context
-      ->setParameter('parent:id', (integer) $parent)
-      ->setIfNotNull('name', Strings::nullOnEmpty($name));
+      ->setRequiredInteger('parent:id', $parent)
+      ->setRequiredString('name', $name);
 
     // Call Action
     return $this->doAction($context);
@@ -133,8 +133,8 @@ class ContainersController extends BaseServiceController {
 
     // Initialize Context
     $context = $context
-      ->setParameter('parent:id', (integer) $parent)
-      ->setIfNotNull('folder:name', Strings::nullOnEmpty($name))
+      ->setRequiredInteger('parent:id', $parent)
+      ->setRequiredString('folder:name', $name)
       ->setParameter('folder:single_level', $single_level);
 
     // Call Action
@@ -152,8 +152,8 @@ class ContainersController extends BaseServiceController {
     // Create and Initialize Action Context
     $context = new ActionContext('rename');
     $context = $context
-      ->setParameter('folder:id', (integer) $folder)
-      ->setIfNotNull('folder:name', Strings::nullOnEmpty($new_name));
+      ->setRequiredInteger('folder:id', $folder)
+      ->setRequiredString('folder:name', $new_name);
 
     // Call Action
     return $this->doAction($context);
@@ -170,8 +170,8 @@ class ContainersController extends BaseServiceController {
     // Create and Initialize Action Context
     $context = new ActionContext('move');
     $context = $context
-      ->setParameter('entry:id', (integer) $entry)
-      ->setParameter('parent:id', (integer) $new_parent);
+      ->setRequiredInteger('entry:id', $entry)
+      ->setRequiredInteger('parent:id', $new_parent);
 
     // Call Action
     return $this->doAction($context);
@@ -187,7 +187,79 @@ class ContainersController extends BaseServiceController {
     // Create and Initialize Action Context
     $context = new ActionContext('delete');
     $context = $context
-      ->setParameter('entry:id', (integer) $entry);
+      ->setRequiredInteger('entry:id', $entry);
+
+    // Call Action
+    return $this->doAction($context);
+  }
+
+  /**
+   * List Folder Entries (With Optional Filter and Sort Conditions)
+   * 
+   * @param integer $folder Container to List Contents for
+   * @param string $filter [DEFAULT null = All Items] Name Filter
+   * @param string $sort [DEFAULT null = By Name Ascending] Sort Conditions
+   * @return string HTTP Body Response
+   */
+  public function listFolders($folder, $filter = null, $sort = null) {
+    return $this->listEntries($folder, 'F', $filter, $sort);
+  }
+
+  /**
+   * List Tests in Folder (With Optional Filter and Sort Conditions)
+   * 
+   * @param integer $folder Container to List Contents for
+   * @param string $filter [DEFAULT null = All Items] Name Filter
+   * @param string $sort [DEFAULT null = By Name Ascending] Sort Conditions
+   * @return string HTTP Body Response
+   */
+  public function listTests($folder, $filter = null, $sort = null) {
+    // Create and Initialize Action Context
+    $context = new ActionContext('list_tests');
+    $context = $context
+      ->setRequiredInteger('folder:id', $folder)
+      ->setOptionalString('filter', $filter)
+      ->setOptionalString('sort', $sort);
+
+    // Call Action
+    return $this->doAction($context);
+  }
+
+  /**
+   * List Test Set in Folder (With Optional Filter and Sort Conditions)
+   * 
+   * @param integer $folder Container to List Contents for
+   * @param string $filter [DEFAULT null = All Items] Name Filter
+   * @param string $sort [DEFAULT null = By Name Ascending] Sort Conditions
+   * @return string HTTP Body Response
+   */
+  public function listSets($folder, $filter = null, $sort = null) {
+    // Create and Initialize Action Context
+    $context = new ActionContext('list_sets');
+    $context = $context
+      ->setRequiredInteger('folder:id', $folder)
+      ->setOptionalString('filter', $filter)
+      ->setOptionalString('sort', $sort);
+
+    // Call Action
+    return $this->doAction($context);
+  }
+
+  /**
+   * List Runs in Folder (With Optional Filter and Sort Conditions)
+   * 
+   * @param integer $folder Container to List Contents for
+   * @param string $filter [DEFAULT null = All Items] Name Filter
+   * @param string $sort [DEFAULT null = By Name Ascending] Sort Conditions
+   * @return string HTTP Body Response
+   */
+  public function listRuns($folder, $filter = null, $sort = null) {
+    // Create and Initialize Action Context
+    $context = new ActionContext('list_runs');
+    $context = $context
+      ->setRequiredInteger('folder:id', $folder)
+      ->setOptionalString('filter', $filter)
+      ->setOptionalString('sort', $sort);
 
     // Call Action
     return $this->doAction($context);
@@ -196,34 +268,84 @@ class ContainersController extends BaseServiceController {
   /**
    * List Folder Entries (With Optional Type Filter)
    * 
-   * @param $folder $id Container to List Contents for
-   * @param string $filter [DEFAULT null = All Items] List Items in the Container
+   * @param integer $folder Container to List Contents for
+   * @param string $type [DEFAULT null = All Items] List Items in the Container
+   * @param string $filter [DEFAULT null = All Items] Name Filter
+   * @param string $sort [DEFAULT null = By Name Ascending] Sort Conditions
    * @return string HTTP Body Response
    */
-  public function listEntries($folder, $filter = null) {
+  public function listEntries($folder, $type = null, $filter = null, $sort = null) {
     // Create and Initialize Action Context
     $context = new ActionContext('list');
     $context = $context
-      ->setParameter('folder:id', (integer) $folder)
-      ->setIfNotNull('filter', Strings::nullOnEmpty($filter));
+      ->setRequiredInteger('folder:id', $folder)
+      ->setOptionalString('type', $type)
+      ->setOptionalString('filter', $filter)
+      ->setOptionalString('sort', $sort);
 
     // Call Action
     return $this->doAction($context);
   }
 
   /**
-   * Count Folder Entries (With Optional Type Filter)
+   * Count Folder Entries (With Optional Name Filter)
    * 
-   * @param $folder $id Container to Count Entries for
-   * @param string $filter [DEFAULT null = All Items] Item Types to Count in the Container
+   * @param integer $folder Container to Count Entries for
+   * @param string $filter [DEFAULT null = All Items] Name Filter
    * @return string HTTP Body Response
    */
-  public function countEntries($id, $filter = null) {
+  public function countFolders($folder, $filter = null) {
+    return $this->countEntries($folder, 'F', $filter);
+  }
+
+  /**
+   * Count Test Entries (With Optional Name Filter)
+   * 
+   * @param integer $folder Container to Count Entries for
+   * @param string $filter [DEFAULT null = All Items] Name Filter
+   * @return string HTTP Body Response
+   */
+  public function countTests($folder, $filter = null) {
+    return $this->countEntries($folder, 'T', $filter);
+  }
+
+  /**
+   * Count Test Set Entries (With Optional Name Filter)
+   * 
+   * @param integer $folder Container to Count Entries for
+   * @param string $filter [DEFAULT null = All Items] Name Filter
+   * @return string HTTP Body Response
+   */
+  public function countSets($folder, $filter = null) {
+    return $this->countEntries($folder, 'S', $filter);
+  }
+
+  /**
+   * Count Run Entries (With Optional Name Filter)
+   * 
+   * @param integer $folder Container to Count Entries for
+   * @param string $filter [DEFAULT null = All Items] Name Filter
+   * @return string HTTP Body Response
+   */
+  public function countRuns($folder, $filter = null) {
+    return $this->countEntries($folder, 'R', $filter);
+  }
+
+  /**
+   * Count Folder Entries (With Optional Type Filter)
+   * 
+   * @param integer $folder Container to Count Entries for
+   * @param string $type [DEFAULT null = All Items] List Items in the Container
+   * @param string $filter [DEFAULT null = All Items] Name Filter
+   * @return string HTTP Body Response
+   */
+  public function countEntries($folder, $type = null, $filter = null) {
     // Create and Initialize Action Context
     $context = new ActionContext('count');
     $context = $context
-      ->setParameter('folder:id', (integer) $id)
-      ->setIfNotNull('filter', Strings::nullOnEmpty($filter));
+      ->setRequiredInteger('folder:id', $folder)
+      ->setOptionalString('type', $type)
+      ->setOptionalString('filter', $filter);
 
     // Call Action
     return $this->doAction($context);
@@ -412,6 +534,87 @@ class ContainersController extends BaseServiceController {
   }
 
   /**
+   * List Tests in a Specific Folder
+   * 
+   * @param \api\controller\ActionContext $context Context for Action
+   * @return \models\Container[] Container Entries
+   * @throws \Exception On failure to perform the action
+   */
+  protected function doListTestsAction($context) {
+    // Get the Current Container
+    $folder = $context->getParameter('folder');
+    $filter = $context->getParameter('filter');
+    $sort = $context->getParameter('sort');
+    assert('isset($folder)');
+
+    // Do we have a Filter Defined?
+    $filter = $this->_buildFilter(null, $filter);
+
+    // Do we have a Sort Condition Defined?
+    $orderBy = $this->_buildOrderBy($sort, 'name');
+
+    // Find Child Entries
+    $tests = \models\Test::listInFolder($folder, $filter, $orderBy);
+
+    // Return Result Set
+    return $tests;
+  }
+
+  /**
+   * List Tests in a Specific Folder
+   * 
+   * @param \api\controller\ActionContext $context Context for Action
+   * @return \models\Container[] Container Entries
+   * @throws \Exception On failure to perform the action
+   */
+  protected function doListSetsAction($context) {
+    // Get the Current Container
+    $folder = $context->getParameter('folder');
+    $filter = $context->getParameter('filter');
+    $sort = $context->getParameter('sort');
+    assert('isset($folder)');
+
+    // Do we have a Filter Defined?
+    $filter = $this->_buildFilter(null, $filter);
+
+    // Do we have a Sort Condition Defined?
+    $orderBy = $this->_buildOrderBy($sort, 'name');
+
+    // Find Sets
+    $sets = \models\Set::listInFolder($folder, $filter, $orderBy);
+
+    // Return Result Set
+    return $sets;
+  }
+
+  /**
+   * List Runs in a Specific Folder
+   * 
+   * @param \api\controller\ActionContext $context Context for Action
+   * @return \models\Container[] Container Entries
+   * @throws \Exception On failure to perform the action
+   */
+  protected function doListRunsAction($context) {
+    // Get the Current Container
+    $folder = $context->getParameter('folder');
+    $filter = $context->getParameter('filter');
+    $sort = $context->getParameter('sort');
+    assert('isset($folder)');
+
+    // Do we have a Filter Defined?
+    $filter = $this->_buildFilter(null, $filter);
+
+    // Do we have a Sort Condition Defined?
+    $orderBy = $this->_buildOrderBy($sort, 'name');
+
+    // Find Runs
+    $runs = \models\Run::listInFolder($folder, $filter, $orderBy);
+
+    // Return Result Set
+    return $runs;
+  }
+
+  /**
    * List Child Entries
    * 
    * @param \api\controller\ActionContext $context Context for Action
@@ -421,27 +624,19 @@ class ContainersController extends BaseServiceController {
   protected function doListAction($context) {
     // Get the Current Container
     $folder = $context->getParameter('folder');
+    $type = $context->getParameter('type');
     $filter = $context->getParameter('filter');
     $sort = $context->getParameter('sort');
     assert('isset($folder)');
 
-    // Create Query Conditons
-    $params = [
-      'conditions' => 'parent = :id:',
-      'bind' => array('id' => $folder->id)
-    ];
+    // Do we have a Filter Defined?
+    $filter = $this->_buildFilter($type, $filter);
 
-    // Do we have a filter set?
-    $filter = $this->_buildFilter($filter);
-    if (isset($filter)) { // YES
-      $params['conditions'] = $params['conditions'] . "AND ({$filter})";
-    }
-
-    // Create a Order By Condition from
-    $params['order'] = $this->_buildOrderBy($sort, 'name');
+    // Do we have a Sort Condition Defined?
+    $orderBy = $this->_buildOrderBy($sort, 'type, name');
 
     // Find Child Entries
-    $entities = \models\Container::find($params);
+    $entities = \models\Container::listEntries($folder, $filter, $orderBy);
 
     // Return Result Set
     return $entities;
@@ -457,23 +652,15 @@ class ContainersController extends BaseServiceController {
   protected function doCountAction($context) {
     // Get the Current Container
     $folder = $context->getParameter('folder');
+    $type = $context->getParameter('type');
     $filter = $context->getParameter('filter');
     assert('isset($folder)');
 
-    // Create Query Conditons
-    $params = [
-      'conditions' => 'parent = :id:',
-      'bind' => array('id' => $folder->id)
-    ];
+    // Do we have a Filter Defined?
+    $filter = $this->_buildFilter($type, $filter);
 
-    // Do we have a filter set?
-    $filter = $this->_buildFilter($filter);
-    if (isset($filter)) { // YES
-      $params['conditions'] = $params['conditions'] . "AND ({$filter})";
-    }
-
-    // Find Child Entries
-    $count = \models\Container::count($params);
+    // Count Child Entries
+    $count = \models\Container::countEntries($folder, $filter);
 
     // Return Result Set
     return (integer) $count;
@@ -528,7 +715,7 @@ class ContainersController extends BaseServiceController {
       }
 
       return $context->setParameter('entry', $entry);
-    }, null, array('Root', 'Parent', 'Move', 'Delete'));
+    }, null, ['Root', 'Parent', 'Move', 'Delete']);
 
     // Process 'folder:id' Parameter (if it exists)
     $context = $this->onParameterDo($context, 'folder:id', function($controller, $context, $action, $value) {
@@ -539,7 +726,11 @@ class ContainersController extends BaseServiceController {
       }
 
       return $context->setParameter('folder', $folder);
-    }, null, array('Rename', 'List', 'Count'));
+    }, null, [
+      'Rename',
+      'List', 'ListTests', 'ListSets', 'ListRuns',
+      'Count', 'CountTests', 'CountSets', 'CountRuns'
+    ]);
 
     // Process 'parent:id' Parameter (if it exists)
     $context = $this->onParameterDo($context, 'parent:id', function($controller, $context, $action, $value) {
@@ -550,7 +741,7 @@ class ContainersController extends BaseServiceController {
       }
 
       return $context->setParameter('parent', $parent);
-    }, null, array('Exists', 'Create', 'Move'));
+    }, null, ['Exists', 'Create', 'Move']);
 
     /* TODO: Problem
      * How do we verify the access rights to the Container or Entry?
@@ -604,6 +795,9 @@ class ContainersController extends BaseServiceController {
         $return = $results->toArray();
         break;
       case 'List':
+      case 'ListTests':
+      case 'ListSets':
+      case 'ListRuns':
         $return = [];
         $entities = [];
         $header = true;
@@ -761,55 +955,61 @@ class ContainersController extends BaseServiceController {
     return $registry->executeAction($entity->type, 'delete', [$entity], false);
   }
 
-  protected function _buildFilter($filter) {
+  protected function _buildFilter($type, $filter = null) {
     $condition = null;
-    if (isset($filter)) {
-      $filter = strtoupper($filter);
-      $filter = str_split($filter);
-      $filter = array_map(function($type) {
+    if (isset($type)) {
+      $type = strtoupper($type);
+      $type = str_split($type);
+      $type = array_map(function($type) {
         return "'{$type}'";
-      }, $filter);
+      }, $type);
 
-      return 'type IN (' . implode(',', $filter) . ')';
+      if (count($type)) {
+        return count($type) === 1 ? ['type' => ['=', $type[0]]] : ['type' => ['IN', $type]];
+      }
     }
 
     return null;
   }
 
-  protected function _buildOrderBy($sort, $default) {
-    // Do we have Sort Condition Set?
-    if (!isset($sort)) { // NO: User Default
-      return $default;
-    }
+  protected function _buildOrderBy($sort, $default = null) {
+    // Create Default OrderBy Condition
+    $default = isset($default) ? $this->_sequenceOrderBy($default) : null;
+    return isset($sort) ? $this->_sequenceOrderBy($default) : $default;
+  }
 
+  protected function _sequenceOrderBy($sequence) {
     // Explode the Sort Condition into Seperate Fields
-    $fields = explode(',', $sort);
+    $fields = explode(',', $sequence);
 
-    // Process Each Field Extracting Sort Condition
-    $condition = '';
-    $comma = false;
-    $descdending = false;
+    // Process Each Field Extracting Order By Condition
+    $conditions = [];
     foreach ($fields as $field) {
       $field = Strings::nullOnEmpty($field);
       if (!isset($field)) {
         continue;
       }
 
-      $descending = false;
-      if ($field[0] === '!') {
-        $descdending = true;
-        $field = Strings::nullOnEmpty(substr($field, 1));
-      }
-
-      if (isset($field) && property_exists('\models\Container', $field)) {
-        $condition .= $comma ? ", {$field}" : $field;
-        if ($descdending) {
-          $condition.=' DESC';
-        }
+      $ascending = $this->_orderBy($field);
+      if (isset($field)) {
+        $conditions[$field] = $ascending;
       }
     }
 
-    return $condition === '' ? $default : $condition;
+    return $conditions;
+  }
+
+  protected function _orderBy(&$field) {
+    $ascending = true;
+    $field = Strings::nullOnEmpty($field);
+    if (isset($field)) {
+      if ($field[0] === '!') {
+        $ascending = false;
+        $field = count($field) > 1 ? Strings::nullOnEmpty(substr($field, 1)) : null;
+      }
+    }
+
+    return $ascending;
   }
 
 }

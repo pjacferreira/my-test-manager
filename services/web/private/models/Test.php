@@ -30,6 +30,9 @@ use common\utility\Strings;
  */
 class Test extends \api\model\AbstractEntity {
 
+  // Add Complex PHQL Handler
+  use \api\model\MixinComplexQueries;
+
   // INITIAL STATE - Test has been Created but Not Modified
   const STATE_CREATED = 0;
   // TEST is STILL BEING WRITTEN
@@ -132,9 +135,7 @@ class Test extends \api\model\AbstractEntity {
     // A Single Projects can Contain Many Runs
     $this->hasMany("project", "models\Project", "id");
     // A Single Project is Linked to a Single Container
-    $this->hasOne("container", "models\Container", "id");
-    // A Single Test has a Single Container
-    $this->hasOne("container", "models\Container", "id");
+//    $this->hasOne("container", "models\Container", "id");
   }
 
   /**
@@ -399,11 +400,11 @@ class Test extends \api\model\AbstractEntity {
    * @return \models\Test[] Test in Project
    * @throws \Exception On Any Failure
    */
-  public static function listInFolder($container) {
-    assert('isset($container)');
+  public static function listInFolder($folder, $filter = null, $order = null) {
+    assert('isset($folder)');
 
     // Are we able to extract the Container ID from the Parameter?
-    $id = \models\Container::extractContainerID($container);
+    $id = \models\Container::extractID($folder);
     if (!isset($id)) { // NO
       throw new \Exception("Container Parameter is invalid.", 1);
     }
@@ -412,18 +413,22 @@ class Test extends \api\model\AbstractEntity {
     /* NOTE: The choice of the Entity Used with FROM is important, as it
      * represents the type of entity that will be created, on rehydration.
      */
-    $pqhl = 'SELECT t.*' .
+    $phql = 'SELECT t.*' .
       ' FROM models\Test t' .
       ' JOIN models\Container c' .
-      ' WHERE c.parent = :id: and c.type = :type: and c.link = t.id' .
-      ' ORDER BY t.id';
+      ' WHERE c.parent = :id: and c.type = :type: and c.link = t.id';
+
+    // Apply Filter and Order By (if any)
+    $phql = self::applyOrder($order, self::applyFilter($filter, $phql), 't');
 
     // Execute Query and Return Results
-    $tests = self::selectQuery($pqhl, [
+    $tests = self::selectQuery($phql, [
         'id' => $id,
         'type' => 'T'
     ]);
-    return $tests !== FALSE ? $tests : [];
+
+    // Return Result Set
+    return $tests === FALSE ? [] : $tests;
   }
 
   /**
@@ -433,20 +438,25 @@ class Test extends \api\model\AbstractEntity {
    * @return integer Number of Test under Given Conditions
    * @throws \Exception On Any Failure
    */
-  public static function countInFolder($container) {
+  public static function countInFolder($container, $filter = null) {
     assert('isset($container)');
 
     // Are we able to extract the Container ID from the Parameter?
-    $id = \models\Container::extractContainerID($container);
+    $id = \models\Container::extractID($container);
     if (!isset($id)) { // NO
       throw new \Exception("Container Parameter is invalid.", 1);
     }
 
-    // Find Child Entries
-    $count = \models\Container::count([
-        'conditions' => 'parent = :id: and type = :type:',
-        'bind' => [ 'id' => $id, 'type' => 'T']
-    ]);
+    // Create Query
+    $phql = 'SELECT COUNT(*) as count' .
+      ' FROM models\Container' .
+      ' WHERE parent = :id: and type = :type:';
+
+    // Apply Filter and Order By (if any)
+    $phql = self::applyFilter($filter, $phql);
+
+    // Execute Query and Return Results
+    $count = self::countQuery($phql, [ 'id' => $id, 'type' => 'T']);
 
     // Return Result Set
     return (integer) $count;

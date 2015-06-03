@@ -31,6 +31,9 @@ use common\utility\Strings;
  */
 class Container extends \api\model\AbstractEntity {
 
+  // Add Complex PHQL Handler
+  use \api\model\MixinComplexQueries;
+
   /**
    *
    * @var integer Container ID
@@ -236,6 +239,29 @@ class Container extends \api\model\AbstractEntity {
 
   /*
    * ---------------------------------------------------------------------------
+   * Public Helper Functions
+   * ---------------------------------------------------------------------------
+   */
+
+  /**
+   * Try to Extract a Container ID from the incoming parameter
+   * 
+   * @param mixed $organization The Potential Container (object) or Container ID (integer)
+   * @return mixed Returns the Container ID or 'null' on failure;
+   */
+  public static function extractID($container) {
+    // Is the parameter an Container Object?
+    if (is_object($container) && is_a($container, __CLASS__)) { // YES
+      return $container->id;
+    } else if (is_integer($container) && ($container >= 0)) { // NO: It's a Positive Integer
+      return $container;
+    }
+    // ELSE: None of the above
+    return null;
+  }
+
+  /*
+   * ---------------------------------------------------------------------------
    * Relation Management Functions
    * ---------------------------------------------------------------------------
    */
@@ -262,23 +288,6 @@ class Container extends \api\model\AbstractEntity {
   }
 
   /**
-   * Try to Extract a Container ID from the incoming parameter
-   * 
-   * @param mixed $organization The Potential Container (object) or Container ID (integer)
-   * @return mixed Returns the Container ID or 'null' on failure;
-   */
-  public static function extractContainerID($container) {
-    // Is the parameter an Container Object?
-    if (is_object($container) && is_a($container, __CLASS__)) { // YES
-      return $container->id;
-    } else if (is_integer($container) && ($container >= 0)) { // NO: It's a Positive Integer
-      return $container;
-    }
-    // ELSE: None of the above
-    return null;
-  }
-
-  /**
    * Does the Name Exist in the Container
    * 
    * @param \models\Container $container Parent Container
@@ -287,7 +296,7 @@ class Container extends \api\model\AbstractEntity {
    * @return boolean 'true' The name exists, 'false' otherwise
    */
   public static function existsName($container, $name, $type = null) {
-    $id = self::extractContainerID($container);
+    $id = self::extractID($container);
     $name = Strings::nullOnEmpty($name);
     $type = Strings::nullOnEmpty($type);
 
@@ -317,7 +326,7 @@ class Container extends \api\model\AbstractEntity {
    * @return \models\Container Container Entry or FALSE if none found
    */
   public static function findChildByName($container, $name, $type = null) {
-    $id = self::extractContainerID($container);
+    $id = self::extractID($container);
     $name = Strings::nullOnEmpty($name);
     $type = Strings::nullOnEmpty($type);
 
@@ -430,6 +439,59 @@ class Container extends \api\model\AbstractEntity {
     }
 
     return true;
+  }
+
+  /**
+   * Delete the Folder
+   * 
+   * @param \models\Container $folder Folder to Delete
+   * @param array $filter [DEFAULT null = All Items] Filter Condition
+   * @param array $order [DEFAULT null = No Sort Order] Sort Order for Entries
+   * @return \models\Container[] Entries Found
+   * @throws \Exception On failure to delete 
+   */
+  public static function listEntries(Container $folder, $filter = null, $order = null) {
+    assert('isset($folder)');
+
+    // Create Query
+    $phql = 'SELECT *' .
+      ' FROM models\Container' .
+      ' WHERE parent = :id:';
+
+    // Apply Filter and Order By (if any)
+    $phql = self::applyOrder($order, self::applyFilter($filter, $phql));
+
+    // Execute Query and Return Results
+    $entries = self::selectQuery($phql, ['id' => $folder->id]);
+
+    // Return Result Set
+    return $entries === FALSE ? [] : $entries;
+  }
+
+  /**
+   * Count the Number of Child Entries
+   * 
+   * @param \models\Container $folder Folder to Delete
+   * @param array $filter [DEFAULT null = All Items] Filter Options
+   * @return integer Entries Counted
+   * @throws \Exception On failure to delete 
+   */
+  public static function countEntries(Container $folder, $filter = null) {
+    assert('isset($folder)');
+
+    // Create Query
+    $phql = 'SELECT COUNT(*) as count' .
+      ' FROM models\Container' .
+      ' WHERE parent = :id:';
+
+    // Apply Filter and Order By (if any)
+    $phql = self::applyFilter($filter, $phql);
+
+    // Execute Query and Return Results
+    $count = self::countQuery($phql, ['id' => $folder->id]);
+
+    // Return Result Set
+    return $count;
   }
 
 }

@@ -28,6 +28,9 @@ namespace models;
  */
 class Set extends \api\model\AbstractEntity {
 
+  // Add Complex PHQL Handler
+  use \api\model\MixinComplexQueries;
+  
   // INITIAL STATE - Test has been Created but Not Modified
   const STATE_CREATED = 0;
   // TEST is STILL BEING WRITTEN
@@ -394,11 +397,11 @@ class Set extends \api\model\AbstractEntity {
    * @return \models\Set[] Test Set in Container
    * @throws \Exception On Any Failure
    */
-  public static function listInFolder($container) {
+  public static function listInFolder($containe, $filter = null, $order = null) {
     assert('isset($container)');
 
     // Are we able to extract the Container ID from the Parameter?
-    $id = \models\Container::extractContainerID($container);
+    $id = \models\Container::extractID($container);
     if (!isset($id)) { // NO
       throw new \Exception("Container Parameter is invalid.", 1);
     }
@@ -407,14 +410,16 @@ class Set extends \api\model\AbstractEntity {
     /* NOTE: The choice of the Entity Used with FROM is important, as it
      * represents the type of entity that will be created, on rehydration.
      */
-    $pqhl = 'SELECT s.*' .
+    $phql = 'SELECT s.*' .
       ' FROM models\Set s' .
       ' JOIN models\Container c' .
-      ' WHERE c.parent = :id: and c.type = :type: and c.link = s.id' .
-      ' ORDER BY s.id';
+      ' WHERE c.parent = :id: and c.type = :type: and c.link = s.id';
+
+    // Apply Filter and Order By (if any)
+    $phql = self::applyOrder($order, self::applyFilter($filter, $phql), 's');
 
     // Execute Query and Return Results
-    $sets = self::selectQuery($pqhl, [
+    $sets = self::selectQuery($phql, [
         'id' => $id,
         'type' => 'S'
     ]);
@@ -432,16 +437,21 @@ class Set extends \api\model\AbstractEntity {
     assert('isset($container)');
 
     // Are we able to extract the Container ID from the Parameter?
-    $id = \models\Container::extractContainerID($container);
+    $id = \models\Container::extractID($container);
     if (!isset($id)) { // NO
       throw new \Exception("Container Parameter is invalid.", 1);
     }
 
-    // Find Child Entries
-    $count = \models\Container::count([
-        'conditions' => 'parent = :id: and type = :type:',
-        'bind' => [ 'id' => $id, 'type' => 'S']
-    ]);
+    // Create Query
+    $phql = 'SELECT COUNT(*) as count' .
+      ' FROM models\Container' .
+      ' WHERE parent = :id: and type = :type:';
+
+    // Apply Filter and Order By (if any)
+    $phql = self::applyFilter($filter, $phql);
+
+    // Execute Query and Return Results
+    $count = self::countQuery($phql, [ 'id' => $id, 'type' => 'S']);
 
     // Return Result Set
     return (integer) $count;
