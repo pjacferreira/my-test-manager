@@ -28,6 +28,16 @@ namespace models;
  */
 class Run extends \api\model\AbstractEntity {
 
+  // Add Complex PHQL Handler
+  use \api\model\MixinComplexQueries;
+
+  // INITIAL STATE - RUN has been Created but never been opened
+  const STATE_CREATED = 0;
+  // RUN is Open for Running
+  const STATE_OPEN = 1;
+  // RUN Has been Closed
+  const STATE_CLOSED = 9;
+
   /**
    *
    * @var integer
@@ -138,7 +148,7 @@ class Run extends \api\model\AbstractEntity {
     // A Run Belongs To a Single Project
     $this->belongsTo("project", "models\Project", "id");
     // A Single Set has a Single Container
-    $this->hasOne("container", "models\Container", "id");
+//    $this->hasOne("container", "models\Container", "id");
     // A Single Test Set can be Runned Many Times
     $this->hasMany("set", "models\Set", "id");
     // A Single Run can have Point at a Single Play Entry
@@ -149,9 +159,8 @@ class Run extends \api\model\AbstractEntity {
    * PHALCON per instance Contructor
    */
   public function onConstruct() {
-    // Make sure the Creation Date is Set
-    $now = new \DateTime();
-    $this->date_created = $now->format('Y-m-d H:i:s');
+    // By Default Single Level
+    $this->state = self::STATE_CREATED;
   }
 
   /**
@@ -198,7 +207,7 @@ class Run extends \api\model\AbstractEntity {
     $this->container = (integer) $this->container;
     $this->current_ple = isset($this->current_ple) ? (integer) $this->current_ple : null;
     $this->state = (integer) $this->state;
-    $this->run_code = (integer) $this->run_code;
+    $this->run_code = isset($this->run_code) ? (integer) $this->run_code : null;
     $this->creator = (integer) $this->creator;
     $this->modifier = isset($this->modifier) ? (integer) $this->modifier : null;
     $this->owner = (integer) $this->owner;
@@ -413,11 +422,11 @@ class Run extends \api\model\AbstractEntity {
    * @return \models\Run[] Runs in Container
    * @throws \Exception On Any Failure
    */
-  public static function listInFolder($container) {
+  public static function listInFolder($container, $filter = null, $order = null) {
     assert('isset($container)');
 
     // Are we able to extract the Container ID from the Parameter?
-    $id = \models\Container::extractContainerID($container);
+    $id = \models\Container::extractID($container);
     if (!isset($id)) { // NO
       throw new \Exception("Container Parameter is invalid.", 1);
     }
@@ -426,14 +435,16 @@ class Run extends \api\model\AbstractEntity {
     /* NOTE: The choice of the Entity Used with FROM is important, as it
      * represents the type of entity that will be created, on rehydration.
      */
-    $pqhl = 'SELECT r.*
-               FROM models\Run r
-               JOIN models\Container c ON c.link = r.id
-               WHERE c.parent = :id: and c.type = :type:
-               ORDER BY s.id';
+    $phql = 'SELECT r.*' .
+      ' FROM models\Run r' .
+      ' JOIN models\Container c ON c.link = r.id' .
+      ' WHERE c.parent = :id: and c.type = :type:';
+
+    // Apply Filter and Order By (if any)
+    $phql = self::applyOrder($order, self::applyFilter($filter, $phql), 'r');
 
     // Execute Query and Return Results
-    $runs = self::selectQuery($pqhl, [
+    $runs = self::selectQuery($phql, [
         'id' => $id,
         'type' => 'R'
     ]);
@@ -447,20 +458,25 @@ class Run extends \api\model\AbstractEntity {
    * @return integer Number of Runs under Given Conditions
    * @throws \Exception On Any Failure
    */
-  public static function countInFolder($container) {
+  public static function countInFolder($container, $filter = null) {
     assert('isset($container)');
 
     // Are we able to extract the Container ID from the Parameter?
-    $id = \models\Container::extractContainerID($container);
+    $id = \models\Container::extractID($container);
     if (!isset($id)) { // NO
       throw new \Exception("Container Parameter is invalid.", 1);
     }
 
-    // Find Child Entries
-    $count = \models\Container::count([
-        'conditions' => 'parent = :id: and type = :type:',
-        'bind' => [ 'id' => $id, 'type' => 'R']
-    ]);
+    // Create Query
+    $phql = 'SELECT COUNT(*) as count' .
+      ' FROM models\Container' .
+      ' WHERE parent = :id: and type = :type:';
+
+    // Apply Filter and Order By (if any)
+    $phql = self::applyFilter($filter, $phql);
+
+    // Execute Query and Return Results
+    $count = self::countQuery($phql, [ 'id' => $id, 'type' => 'R']);
 
     // Return Result Set
     return (integer) $count;
@@ -528,7 +544,7 @@ class Run extends \api\model\AbstractEntity {
     ]);
 
     // Return Result Set
-    return  $count;
+    return $count;
   }
 
   /**

@@ -422,9 +422,6 @@ class RunsController extends CrudServiceController {
     // Get the Set to Base On
     $set = $context->getParameter('set');
 
-    // Get the Project Settings
-    $settings = $context->getParameter('project-settings');
-
     // Get the Container
     $container = $context->getParameter('run:container');
 
@@ -434,8 +431,6 @@ class RunsController extends CrudServiceController {
     $entity->container = $container->id;
 
     // Run set Default State and Run Codes
-    $entity->state = $settings->run_state_create;
-    $entity->run_code = $settings->run_code_create;
     return $entity;
   }
 
@@ -458,12 +453,8 @@ class RunsController extends CrudServiceController {
       // Create Play List for Run
       $playlist = \models\PlayEntry::createPlayList($entity);
       if (count($playlist)) {
-        // Get the Project Settings
-        $settings = $context->getParameter('project-settings');
-
         // Initializa and Save each Play List Entry
         foreach ($playlist as $entry) {
-          $entry->run_code = $settings->run_code_create;
           $this->_persist($entry);
         }
       } else {
@@ -574,12 +565,6 @@ class RunsController extends CrudServiceController {
       throw new \Exception("Session Project [$id] is invalid.", 2);
     }
     $context = $context->setParameter('project', $project);
-
-    // Are we performing a Create Action?
-    if ($context->getAction() === 'Create') { // YES: Get the Project Settings
-      $settings = \models\ProjectSettings::findFirstByProject($project->id);
-      $context = $context->setParameter('project-settings', $settings);
-    }
 
     // Process 'folder:id' Parameter (if it exists)
     $context = $this->onParameterDo($context, 'folder:id', function($controller, $context, $action, $value) {

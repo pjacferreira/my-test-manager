@@ -40,73 +40,43 @@ class ProjectSettings extends \api\model\AbstractEntity {
    *
    * @var integer
    */
-  public $test_state_create;
+  public $run_pass;
 
   /**
    *
    * @var integer
    */
-  public $test_state_ud;
+  public $run_incomplete;
 
   /**
    *
    * @var integer
    */
-  public $test_state_ready;
+  public $run_fail;
 
   /**
    *
    * @var integer
    */
-  public $set_state_create;
+  public $step_pass;
 
   /**
    *
    * @var integer
    */
-  public $set_state_ud;
+  public $step_fail;
 
   /**
    *
    * @var integer
    */
-  public $set_state_ready;
+  public $modifier;
 
   /**
    *
-   * @var integer
+   * @var string
    */
-  public $run_state_create;
-
-  /**
-   *
-   * @var integer
-   */
-  public $run_state_ud;
-
-  /**
-   *
-   * @var integer
-   */
-  public $run_state_ready;
-
-  /**
-   *
-   * @var integer
-   */
-  public $run_code_create;
-
-  /**
-   *
-   * @var integer
-   */
-  public $run_code_ip;
-
-  /**
-   *
-   * @var integer
-   */
-  public $run_code_complete;
+  public $date_modified;
 
   /**
    * Independent Column Mapping.
@@ -145,18 +115,11 @@ class ProjectSettings extends \api\model\AbstractEntity {
   public function columnMap() {
     return array(
       'id_project' => 'project',
-      'id_test_dc_state' => 'test_state_create',
-      'id_test_dud_state' => 'test_state_ud',
-      'id_test_dr_state' => 'test_state_ready',
-      'id_set_dc_state' => 'set_state_create',
-      'id_set_dud_state' => 'set_state_ud',
-      'id_set_dr_state' => 'set_state_ready',
-      'id_run_dc_state' => 'run_state_create',
-      'id_run_dud_state' => 'run_state_ud',
-      'id_run_dr_state' => 'run_state_ready',
-      'id_run_drns_state' => 'run_code_create',
-      'id_run_drip_state' => 'run_code_ip',
-      'id_run_drc_state' => 'run_code_complete',
+      'id_run_pass' => 'run_pass',
+      'id_run_incomplete' => 'run_incomplete',
+      'id_run_fail' => 'run_fail',
+      'id_step_pass' => 'step_pass',
+      'id_step_fail' => 'step_fail',
       'id_modifier' => 'modifier',
       'dt_modified' => 'date_modified',
     );
@@ -167,18 +130,11 @@ class ProjectSettings extends \api\model\AbstractEntity {
    */
   public function afterFetch() {
     $this->project = (integer) $this->project;
-    $this->test_state_create = (integer) $this->test_state_create;
-    $this->test_state_ud = (integer) $this->test_state_ud;
-    $this->test_state_ready = (integer) $this->test_state_ready;
-    $this->set_state_create = (integer) $this->set_state_create;
-    $this->set_state_ud = (integer) $this->set_state_ud;
-    $this->set_state_ready = (integer) $this->set_state_ready;
-    $this->run_state_create = (integer) $this->run_state_create;
-    $this->run_state_ud = (integer) $this->run_state_ud;
-    $this->run_state_ready = (integer) $this->run_state_ready;
-    $this->run_code_create = (integer) $this->run_code_create;
-    $this->run_code_ip = (integer) $this->run_code_ip;
-    $this->run_code_complete = (integer) $this->run_code_complete;
+    $this->run_pass = (integer) $this->run_pass;
+    $this->run_incomplete = (integer) $this->run_incomplete;
+    $this->run_fail = (integer) $this->run_fail;
+    $this->step_pass = (integer) $this->step_pass;
+    $this->step_fail = (integer) $this->step_fail;
     $this->modifier = isset($this->modifier) ? (integer) $this->modifier : null;
   }
 
