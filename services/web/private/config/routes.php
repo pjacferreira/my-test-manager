@@ -47,11 +47,12 @@ include __DIR__ . '/routes/common/session.php';
 include __DIR__ . '/routes/user/projects.php';
 include __DIR__ . '/routes/user/organizations.php';
 include __DIR__ . '/routes/user/users.php';
-include __DIR__ . '/routes/user/containers.php';
+include __DIR__ . '/routes/user/folders.php';
 include __DIR__ . '/routes/user/tests.php';
 include __DIR__ . '/routes/user/steps.php';
 include __DIR__ . '/routes/user/sets.php';
 include __DIR__ . '/routes/user/runs.php';
+include __DIR__ . '/routes/user/player.php';
 
 // Should we add Admin Mode routes?
 if ($ADMIN) { // YES

@@ -138,10 +138,11 @@ class PlayEntry extends \api\model\AbstractEntity {
    */
   public function afterFetch() {
     $this->id = (integer) $this->id;
+    $this->run = (integer) $this->run;
     $this->sequence = (integer) $this->sequence;
     $this->test = (integer) $this->test;
     $this->step = (integer) $this->step;
-    $this->code = (integer) $this->run_code;
+    $this->run_code = isset($this->run_code) ? (integer) $this->run_code : null;
     $this->modifier = isset($this->modifier) ? (integer) $this->modifier : null;
   }
 
@@ -204,6 +205,25 @@ class PlayEntry extends \api\model\AbstractEntity {
    */
 
   /**
+   * Try to Extract a Set<-->Test ID from the incoming parameter
+   * 
+   * @param mixed $project The Potential Link (object) or ID (integer)
+   * @return mixed Returns the ID or 'null' on failure;
+   */
+  public static function extractID($settest) {
+    assert('isset($settest)');
+
+    // Is the parameter an Project Object?
+    if (is_object($settest) && is_a($settest, __CLASS__)) { // YES
+      return $settest->id;
+    } else if (is_integer($settest) && ($settest >= 0)) { // NO: It's a Positive Integer
+      return $settest;
+    }
+    // ELSE: None of the above
+    return null;
+  }
+
+  /**
    * Create a Play List from a Run
    * 
    * @param models\Run $run Run Entity
@@ -243,6 +263,437 @@ class PlayEntry extends \api\model\AbstractEntity {
     }
 
     return $playlist;
+  }
+
+  /**
+   * Find the First Play Entry in the Previous Test (or 1st Step in the 1st Test)
+   * 
+   * @param mixed $run Run ID or Run Entity
+   * @param mixed $test Test ID or Test Entity
+   * @return mixed Returns Link or 'null' if none found
+   * @throws \Exception On Any Failure
+   */
+  public static function previousTest(PlayEntry $ple) {
+    // Are we able to extract the Run ID from the Parameter?
+    $run_id = \models\Run::extractID($ple->run);
+    if (!isset($run_id)) { // NO
+      throw new \Exception("Run Parameter is invalid.", 1);
+    }
+
+    // Are we able to extract the Test ID from the Parameter?
+    $test_id = \models\Test::extractID($ple->test);
+    if (!isset($test_id)) { // NO
+      throw new \Exception("Test Parameter is invalid.", 1);
+    }
+
+    $params = [
+      "conditions" => '[run] = :run_id: and test <> :test_id: and sequence < :sequence:',
+      "bind" => ['run_id' => $run_id, 'test_id' => $test_id, 'sequence' => $ple->sequence],
+      "order" => 'sequence'
+    ];
+
+    $first = self::findFirst($params);
+    return ($first === FALSE) ? self::first($ple->run) : $first;
+  }
+
+  /**
+   * Find the First Play Entry in the Next Test (or return 1st Entry in the Last Test)
+   * 
+   * @param mixed $run Run ID or Run Entity
+   * @param mixed $test Test ID or Test Entity
+   * @return mixed Returns Link or 'null' if none found
+   * @throws \Exception On Any Failure
+   */
+  public static function nextTest(PlayEntry $ple) {
+    // Are we able to extract the Run ID from the Parameter?
+    $run_id = \models\Run::extractID($ple->run);
+    if (!isset($run_id)) { // NO
+      throw new \Exception("Run Parameter is invalid.", 1);
+    }
+
+    // Are we able to extract the Test ID from the Parameter?
+    $test_id = \models\Test::extractID($ple->test);
+    if (!isset($test_id)) { // NO
+      throw new \Exception("Test Parameter is invalid.", 1);
+    }
+
+    $params = [
+      "conditions" => '[run] = :run_id: and test <> :test_id: and sequence > :sequence:',
+      "bind" => ['run_id' => $run_id, 'test_id' => $test_id, 'sequence' => $ple->sequence],
+      "order" => 'sequence'
+    ];
+
+    $last = self::findFirst($params);
+    return ($last === FALSE) ? self::lastTest($ple->run) : $last;
+  }
+
+  /**
+   * Find the First Play Entry in the Last Test
+   * 
+   * @param mixed $run Run ID or Run Entity
+   * @param mixed $test Test ID or Test Entity
+   * @return mixed Returns Link or 'null' if none found
+   * @throws \Exception On Any Failure
+   */
+  public static function lastTest($run) {
+    // Find the Last PLE    
+    $last = self::last($run);
+
+    // Find the 1st Step in the Last Test
+    $params = [
+      "conditions" => '[run] = :run_id: and test = :test_id:',
+      "bind" => ['run_id' => $last->run, 'test_id' => $last->test],
+      "order" => 'sequence DESC'
+    ];
+
+    return self::findFirst($params);
+  }
+
+  /**
+   * Find the First Play Entry based on the Given Play Entry
+   * 
+   * @param mixed $run Run ID or Run Entity
+   * @param mixed $test Test ID or Test Entity
+   * @return mixed Returns Link or 'null' if none found
+   * @throws \Exception On Any Failure
+   */
+  public static function firstByTest($run, $test) {
+    // Are we able to extract the Run ID from the Parameter?
+    $run_id = \models\Run::extractID($run);
+    if (!isset($run_id)) { // NO
+      throw new \Exception("Run Parameter is invalid.", 1);
+    }
+
+    // Are we able to extract the Test ID from the Parameter?
+    $test_id = \models\Test::extractID($test);
+    if (!isset($test_id)) { // NO
+      throw new \Exception("Test Parameter is invalid.", 1);
+    }
+
+    $params = [
+      "conditions" => '[run] = :run_id: and test = :test_id:',
+      "bind" => ['run_id' => $run_id, 'test_id' => $test_id],
+      "order" => 'sequence'
+    ];
+
+    return self::findFirst($params);
+  }
+
+  /**
+   * Find the First Play Entry based on the Given Play Entry
+   * 
+   * @param mixed $run Run ID or Run Entity
+   * @param mixed $test Test ID or Test Entity
+   * @return mixed Returns Link or 'null' if none found
+   * @throws \Exception On Any Failure
+   */
+  public static function previousByTest(PlayEntry $ple) {
+    // Are we able to extract the Run ID from the Parameter?
+    $run_id = \models\Run::extractID($ple->run);
+    if (!isset($run_id)) { // NO
+      throw new \Exception("Run Parameter is invalid.", 1);
+    }
+
+    // Are we able to extract the Test ID from the Parameter?
+    $test_id = \models\Test::extractID($ple->test);
+    if (!isset($test_id)) { // NO
+      throw new \Exception("Test Parameter is invalid.", 1);
+    }
+
+    $params = [
+      "conditions" => '[run] = :run_id: and test = :test_id: and sequence < :sequence:',
+      "bind" => ['run_id' => $run_id, 'test_id' => $test_id, 'sequence' => $ple->sequence],
+      "order" => 'sequence DESC'
+    ];
+
+    return self::findFirst($params);
+  }
+
+  /**
+   * Find the First Play Entry based on the Given Play Entry
+   * 
+   * @param mixed $run Run ID or Run Entity
+   * @param mixed $test Test ID or Test Entity
+   * @return mixed Returns Link or 'null' if none found
+   * @throws \Exception On Any Failure
+   */
+  public static function nextByTest(PlayEntry $ple) {
+    // Are we able to extract the Run ID from the Parameter?
+    $run_id = \models\Run::extractID($ple->run);
+    if (!isset($run_id)) { // NO
+      throw new \Exception("Run Parameter is invalid.", 1);
+    }
+
+    // Are we able to extract the Test ID from the Parameter?
+    $test_id = \models\Test::extractID($ple->test);
+    if (!isset($test_id)) { // NO
+      throw new \Exception("Test Parameter is invalid.", 1);
+    }
+
+    $params = [
+      "conditions" => '[run] = :run_id: and test = :test_id: and sequence > :sequence:',
+      "bind" => ['run_id' => $run_id, 'test_id' => $test_id, 'sequence' => $ple->sequence],
+      "order" => 'sequence'
+    ];
+
+    return self::findFirst($params);
+  }
+
+  /**
+   * Find the First Play Entry based on the Given Play Entry
+   * 
+   * @param mixed $run Run ID or Run Entity
+   * @param mixed $test Test ID or Test Entity
+   * @return mixed Returns Link or 'null' if none found
+   * @throws \Exception On Any Failure
+   */
+  public static function lastByTest($run, $test) {
+    // Are we able to extract the Run ID from the Parameter?
+    $run_id = \models\Run::extractID($run);
+    if (!isset($run_id)) { // NO
+      throw new \Exception("Run Parameter is invalid.", 1);
+    }
+
+    // Are we able to extract the Test ID from the Parameter?
+    $test_id = \models\Test::extractID($test);
+    if (!isset($test_id)) { // NO
+      throw new \Exception("Test Parameter is invalid.", 1);
+    }
+
+    $params = [
+      "conditions" => '[run] = :run_id: and test = :test_id:',
+      "bind" => ['run_id' => $run_id, 'test_id' => $test_id],
+      "order" => 'sequence DESC'
+    ];
+
+    return self::findFirst($params);
+  }
+
+  /**
+   * Find the First Play Entry based on the Given Play Entry
+   * 
+   * @param mixed $run Run ID or Run Entity
+   * @return mixed Returns Link or 'null' if none found
+   * @throws \Exception On Any Failure
+   */
+  public static function first($run) {
+    // Are we able to extract the Run ID from the Parameter?
+    $run_id = \models\Run::extractID($run);
+    if (!isset($run_id)) { // NO
+      throw new \Exception("Run Parameter is invalid.", 1);
+    }
+
+    $params = [
+      "conditions" => '[run] = :run_id:',
+      "bind" => ['run_id' => $run_id],
+      "order" => 'sequence'
+    ];
+
+    return self::findFirst($params);
+  }
+
+  /**
+   * Find the First Play Entry based on the Given Play Entry
+   * 
+   * @param mixed $run Run ID or Run Entity
+   * @param mixed $test Test ID or Test Entity
+   * @return mixed Returns Link or 'null' if none found
+   * @throws \Exception On Any Failure
+   */
+  public static function previous(PlayEntry $ple) {
+    // Are we able to extract the Run ID from the Parameter?
+    $run_id = \models\Run::extractID($ple->run);
+    if (!isset($run_id)) { // NO
+      throw new \Exception("Run Parameter is invalid.", 1);
+    }
+
+    $params = [
+      "conditions" => '[run] = :run_id: and sequence < :sequence:',
+      "bind" => ['run_id' => $run_id, 'sequence' => $ple->sequence],
+      "order" => 'sequence DESC'
+    ];
+
+    return self::findFirst($params);
+  }
+
+  /**
+   * Find the First Play Entry based on the Given Play Entry
+   * 
+   * @param mixed $run Run ID or Run Entity
+   * @param mixed $test Test ID or Test Entity
+   * @return mixed Returns Link or 'null' if none found
+   * @throws \Exception On Any Failure
+   */
+  public static function next(PlayEntry $ple) {
+    // Are we able to extract the Run ID from the Parameter?
+    $run_id = \models\Run::extractID($ple->run);
+    if (!isset($run_id)) { // NO
+      throw new \Exception("Run Parameter is invalid.", 1);
+    }
+
+    $params = [
+      "conditions" => '[run] = :run_id: and sequence > :sequence:',
+      "bind" => ['run_id' => $run_id, 'sequence' => $ple->sequence],
+      "order" => 'sequence'
+    ];
+
+    return self::findFirst($params);
+  }
+
+  /**
+   * Find the First Play Entry based on the Given Play Entry
+   * 
+   * @param mixed $run Run ID or Run Entity
+   * @param mixed $test Test ID or Test Entity
+   * @return mixed Returns Link or 'null' if none found
+   * @throws \Exception On Any Failure
+   */
+  public static function last($run) {
+    // Are we able to extract the Run ID from the Parameter?
+    $run_id = \models\Run::extractID($run);
+    if (!isset($run_id)) { // NO
+      throw new \Exception("Run Parameter is invalid.", 1);
+    }
+
+    $params = [
+      "conditions" => '[run] = :run_id:',
+      "bind" => ['run_id' => $run_id],
+      "order" => 'sequence DESC'
+    ];
+
+    return self::findFirst($params);
+  }
+
+  /**
+   * List the Test Steps Related to the Specified Test
+   * 
+   * @param mixed $run Run ID or Run Entity
+   * @param boolean $descending [DEFAULT false] Sort in Descending Order by Sequence
+   * @return Test[] Related Tests
+   * @throws \Exception On Any Failure
+   */
+  public static function listByRun($run, $descending = false) {
+    assert('isset($run)');
+
+    // Are we able to extract the Test ID from the Parameter?
+    $id = \models\Run::extractID($run);
+    if (!isset($id)) { // NO
+      throw new \Exception("Parameter is invalid.", 1);
+    }
+
+    // Build Query Conditions
+    $params = [
+      'conditions' => '[run] = :id:',
+      'bind' => ['id' => $id],
+      'order' => !!$descending ? 'sequence DESC' : 'sequence'
+    ];
+
+    // Search for Matching Projects
+    $ples = self::find($params);
+    return $ples === FALSE ? [] : $ples;
+  }
+
+  /**
+   * Count the Number of Tests Related to the Specified Set
+   * 
+   * @param mixed $run Run ID or Run Entity
+   * @return integer Number of Related Tests
+   * @throws \Exception On Any Failure
+   */
+  public static function countByRun($run) {
+    assert('isset($run)');
+
+    // Are we able to extract the Test ID from the Parameter?
+    $id = \models\Run::extractID($run);
+    if (!isset($id)) { // NO
+      throw new \Exception("Parameter is invalid.", 1);
+    }
+
+    // Build Query Conditions
+    $params = [
+      'conditions' => 'run = :id:',
+      'bind' => ['id' => $id]
+    ];
+
+    // Find Child Entries
+    $count = self::count($params);
+
+    // Return Result Set
+    return (integer) $count;
+  }
+
+  /**
+   * List the Steps for the Given Run and Test
+   * 
+   * @param mixed $run Run ID or Run Entity
+   * @param mixed $test Test ID or Test Entity
+   * @param boolean $descending [DEFAULT false] Sort in Descending Order by Sequence
+   * @return Test[] Related Tests
+   * @throws \Exception On Any Failure
+   */
+  public static function listByTest($run, $test, $descending = false) {
+    assert('isset($run)');
+    assert('isset($test)');
+
+    // Are we able to extract the Run ID from the Parameter?
+    $run_id = \models\Run::extractID($run);
+    if (!isset($run_id)) { // NO
+      throw new \Exception("Run Parameter is invalid.", 1);
+    }
+
+    // Are we able to extract the Test ID from the Parameter?
+    $test_id = \models\Test::extractID($test);
+    if (!isset($test_id)) { // NO
+      throw new \Exception("Test Parameter is invalid.", 1);
+    }
+
+    // Build Query Conditions
+    $params = [
+      "conditions" => '[run] = :run_id: and test = :test_id:',
+      "bind" => ['run_id' => $run_id, 'test_id' => $test_id],
+      'order' => !!$descending ? 'sequence DESC' : 'sequence'
+    ];
+
+    // Search for Matching Projects
+    $ples = self::find($params);
+    return $ples === FALSE ? [] : $ples;
+  }
+
+  /**
+   * Count the Number of Steps in the Given Run and Test
+   * 
+   * @param mixed $run Run ID or Run Entity
+   * @param mixed $test Test ID or Test Entity
+   * @return integer Number of Related Steps
+   * @throws \Exception On Any Failure
+   */
+  public static function countByTest($run) {
+    assert('isset($run)');
+    assert('isset($test)');
+
+    // Are we able to extract the Run ID from the Parameter?
+    $run_id = \models\Run::extractID($run);
+    if (!isset($run_id)) { // NO
+      throw new \Exception("Run Parameter is invalid.", 1);
+    }
+
+    // Are we able to extract the Test ID from the Parameter?
+    $test_id = \models\Test::extractID($test);
+    if (!isset($test_id)) { // NO
+      throw new \Exception("Test Parameter is invalid.", 1);
+    }
+
+    // Build Query Conditions
+    $params = [
+      "conditions" => '[run] = :run_id: and test = :test_id:',
+      "bind" => ['run_id' => $run_id, 'test_id' => $test_id]
+    ];
+
+    // Find Child Entries
+    $count = self::count($params);
+
+    // Return Result Set
+    return (integer) $count;
   }
 
   /**
@@ -294,208 +745,6 @@ class PlayEntry extends \api\model\AbstractEntity {
         "bind" => array('run' => $run_id, 'sequence' => $sequence))
     );
     return $entry !== FALSE ? $entry : null;
-  }
-
-  /**
-   * Create a New Play Entry for the Run, Test, Sequence and Comment.
-   * 
-   * @param mixed $run Run ID / Entity
-   * @param mixed $test Test ID / Entity
-   * @param integer $sequence OPTIONAL Step Sequence Number (if not given then
-   *   the step will given a sequence that places it last in the list)
-   * @param string $comment OPTIONAL Comment associated with Play Entry
-   * @return \PlayEntry Newly Created Entity
-   * @throws \Exception On Any Failure
-   */
-  public function createEntry($run, $test, $sequence = null, $comment = null) {
-    assert('!isset($sequence) || (is_integer($sequence) && ($sequence > 0))');
-    assert('!isset($comment) || is_string($comment)');
-
-    // Are qe creating an Entry with a Specific Sequence?
-    if (isset($sequence)) { // YES
-      $entry = self::findEntry($run, $sequence);
-      if (isset($entry)) {
-        throw new \Exception("Sequence #[$sequence] already exists in Run [{$entry->run}]");
-      }
-    } else { // NO
-      // Get the Last Entry, if it exists
-      $entry = self::lastEntry($run);
-      // Calculate the Next Entry Sequence
-      $sequence = isset($entry) ? $entry->sequence + 10 : 10;
-    }
-
-    // Are we able to extract the Test ID from the Parameter?
-    $test_id = \Test::extractID($test);
-    if (isset($test_id)) { // NO
-      throw new \Exception("Test Parameter is invalid.", 2);
-    }
-
-    // Create the Link
-    $entry = new PlayEntry();
-    $entry->run = $run;
-    $entry->test = $test_id;
-
-    // Do we have a comment for the Entry?
-    $comment = Strings::nullOnEmpty($comment);
-    if (isset($comment)) {
-      $entry->comment = $comment;
-    }
-    $entry->sequence = $sequence;
-
-    // Were we able to flush the changes?
-    if ($entry->save() === FALSE) { // No
-      throw new \Exception("Failed to Save the Play Entry.", 1);
-    }
-
-    return $entry;
-  }
-
-  /**
-   * Delete a Specific Entry from the Run
-   * 
-   * @param mixed $run Run Set ID / Entity
-   * @param integer $sequence Step Sequence Number
-   * @return mixed Returns Play Entry or 'null' if none found
-   * @throws \Exception On Any Failure
-   */
-  public static function deleteStep($run, $sequence) {
-    // Find the Entry to Remove
-    $entry = self::findEntry($run, $sequence);
-
-    // Did we find the entry?
-    if (isset($entry)) { // YES
-      // Were we able to delete the Step?
-      if ($entry->delete() === FALSE) { // NO
-        throw new \Exception("Failed to Delete Step [{$entry->sequence}] for Run [{$entry->run}].", 2);
-      }
-    }
-
-    return $entry;
-  }
-
-  /**
-   * Delete All Run Steps for the Specified Run
-   * 
-   * @param mixed $run Run Set ID / Entity
-   * @throws \Exception On Any Failure
-   */
-  public function deleteAllRunEntries($run) {
-    // Are we able to extract the Run ID from the Parameter?
-    $run_id = \Run::extractID($run);
-    if (isset($run_id)) { // NO
-      throw new \Exception("Run Parameter is invalid.", 1);
-    }
-
-    // Instantiate the Query
-    $query = new Phalcon\Mvc\Model\Query('DELETE FROM PlayEntry WHERE run = :id:', \Phalcon\Di::getDefault());
-
-    // Execute the query returning a result if any
-    if ($query->execute(array('id' => $run_id)) === FALSE) {
-      throw new \Exception("Failed Deleting Steps for Run[{$run_id}].", 1);
-    }
-  }
-
-  /**
-   * Find the Next Available Sequence Number for the Run
-   * 
-   * @param mixed $run Run ID / Entity
-   * @param integer Next Available Sequence number (Last Sequence Number + 10)
-   * @throws \Exception On Any Failure
-   */
-  public function nextSequence($run) {
-    // Are we able to extract the Run ID from the Parameter?
-    $run_id = \Run::extractID($run);
-    if (isset($run_id)) { // NO
-      throw new \Exception("Run Parameter is invalid.", 1);
-    }
-
-    // Instantiate the Query
-    $query = new Phalcon\Mvc\Model\Query('SELECT MAX(sequence) FROM PlayEntry WHERE run = :id:', \Phalcon\Di::getDefault());
-
-    // Execute the query returning a result if any
-    if ($query->execute(array('id' => $run_id)) === FALSE) {
-      throw new \Exception("Failed Attempt to Obtain Last Sequence Number for Run [{$run_id}].", 1);
-    }
-
-    // Execute the query returning a result if any
-    $result = $query->getFirst();
-
-    return $result ? 10 : (integer) $result['0'] + 10;
-  }
-
-  /**
-   * 
-   * @param type $run
-   * @param type $sequence
-   * @return type
-   */
-  public function hasLink($run, $sequence) {
-    return self::findBySequence($run, $sequence) !== null;
-  }
-
-  /**
-   * Find the Last Play Entry for the Run
-   * 
-   * @param mixed $run Run ID / Entity
-   * @return mixed Returns Step or 'null' if none found
-   * @throws \Exception On Any Failure
-   */
-  public function lastEntry($run) {
-    // Are we able to extract the Run ID from the Parameter?
-    $run_id = \Run::extractID($run);
-    if (isset($run_id)) { // NO
-      throw new \Exception("Run Parameter is invalid.", 1);
-    }
-
-    return self::findFirst(array(
-        "conditions" => 'run = :id:',
-        "bind" => array('id' => $run_id),
-        "order" => 'sequence DESC')
-    );
-  }
-
-  /**
-   * List the Play Entries for the Run
-   * 
-   * @param mixed $run Run ID / Entity
-   * @return \PlayEntry[] Play Entries for Run
-   * @throws \Exception On Any Failure
-   */
-  public function listInRun($run) {
-    // Are we able to extract the Run ID from the Parameter?
-    $run_id = \Run::extractID($run);
-    if (isset($run_id)) { // NO
-      throw new \Exception("Run Parameter is invalid.", 1);
-    }
-
-    return self::find(array(
-        "conditions" => 'run = :id:',
-        "bind" => array('id' => $test_id),
-        "order" => "sequence"
-    ));
-  }
-
-  /**
-   * Count the Number of Play Entries for the Run
-   * 
-   * @param mixed $run Run ID / Entity
-   * @return integer Number of Play Entries
-   * @throws \Exception On Any Failure
-   */
-  public function countInRun($run) {
-    // Are we able to extract the Run ID from the Parameter?
-    $run_id = \Run::extractID($run);
-    if (isset($run_id)) { // NO
-      throw new \Exception("Run Parameter is invalid.", 1);
-    }
-
-    // Instantiate the Query
-    $pqhl = 'SELECT COUNT(*) FROM PlayEntry WHERE run = :id:';
-    $query = new Phalcon\Mvc\Model\Query($pqhl, \Phalcon\Di::getDefault());
-
-    // Execute the query returning a result if any
-    $result = $query->execute(array('id' => $run_id))->getFirst();
-    return (integer) $result['0'];
   }
 
 }
