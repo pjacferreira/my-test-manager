@@ -7,6 +7,10 @@
  * INITIALZATION FUNCTIONS
  *******************************/
 
+var current_test = null, current_first_test = false;
+var current_step = null, current_first_step = false;
+var current_entry = null;
+
 /**
  * 
  * @returns {undefined}
@@ -25,16 +29,35 @@ function initialize() {
   // Initialize Organization/Project Dropdowns
   initialize_dropdowns();
 
+  // Selectors
+  var $player = $('#player');
+  var $tests = $('#test_cards');
+  var $steps = $('#step_cards');
+
   // Initialize Player Views
-  initialize_player_tests_view('#test_cards');
-  initialize_player_steps_view('#step_cards');
+  initialize_player_tests_view($player, $tests);
+  initialize_player_steps_view($player, $steps);
 
   // Attach Other Listeners
   $('#folders').on('folder-view.folder-selected', onFolderSelected);
   $('#list_runs').on('gridlist.item-selected', onRunSelected);
-  $('#test_cards').on('card-clicked.cardview', onTestClicked);
-  $('#test_cards').on('set-current.cardview', onSetCurrentTest);
-  $('#test_cards').on('loaded.cardview', onTestsLoaded);
+
+  // Tests Listeners
+  $tests.on('set-current.cardview', onSetCurrentTest);
+  $tests.on('loaded.cardview', onTestsLoaded);
+  $tests.on('restart.player', onTestsRestart);
+  $tests.on('previous.player', onTestsPrevious);
+  $tests.on('next.player', onTestsNext);
+
+  // Steps Listeners
+  $steps.on('loaded.cardview', onStepsLoaded);
+  $steps.on('set-current.cardview', onSetCurrentStep);
+  $steps.on('pass.player', onStepsPass);
+  $steps.on('pass-comment.player', onStepsPassComment);
+  $steps.on('next.player', onStepsNext);
+  $steps.on('restart.player', onStepsRestart);
+  $steps.on('previous.player', onStepsPrevious);
+  $steps.on('fail.player', onStepsFail);
 
   // Remove Loader
   $('#loader').removeClass('active');
@@ -69,31 +92,472 @@ function onFolderSelected(event, id) {
 function onRunSelected(event, node) {
   console.log('gridlist.item-selected [' + node.id + ':' + node.text + ']');
 
-  // Reload Tests View
-  var $view = $('#test_cards');
-  $view.cardview('clear').
-    data('run.id', node.id).
-    cardview('load', node.id);
+  var $player = $('#player');
+
+  // Get the Current Entry for the Selected Entry
+  testcenter.services.call(['play', node.id.toString(), 'current']).
+    then(function(response) {
+      $player.removeClass('loading');
+
+      // TODO: Extract 1st Test/Step for Play from Response
+      current_entry = response.return;
+
+      // Add Loading Class
+      $('#test_cards').addClass('loading');
+      $('#step_cards').addClass('loading');
+
+      // Save Run ID
+      $player.data('run.id', node.id);
+
+      // Reload Tests View
+      var $view = $('#test_cards');
+      $view.cardview('clear').
+        cardview('load', node.id);
+    }).
+    fail(function(code, message) {
+      $player.removeClass('loading');
+      console.error('Failed to Open Run');
+    });
+
+  /*
+   // Open Run for Playing
+   $player.addClass('loading');
+   testcenter.services.call(['play', node.id.toString(), 'open']).
+   then(function(entity) {
+   $player.removeClass('loading');
+   
+   // TODO: Extract 1st Test/Step for Play from Response
+   current_test = null;
+   current_step = null;
+   
+   // Add Loading Class
+   $('#test_cards').addClass('loading');
+   $('#step_cards').addClass('loading');
+   
+   // Save Run ID
+   $player.data('run.id', node.id);
+   
+   // Reload Tests View
+   var $view = $('#test_cards');
+   $view.cardview('clear').
+   cardview('load', node.id);
+   }).
+   fail(function(code, message) {
+   $player.removeClass('loading');
+   console.error('Failed to Open Run');
+   });
+   */
 }
 
 function onTestsLoaded(event) {
   var $view = $(this);
-  // Make the 1st Test the Current test
-  $view.cardview('card.current.set', $view.cardview('card.first'));
-}
 
-function onTestClicked(event, card) {
-  $(this).cardview('card.current.clear').cardview('card.current.set', card);
+  // Remove Loading Class
+  $view.removeClass('loading');
+
+  var $card = [];
+  // Is the Current Entry Set?
+  if ($.isset(current_entry)) { // YES - Use it to Select the Test
+    $card = $view.cardview('card.byID', current_entry.test);
+  } else { // NO - Select the 1st Test as Default
+    $card = $view.cardview('card.first');
+  }
+
+  // Should we set a Current Card?
+  if ($card.length) { // YES
+    _setCurrentCard($view, $card);
+  }
 }
 
 function onSetCurrentTest(event, card) {
-  var test = $(this).cardview('card.data', card);
+  var $cv = $(this);
+  var test = $cv.cardview('card.data', card);
+
+  // Add Buttons to Current Card
+  $cv.cardview('card.extras.set', card, $cv.data('cv.extras'));
 
   // Reload Steps View
-  var $view = $('#step_cards');
-  $view.cardview('clear').
-    data('test.id', test.id).
+  var $steps = $('#step_cards');
+  /* NOTE: We are removing the extras before reloading the steps card view because,
+   * if we are reloading, and a card was current set, if we just clear this means 
+   * that, extras will be jquery 'removed' and not 'detached' and we loose the
+   * buttons events.
+   */
+  $steps.cardview('card.extras.remove');
+  // Reload Steps View
+  $steps.cardview('clear').
     cardview('load', test.id);
+}
+
+function onTestsRestart(event) {
+  var $cv = $(this);
+  var $first = $cv.cardview('card.first');
+  if ($first.length) {
+    var $current = $cv.cardview('card.current.get');
+    if (($current.length === 0) || ($first.get(0) !== $current.get(0))) {
+      // Get the Run for the Current Player
+      var run = $cv.data('player').data('run.id');
+
+      // Display Loading Icon
+      $cv.addClass('loading');
+
+      // Try to Restart Testing
+      testcenter.services.call(['play', run.toString(), 'test', 'first']).
+        then(function(response) {
+          // Remove Loader
+          $cv.removeClass('loading');
+
+          // Is the Returned PLE different than the Current PLE?
+          var ple = response['return'];
+          if (current_entry.id !== ple.id) { // YES
+            if (current_entry.test === ple.test) {
+              // Save the New PLE
+              current_entry = ple;
+              // Selected the Step Card
+              $('#step_cards').cardview('card.current.setByID', ple.step);
+            } else {
+              // Save the New PLE
+              current_entry = ple;
+              // Select the Test Card
+              $cv.cardview('card.current.setByID', ple.test);
+            }
+
+            console.log('Restart Test');
+          }
+        }).
+        fail(function(code, message) {
+          // Remove Loader
+          $cv.removeClass('loading');
+          console.error('Failed to Restart Run');
+        });
+    }
+  }
+}
+
+function onTestsPrevious(event) {
+  var $cv = $(this);
+  var $first = $cv.cardview('card.first');
+  if ($first.length) {
+    var $current = $cv.cardview('card.current.get');
+    if (($current.length === 0) || ($first.get(0) !== $current.get(0))) {
+      // Get the Run for the Current Player
+      var run = $cv.data('player').data('run.id');
+
+      // Display Loading Icon
+      $cv.addClass('loading');
+
+      testcenter.services.call(['play', run.toString(), 'test', 'previous']).
+        then(function(response) {
+          // Remove Loader
+          $cv.removeClass('loading');
+
+          // Is the Returned PLE different than the Current PLE?
+          var ple = response['return'];
+          if (current_entry.id !== ple.id) { // YES
+            if (current_entry.test === ple.test) {
+              // Save the New PLE
+              current_entry = ple;
+              // Selected the Step Card
+              $('#step_cards').cardview('card.current.setByID', ple.step);
+            } else {
+              // Save the New PLE
+              current_entry = ple;
+              // Select the Test Card
+              $cv.cardview('card.current.setByID', ple.test);
+            }
+
+            console.log('Previous Test');
+          }
+        }).
+        fail(function(code, message) {
+          // Remove Loader
+          $cv.removeClass('loading');
+          console.error('Failed to Move to Previous Test');
+        });
+    }
+  }
+}
+
+function onTestsNext(event) {
+  var $cv = $(this);
+  var $current = $cv.cardview('card.current.get');
+  if ($current.length) {
+    var $next = $cv.cardview('card.next', $current);
+    if ($next.length) {
+      // Get the Run for the Current Run ID
+      var run = $cv.data('player').data('run.id');
+
+      // Display Loading Icon
+      $cv.addClass('loading');
+      testcenter.services.call(['play', run.toString(), 'test', 'next']).
+        then(function(response) {
+          // Is the Returned PLE different than the Current PLE?
+          var ple = response['return'];
+          if (current_entry.id !== ple.id) { // YES
+            if (current_entry.test === ple.test) {
+              // Save the New PLE
+              current_entry = ple;
+              // Selected the Step Card
+              $('#step_cards').cardview('card.current.setByID', ple.step);
+            } else {
+              // Save the New PLE
+              current_entry = ple;
+              // Select the Test Card
+              $cv.cardview('card.current.setByID', ple.test);
+            }
+
+            console.log('Next Test');
+          }
+        }).
+        fail(function(code, message) {
+          // Remove Loader
+          $cv.removeClass('loading');
+          console.error('Failed to Move to Next Step in Test');
+        });
+    }
+  }
+}
+
+function onStepsLoaded(event) {
+  var $view = $(this);
+
+  // Remove Loading Class
+  $view.removeClass('loading');
+
+  var $card = [];
+
+  // Is the Current Entry Set?
+  if ($.isset(current_entry)) { // YES: Use it to Select the Current Step
+    $card = $view.cardview('card.byID', current_entry.step);
+  } else { // NO: Select the 1st Step
+    $card = $view.cardview('card.first');
+  }
+
+  // Should we set a Current Card?
+  if ($card.length) { // YES
+    _setCurrentCard($view, $card);
+  }
+}
+
+function onSetCurrentStep(event, card) {
+  var $cv = $(this);
+
+  // Add Buttons to Current Card
+  $cv.cardview('card.extras.set', card, $cv.data('cv.extras'));
+}
+
+function onStepsPass(event) {
+  var $cv = $(this);
+
+  // Get the Run for the Current Player
+  var run = $cv.data('player').data('run.id');
+
+  // Display Loading Icon
+  $cv.addClass('loading');
+  testcenter.services.call(['play', run.toString(), 'step', 'current', 'pass'], null, post_values, {
+    type: 'POST'
+  }).
+    then(function(entity) {
+      // Remove Loader
+      $cv.removeClass('loading');
+      console.log('Pass Step');
+
+      // TODO: With Successfull Pass (Move onto the Next Step)
+    }).
+    fail(function(code, message) {
+      // Remove Loader
+      $cv.removeClass('loading');
+      console.error('Failed to Mark Step as Passed');
+    });
+}
+
+function onStepsPassComment(event) {
+  var $cv = $(this);
+
+  // Get the Run for the Current Run ID
+  var run = $cv.data('player').data('run.id');
+
+  // Display Loading Icon
+  $cv.addClass('loading');
+  testcenter.services.call(['play', run.toString(), 'step', 'current', 'pass'], pass_code, post_values, {
+    type: 'POST'
+  }).
+    then(function(entity) {
+      // Remove Loader
+      $cv.removeClass('loading');
+      console.log('Pass Step with Comment');
+
+      // TODO: With Successfull Pass (Move onto the Next Step)
+    }).
+    fail(function(code, message) {
+      // Remove Loader
+      $cv.removeClass('loading');
+      console.error('Failed to Mark Step as Passed');
+    });
+}
+
+function onStepsRestart(event) {
+  var $cv = $(this);
+
+  var $first = $cv.cardview('card.first');
+  if ($first.length) {
+    var $current = $cv.cardview('card.current.get');
+    if (($current.length === 0) || ($first.get(0) !== $current.get(0))) {
+      // Get the Run for the Current Run ID
+      var run = $cv.data('player').data('run.id');
+
+      // Display Loading Icon
+      $cv.addClass('loading');
+      testcenter.services.call(['play', run.toString(), 'test', 'step', 'first']).
+        then(function(response) {
+          // Remove Loader
+          $cv.removeClass('loading');
+
+          // Is the Returned PLE different than the Current PLE?
+          var ple = response['return'];
+          if (current_entry.id !== ple.id) { // YES
+            // Save the New PLE
+            current_entry = ple;
+            // Selected the Step Card
+            $cv.cardview('card.current.setByID', ple.step);
+
+            console.log('Restart Steps');
+          }
+        }).
+        fail(function(code, message) {
+          // Remove Loader
+          $cv.removeClass('loading');
+          console.error('Failed to Move to First Step in Test');
+        });
+    }
+  }
+}
+
+function onStepsPrevious(event) {
+  var $cv = $(this);
+
+  var $current = $cv.cardview('card.current.get');
+  if ($current.length) {
+    var $previous = $cv.cardview('card.previous', $current);
+    if ($previous.length) {
+      // Get the Run for the Current Run ID
+      var run = $cv.data('player').data('run.id');
+
+      // Display Loading Icon
+      $cv.addClass('loading');
+      testcenter.services.call(['play', run.toString(), 'test', 'step', 'previous']).
+        then(function(response) {
+          // Remove Loader
+          $cv.removeClass('loading');
+
+          // Is the Returned PLE different than the Current PLE?
+          var ple = response['return'];
+          if (current_entry.id !== ple.id) { // YES
+            // Save the New PLE
+            current_entry = ple;
+            // Selected the Step Card
+            $cv.cardview('card.current.setByID', ple.step);
+
+            console.log('Previous Step');
+          }
+        }).
+        fail(function(code, message) {
+          // Remove Loader
+          $cv.removeClass('loading');
+          console.error('Failed to Move to Previous Step in Test');
+        });
+    }
+  }
+}
+
+function onStepsNext(event) {
+  var $cv = $(this);
+
+  // TODO At Last Step - Move to Next Next Step, 1st Step
+
+  var $current = $cv.cardview('card.current.get');
+  if ($current.length) {
+    var $next = $cv.cardview('card.next', $current);
+    if ($next.length) {
+      // Get the Run for the Current Run ID
+      var run = $cv.data('player').data('run.id');
+
+      // Display Loading Icon
+      $cv.addClass('loading');
+      testcenter.services.call(['play', run.toString(), 'test', 'step', 'next']).
+        then(function(response) {
+          // Remove Loader
+          $cv.removeClass('loading');
+
+          // Is the Returned PLE different than the Current PLE?
+          var ple = response['return'];
+          if (current_entry.id !== ple.id) { // YES
+            // Save the New PLE
+            current_entry = ple;
+            // Selected the Step Card
+            $cv.cardview('card.current.setByID', ple.step);
+
+            console.log('Next Step');
+          }
+        }).
+        fail(function(code, message) {
+          // Remove Loader
+          $cv.removeClass('loading');
+          console.error('Failed to Move to Next Step in Test');
+        });
+    }
+  }
+}
+
+function onStepsFail(event) {
+  var $cv = $(this);
+
+  // Get the Run for the Current Run ID
+  var run = $cv.data('player').data('run.id');
+
+  // Display Loading Icon
+  $cv.addClass('loading');
+  testcenter.services.call(['play', run.toString(), 'step', 'current', 'fail'], fail_code, post_values, {
+    type: 'POST'
+  }).
+    then(function(entity) {
+      // Remove Loader
+      $cv.removeClass('loading');
+      console.log('Fail Step with Comment');
+
+      // TODO: With Fail, Allow for Terminating Run with Same Code/Comment
+    }).
+    fail(function(code, message) {
+      // Remove Loader
+      $cv.removeClass('loading');
+      console.error('Failed to Mark Step as Passed');
+    });
+}
+
+function _changeCurrentCard($cardview, $current, $new) {
+  if ($new.length) {
+    // Remove Extras from Current Card
+    $cardview.cardview('card.extras.remove');
+
+    // Clear Current Card
+    $cardview.cardview('card.current.clear');
+
+    // Make the New Card Current
+    _setCurrentCard($cardview, $new);
+  }
+
+  return $cardview;
+}
+
+function _setCurrentCard($cardview, $card) {
+  if ($card.length) {
+    // Make the Card Current
+    $cardview.cardview('card.current.set', $card);
+
+    // NOTE: Extras are Added on the Set-Current Event
+  }
+
+  return $cardview;
 }
 
 /*******************
@@ -119,7 +583,7 @@ function initialize_folders_view(selector) {
 
 function folder_loader(id) {
   // SEE NT-001
-  return testcenter.services.call(['folders', 'list'], [id, 'F']);
+  return testcenter.services.call(['folder', id.toString(), 'folders', 'list']);
 }
 
 function folders_to_nodes(response) {
@@ -154,6 +618,20 @@ function initialize_runs_list(selector) {
 
   $grid.gridlist({
     icon: 'tasks',
+    icon_color: function() {
+      if ($.isset(this.state)) {
+        switch (this.state) {
+          case 0:
+            return 'red';
+          case 9:
+            return 'green';
+          default:
+            return 'blue';
+        }
+      } else {
+        return 'black';
+      }
+    },
     callbacks: {
       loader: load_runs,
       data_to_nodes: runs_to_node,
@@ -164,7 +642,7 @@ function initialize_runs_list(selector) {
 }
 
 function load_runs(folder_id) {
-  return testcenter.services.call(['folders', 'list'], [folder_id, 'R']);
+  return testcenter.services.call(['folder', folder_id.toString(), 'runs', 'list']);
 }
 
 function runs_to_node(response) {
@@ -176,12 +654,14 @@ function runs_to_node(response) {
   switch (response.__type) {
     case 'entity-set':
       var entities = response.entities;
+      var key_field = response.__key;
       var display_field = response.__display;
       // Build Nodes
       $.each(entities, function(i, entity) {
         var node = $.extend(true, {}, defaults, {
-          id: entity.link,
-          text: entity[display_field]
+          id: entity[key_field],
+          text: entity[display_field],
+          state: entity.state
         });
         nodes.push(node);
       });
@@ -189,7 +669,8 @@ function runs_to_node(response) {
     case 'entity':
       var node = $.extend(true, {}, defaults, {
         id: response[response.__key],
-        text: response[response.__display]
+        text: response[response.__display],
+        state: response.state
       });
       nodes.push(node);
       break;
@@ -236,13 +717,38 @@ function menu_handlers_runs($node, action, options) {
  * 
  *******************/
 
-function initialize_player_tests_view(selector) {
-  return $.cardview(selector, {
+function initialize_player_tests_view($player, selector) {
+  var $cv = $.cardview(selector, {
     callbacks: {
       loader: loader_run_tests,
       data_to_cards: tests_to_cards
     }
   });
+  $cv.data('player', $player);
+
+  var $restart = $('<i class="angle double up large icon"></i>').click(
+    function(event) {
+      $cv.trigger('restart.player');
+      return false;
+    });
+  var $previous = $('<i class="angle up large icon"></i>').click(
+    function(event) {
+      $cv.trigger('previous.player');
+      return false;
+    });
+  var $next = $('<i class="angle down large icon"></i>').click(
+    function(event) {
+      $cv.trigger('next.player');
+      return false;
+    });
+
+  // Create Button Bar
+  var $button_bar = $('<div style="text-align: center"></div>');
+  $button_bar.append($next).append($restart).append($previous);
+
+  // Set the Button Bar as Extras
+  $cv.data('cv.extras', $button_bar);
+  return $cv;
 }
 
 function loader_run_tests(run) {
@@ -288,13 +794,57 @@ function tests_to_cards(response) {
  * 
  *******************/
 
-function initialize_player_steps_view(selector) {
-  return $.cardview(selector, {
+function initialize_player_steps_view($player, selector) {
+  var $cv = $.cardview(selector, {
     callbacks: {
       loader: loader_test_steps,
       data_to_cards: steps_to_cards
     }
   });
+  $cv.data('player', $player);
+
+  // Create Buttons
+  var $pass_no_comment = $('<i class="large green thumbs outline up icon"></i>').click(
+    function(event) {
+      $cv.trigger('pass.player');
+      return false;
+    });
+  var $pass_comment = $('<i class="large green thumbs up icon"></i>').click(
+    function(event) {
+      $cv.trigger('pass-comment.player');
+      return false;
+    });
+  var $restart = $('<i class="angle double up large icon"></i>').click(
+    function(event) {
+      $cv.trigger('restart.player');
+      return false;
+    });
+  var $previous = $('<i class="angle up large icon"></i>').click(
+    function(event) {
+      $cv.trigger('previous.player');
+      return false;
+    });
+  var $next = $('<i class="angle down large icon"></i>').click(
+    function(event) {
+      $cv.trigger('next.player');
+      return false;
+    });
+  var $fail_comment = $('<i class="thumbs down large red icon"></i>').click(
+    function(event) {
+      $cv.trigger('fail.player');
+      return false;
+    });
+
+  // Create Button Bar
+  var $left = $('<div class="column"></div>').append($pass_no_comment).append($pass_comment);
+  var $middle = $('<div class="center aligned column"></div>').append($next).append($restart).append($previous);
+  var $right = $('<div class="right aligned column"></div>').append($fail_comment);
+
+  var $button_bar = $('<div class="ui three column grid">').append($left).append($middle).append($right);
+
+  // Set the Button Bar as Extras
+  $cv.data('cv.extras', $button_bar);
+  return $cv;
 }
 
 function loader_test_steps(test) {
@@ -313,9 +863,8 @@ function steps_to_cards(response) {
       // Build Nodes
       $.each(entities, function(i, entity) {
         var node = $.extend(true, {}, defaults, {
-          id: entity.sequence,
+          id: entity[response.__key],
           test: entity['test'],
-          key: entity[response.__key],
           title: entity[response.__display],
           description: entity['description']
         });
@@ -324,9 +873,8 @@ function steps_to_cards(response) {
       break;
     case 'entity':
       var node = $.extend(true, {}, defaults, {
-        id: response.sequence,
+        id: response[response.__key],
         test: response['test'],
-        key: response[response.__key],
         title: response[response.__display],
         description: response['description']
       });
@@ -447,3 +995,14 @@ function field_key(name, prefix) {
 
   return name;
 }
+
+/* TODO
+ * On Small Screens (width < 800 px) the middle buttons for step show up on different
+ * lines (i.e. next and restart / previous) this is because class
+ * i.icon has a margin added by semantic 
+ * (semantic.css : 5612) margin: 0em 0.25rem 0em 0em;
+ * 
+ * See if there is another combination of classes that removes this padding
+ * I think this padding is only added to allow for space between the icon and
+ * a potential label.
+ */
