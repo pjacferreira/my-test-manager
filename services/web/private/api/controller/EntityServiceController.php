@@ -319,4 +319,82 @@ abstract class EntityServiceController extends BaseServiceController {
     }
   }
 
+  /*
+   * ---------------------------------------------------------------------------
+   * HELPER FUNCTIONS: Entity Change Modification
+   * ---------------------------------------------------------------------------
+   */
+  
+  /**
+   * If the Entity Manages it, this sets the User and Timestamp of when the
+   * Entity was created
+   * 
+   * @param \api\model\AbstractEntity $entity Entity to Base Query on
+   * @param \User $user User to set as the Objects Modifier
+   * @return \api\model\AbstractEntity Modified Entity
+   */
+  protected function setCreator($entity, $user) {
+    // Is the User Set?
+    if (isset($user)) { // YES
+      // Does this Entity Object Have a Creator Property?
+      if (property_exists($entity, 'creator')) { // YES
+        // Set Modifier
+        $entity->creator = \models\User::extractID($user);
+
+        // Set the Modification Date and Time
+        $now = new \DateTime();
+        $entity->date_created = $now->format('Y-m-d H:i:s');
+      }
+    }
+
+    return $entity;
+  }
+
+  /**
+   * If the Entity Manages it, this sets the User and Timestamp of when the
+   * Entity was modified
+   * 
+   * @param \api\model\AbstractEntity $entity Entity to Base Query on
+   * @param \User $user User to set as the Objects Modifier
+   * @return \api\model\AbstractEntity Modified Entity
+   */
+  protected function setModifier($entity, $user) {
+    // Is the User Set?
+    if (isset($user)) { // YES
+      // Does this Entity Object Have a Modifier Property?
+      if (property_exists($entity, 'modifier')) { // YES
+        // Set Modifier
+        $entity->modifier = \models\User::extractID($user);
+
+        // Set the Modification Date and Time
+        $now = new \DateTime();
+        $entity->date_modified = $now->format('Y-m-d H:i:s');
+      }
+    }
+
+    return $entity;
+  }
+
+  /**
+   * If the Entity Manages it, this sets the User and Timestamp of when the
+   * Entity was modified
+   * 
+   * @param \api\model\AbstractEntity $entity Entity to Base Query on
+   * @param \User $user User to set as the Objects Modifier
+   * @return \api\model\AbstractEntity Modified Entity
+   */
+  protected function setOwner($entity, $user) {
+    // Is the User Set?
+    if (isset($user)) { // YES
+      // Does this Entity Object Have a Modifier Property?
+      if (property_exists($entity, 'owner')) { // YES
+        // Set Modifier
+        $entity->owner = \models\User::extractID($user);
+      }
+    }
+
+    return $entity;
+  }
+  
+  
 }
