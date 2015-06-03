@@ -177,12 +177,6 @@ class SetTest extends \api\model\AbstractEntity {
     return null;
   }
 
-  /*
-   * ---------------------------------------------------------------------------
-   * PHALCON Model Extensions
-   * ---------------------------------------------------------------------------
-   */
-
   /**
    * Find the Link in the Set with the Given Sequence
    * 

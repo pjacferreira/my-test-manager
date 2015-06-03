@@ -24,7 +24,6 @@
  * @copyright 2015 Paulo Ferreira
  * @author Paulo Ferreira <pf at sourcenotes.org>
  */
-use Phalcon\Mvc\Micro\Collection as MicroCollection;
 use controllers\user\RunsController as Runs;
 
 /*

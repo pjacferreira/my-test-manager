@@ -49,7 +49,7 @@ $di['db'] = function () use ($di, $config) {
       PC::debug($connection->getSQLStatement(), 'db-afterQuery');
     }
   });
- */
+*/
   
   $adapter = new DbAdapter(array(
       "host" => $config->database->host,
@@ -62,10 +62,10 @@ $di['db'] = function () use ($di, $config) {
   $adapter->getInternalHandler()->setAttribute(\PDO::ATTR_EMULATE_PREPARES, false);
   $adapter->getInternalHandler()->setAttribute(\PDO::ATTR_STRINGIFY_FETCHES, false);
 
-/*  
+/*
   //Assign the eventsManager to the db adapter instance
   $adapter->setEventsManager($eventsManager);
-*/  
+*/
   return $adapter;
 };
 
