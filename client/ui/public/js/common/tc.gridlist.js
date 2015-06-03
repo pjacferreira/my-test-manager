@@ -8,8 +8,9 @@
    * LOCAL SCOPE
    */
   var defaults = {
-    // Number of Columns in the Grid
-    columns: 4,
+    icon: null, // Image or Semantic Font Awesome Icon Name
+    icon_color: null, // Semantic Colour Code for Font Awesome Icon
+    columns: 4, // Number of Columns in the Grid
     classes: {
       grid: "ui four column grid middle aligned internally celled"
     },
@@ -47,6 +48,14 @@
     return (((1 + Math.random()) * 0x1000000) | 0).toString(16).substring(1).toUpperCase();
   }
 
+  function __dereference_value(value, context, parameter) {
+    if ($.isFunction(value)) {
+      return $.proxy(value, $.isObject(context) ? context : this)(parameter);
+    }
+
+    return value;
+  }
+
   function __build_container(settings) {
     var $grid = $('<div>', {
       id: 'GLC' + __randomID(),
@@ -66,7 +75,7 @@
       if ($.isString(value)) {
         value = $.strings.nullOnEmpty(value);
       } else if ($.isFunction(value)) {
-        value = $.strings.nullOnEmpty(value(object));
+        value = $.strings.nullOnEmpty(__dereference_value(value,object));
       } else {
         value = $.strings.nullOnEmpty(value.toString());
       }
@@ -101,6 +110,7 @@
     if ($.isset(id)) {
       var id = 'GN:' + id;
       var icon = __property_to_string(node, 'icon', settings.icon);
+      var colour = __property_to_string(node, 'color', settings.icon_color);
       var text = __property_to_string(node, 'text');
       var html = $.isset(text) ? null : __property_to_string(node, 'html');
 
@@ -114,7 +124,7 @@
           });
         } else {
           $icon = $('<i/>', {
-            class: icon + " icon"
+            class: [colour, icon, 'icon'].join(' ').trim()
           });
         }
       }

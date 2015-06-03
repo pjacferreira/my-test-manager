@@ -8,12 +8,14 @@
    * LOCAL SCOPE
    */
   var defaults = {
+    detach_extras: true,
     classes: {
       container: null,
       card: null,
       content: null,
       header: null,
-      description: null
+      description: null,
+      extras: null
     },
     callbacks: {
       /* Loader Function for Nodes
@@ -134,6 +136,12 @@
     }
 
     return null;
+  }
+
+  function __build_extras(settings) {
+    return $('<div>', {
+      class: __append_classes('extra', settings.classes.extra)
+    });
   }
 
   function __build_card(card, settings) {
@@ -266,12 +274,12 @@
       }
     }
 
-    if($.isset($after) && $after.length) {
+    if ($.isset($after) && $after.length) {
       __add_cards($container, cards, $after);
     } else {
       __append_cards($container, cards);
     }
-    
+
     fire_event($container, 'loaded');
   }
 
@@ -350,17 +358,23 @@
       // Get Current Card
       var $current = this.find('.card.current');
       // Are the Current and New Cards the Same?      
-      if ($current.get() !== $card.get()) { // NO: Change Current Card
+      if ($current.length && ($current.get(0) !== $card.get(0))) { // NO: Change Current Card
         // Clear Current Card
         $current.removeClass('current');
         fire_event($(this), 'clear-current', $current);
-        // Make this Card Current
-        $card.addClass('current');
-        fire_event($(this), 'set-current', $card);
       }
+      // Make this Card Current
+      $card.addClass('current');
+      fire_event($(this), 'set-current', $card);
       return this;
     } // ELSE: NO
     throw "Not a Valid Card View";
+  }
+
+  function set_current_card_byid(id) {
+    var $card = $.proxy(card_byid, this)(id);
+    $.proxy(set_current_card, this)($card);
+    return this;
   }
 
   function card_add(parameter, $after) {
@@ -463,6 +477,69 @@
     throw "Not a Valid Card View";
   }
 
+  function card_byid(id) {
+    // Are we dealing with Card View?
+    if (this.data('cv.settings')) { // YES
+      return this.find('.card').filter(function(i, el) {
+        return $(this).data('cv.data').id === id;
+      });
+    } // ELSE: NO
+    throw "Not a Valid Card View";
+  }
+
+  function card_extras_set($card, $contents) {
+    // Are we dealing with Card View?
+    if (this.data('cv.settings')) { // YES
+      $card = $.isset($card) ? __to_card($card) : this.find('.card.current').first();
+
+      // Do we have a Card?
+      if ($card.length) { // YES
+        var $extras = $card.data('cv.extras');
+        if ($.isset($extras)) {
+          // Do we want the Extras Contents Detached (i.e. They Wont be Rebuilt)?
+          if (this.data('cv.settings').detach_extras) { // YES
+            $extras.data('cv.extra.contents').detach();
+          } else { // NO: They will just be simply rebuilt
+            $extras.empty();
+          }
+        } else {
+          $extras = __build_extras(this.data('cv.settings'));
+          $card.data('cv.extras', $extras);
+          $card.append($extras);
+        }
+
+        $extras.data('cv.extra.contents', $contents);
+        $extras.append($contents);
+      }
+
+      return this;
+    } // ELSE: NO
+    throw "Not a Valid Card View";
+  }
+
+  function card_extras_remove($card) {
+    // Are we dealing with Card View?
+    if (this.data('cv.settings')) { // YES
+      $card = $.isset($card) ? __to_card($card) : this.find('.card.current').first();
+
+      // Do we have a Card?
+      if ($card.length) { // YES
+        var $extras = $card.data('cv.extras');
+        if ($.isset($extras)) {
+          // Do we want the Extras Contents Detached (i.e. They Wont be Rebuilt)?
+          if (this.data('cv.settings').detach_extras) { // YES
+            $extras.data('cv.extra.contents').detach();
+          }
+          $extras.remove();
+          $card.removeData('cv.extras');
+        }
+      }
+
+      return this;
+    } // ELSE: NO
+    throw "Not a Valid Card View";
+  }
+
   /*
    * COMMANDS (Handlers)
    */
@@ -537,7 +614,12 @@
       'current': {
         'get': get_current_card,
         'set': set_current_card,
+        'setByID': set_current_card_byid,
         'clear': clear_current_card
+      },
+      'extras': {
+        'set': card_extras_set,
+        'remove': card_extras_remove
       },
       'add': card_add,
       'remove': card_remove,
@@ -546,7 +628,8 @@
       'first': card_first,
       'last': card_last,
       'next': card_next,
-      'previous': card_previous
+      'previous': card_previous,
+      'byID': card_byid
     }
   };
 
