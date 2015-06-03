@@ -210,7 +210,7 @@ class TestStep extends \api\model\AbstractEntity {
    * @param mixed $step Test Step Entity (object) or Test Step ID (integer)
    * @return mixed Returns the Test ID or 'null' on failure;
    */
-  public static function extractStepID($step) {
+  public static function extractID($step) {
     assert('isset($step)');
 
     // Is the parameter an Test Object?
@@ -306,6 +306,47 @@ class TestStep extends \api\model\AbstractEntity {
 
     $step = self::findFirst($params);
     return $step !== FALSE ? $step : null;
+  }
+
+  /**
+   * Find a Test Step if it Belongs to the Project
+   * 
+   * @param mixed $project Project ID or Project Entity
+   * @param mixed $step Test Step ID or Step Entity
+   * @return \models\TestStep Test Step in Project
+   * @throws \Exception On Any Failure
+   */
+  public static function findInProject($project, $step) {
+    assert('isset($project)');
+    assert('isset($step)');
+
+    // Are we able to extract the Project ID from the Parameter?
+    $project_id = \models\Project::extractID($project);
+    if (!isset($project_id)) { // NO
+      throw new \Exception("Project Parameter is invalid.", 1);
+    }
+
+    // Are we able to extract the Step ID from the Parameter?
+    $id = \models\TestStep::extractID($step);
+    if (!isset($id)) { // NO
+      throw new \Exception("Step Parameter is invalid.", 1);
+    }
+
+    // Instantiate the Query
+    /* NOTE: The choice of the Entity Used with FROM is important, as it
+     * represents the type of entity that will be created, on rehydration.
+     */
+    $pqhl = 'SELECT ts.*' .
+      ' FROM models\TestStep ts' .
+      ' JOIN models\Test t' .
+      ' WHERE ts.id = :id: and ts.test = t.id and t.project = :project:';
+
+    // Execute Query and Return Results
+    $step = self::selectQuery($pqhl, [
+        'id' => $id,
+        'project' => $project_id
+    ]);
+    return ($step !== FALSE) && $step->count() ? $step->getFirst() : null;
   }
 
   /**
@@ -602,7 +643,7 @@ class TestStep extends \api\model\AbstractEntity {
           throw new \Exception("Failed to Save the Test Step.", 1);
         }
       }
-      
+
       // Return Renumbered List
       return self::listInTest($test);
     }
