@@ -130,7 +130,7 @@ function initialize_folders_view(selector) {
 
 function folder_loader(id) {
   // SEE NT-001
-  return testcenter.services.call(['folders', 'list'], [id, 'F']);
+  return testcenter.services.call(['folder', id.toString(), 'folders', 'list']);
 }
 
 function folders_to_nodes(response) {
@@ -207,6 +207,20 @@ function initialize_sets_list(selector) {
 
   $grid.gridlist({
     icon: 'tasks',
+    icon_color: function() {
+      if ($.isset(this.state)) {
+        switch (this.state) {
+          case 0:
+            return 'red';
+          case 9:
+            return 'green';
+          default:
+            return 'orange';
+        }
+      } else {
+        return 'black';
+      }
+    },
     callbacks: {
       loader: load_sets,
       data_to_nodes: sets_to_node,
@@ -217,7 +231,7 @@ function initialize_sets_list(selector) {
 }
 
 function load_sets(folder_id) {
-  return testcenter.services.call(['folders', 'list'], [folder_id, 'S']);
+  return testcenter.services.call(['folder', folder_id.toString(), 'list'], 'S');
 }
 
 function sets_to_node(response) {
@@ -254,7 +268,7 @@ function sets_to_node(response) {
 
 function menu_items_sets($node) {
   var items = {
-    'create': {'name': 'New Run..', 'icon': 'add'},
+    'create': {'name': 'New Run..', 'icon': 'add'}
   };
 
   return items;
@@ -291,6 +305,20 @@ function initialize_runs_list(selector) {
 
   $grid.gridlist({
     icon: 'tasks',
+    icon_color: function() {
+      if ($.isset(this.state)) {
+        switch (this.state) {
+          case 0:
+            return 'red';
+          case 9:
+            return 'green';
+          default:
+            return 'blue';
+        }
+      } else {
+        return 'black';
+      }
+    },
     callbacks: {
       loader: load_runs,
       data_to_nodes: runs_to_node
@@ -299,7 +327,7 @@ function initialize_runs_list(selector) {
 }
 
 function load_runs(folder_id) {
-  return testcenter.services.call(['folders', 'list'], [folder_id, 'R']);
+  return testcenter.services.call(['folder', folder_id.toString(), 'runs', 'list']);
 }
 
 function runs_to_node(response) {
@@ -311,12 +339,14 @@ function runs_to_node(response) {
   switch (response.__type) {
     case 'entity-set':
       var entities = response.entities;
+      var key_field = response.__key;
       var display_field = response.__display;
       // Build Nodes
       $.each(entities, function(i, entity) {
         var node = $.extend(true, {}, defaults, {
-          id: entity.link,
-          text: entity[display_field]
+          id: entity[key_field],
+          text: entity[display_field],
+          state: entity.state
         });
         nodes.push(node);
       });
@@ -324,7 +354,8 @@ function runs_to_node(response) {
     case 'entity':
       var node = $.extend(true, {}, defaults, {
         id: response[response.__key],
-        text: response[response.__display]
+        text: response[response.__display],
+        state: response.state
       });
       nodes.push(node);
       break;
@@ -347,7 +378,7 @@ function load_run(id) {
   // Flag the DIV as Loading
   $form.addClass('loading');
   // Load the Tests into the Folder
-  testcenter.services.call(['run', id.toString(), 'read'], null , null, {
+  testcenter.services.call(['run', id.toString(), 'read'], null, null, {
     call_ok: function(run) {
       // Save the Test Data Information with the Form
       form_load($form, run, 'run');

@@ -71,7 +71,7 @@ function initialize_folders_list() {
 
 function folder_loader(id) {
   // SEE NT-001
-  return testcenter.services.call(['folders', 'list'], [id, 'F']);
+  return testcenter.services.call(['folder', id.toString(), 'folders', 'list']);
 }
 
 function folders_to_nodes(response) {
@@ -184,6 +184,20 @@ function initialize_items_grid() {
 
   $grid.gridlist({
     icon: 'file',
+    icon_color: function() {
+      if ($.isset(this.state)) {
+        switch (this.state) {
+          case 0:
+            return 'red';
+          case 9:
+            return 'green';
+          default:
+            return 'orange';
+        }
+      } else {
+        return 'black';
+      }
+    },
     callbacks: {
       loader: load_tests,
       data_to_nodes: tests_to_node,
@@ -194,7 +208,7 @@ function initialize_items_grid() {
 }
 
 function load_tests(folder_id) {
-  return testcenter.services.call(['folders', 'list'], [folder_id, 'T']);
+  return testcenter.services.call(['folder', folder_id.toString(), 'tests', 'list']);
 }
 
 function tests_to_node(response) {
@@ -206,12 +220,14 @@ function tests_to_node(response) {
   switch (response.__type) {
     case 'entity-set':
       var entities = response.entities;
+      var key_field = response.__key;
       var display_field = response.__display;
       // Build Nodes
       $.each(entities, function(i, entity) {
         var node = $.extend(true, {}, defaults, {
-          id: entity.link,
-          text: entity[display_field]
+          id: entity[key_field],
+          text: entity[display_field],
+          state: entity.state
         });
         nodes.push(node);
       });
@@ -219,7 +235,8 @@ function tests_to_node(response) {
     case 'entity':
       var node = $.extend(true, {}, defaults, {
         id: response[response.__key],
-        text: response[response.__display]
+        text: response[response.__display],
+        state: response.state
       });
       nodes.push(node);
       break;
@@ -1041,7 +1058,7 @@ function create_navigator(selector) {
             },
             callbacks: {
               data_url: function(id) {
-                return window.testcenter.services.url.service(['folders', 'list'], [id, 'F'], null);
+                return testcenter.services.call(['folder', id.toString(), 'folders', 'list']);
               },
               data_to_nodes: null,
               'context-menu': contextmenu_folder
