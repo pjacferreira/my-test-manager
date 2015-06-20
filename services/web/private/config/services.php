@@ -105,6 +105,11 @@ $di['view'] = function () use ($config) {
     return $metaData;
   };
 
+  // Application Configuration Properties
+  $di->setShared('config', function() use ($config) {
+    return array_key_exists('properties', $config) ? $config['properties'] : null;
+  });
+
   /**
    * Type Registry
    */

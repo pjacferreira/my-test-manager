@@ -436,9 +436,7 @@ class BaseController extends Controller {
 
     // Set Content Type to JSON
     $this->response->setContentType('application/json');
-    // TODO TD-042
-//    $this->response->setHeader('Access-Control-Allow-Origin','*');
-//    $this->response->setHeader('Access-Control-Allow-Credentials','true');
+    $this->addAcceptHeaders($context);
     return $response;
   }
 
@@ -471,9 +469,7 @@ class BaseController extends Controller {
 
     // Set Content Type to JSON
     $this->response->setContentType('application/json');
-    // TODO TD-042
-//    $this->response->setHeader('Access-Control-Allow-Origin','*');
-//    $this->response->setHeader('Access-Control-Allow-Credentials','true');
+    $this->addAcceptHeaders($context);
     return $response;
   }
 
@@ -482,6 +478,60 @@ class BaseController extends Controller {
    * HELPER FUNCTIONS: HTTP Request Parameters
    * ---------------------------------------------------------------------------
    */
+
+  /**
+   * 
+   * @param type $context
+   */
+  protected function addAcceptHeaders($context) {
+    // Do we have an 'Origin' Header in the Request?
+    $origin = Strings::nullOnEmpty($this->request->getHeader('Origin'));
+    if (isset($origin)) { // YES      
+      // Do we have a more or less normal URI?
+      $uri = parse_url($origin);
+      $host = $uri['host'];
+      /* TODO Extra Verifications
+       * 1. Verify that the schema is http or https (no using allowing anything else)
+       * 2. Since headers can be easily forged, maybe verify other headers for
+       * allowed values, before allowing accept (better yet, throw an exception,
+       * if the headers do not have permitted values, as that probably means
+       * its coming from a hacking source)
+       */
+      if (($uri !== FALSE) && array_key_exists('host', $uri)) { // YES
+        // Get Host component of URI
+        $host = $uri['host'];
+        // Base Matches
+        $matches = ["^127(\.\d{1,3}){3}", "^localhost$"];
+
+        // Add any Application Configuration Matches
+        $config = $this->getDI()->getConfig();
+        if (isset($config) && array_key_exists('allowed-origins', $config)) {
+          $allowed = $config['allowed-origins'];
+          if (is_string($allowed)) {
+            $matches[] = $allowed;
+          } else if (is_array($allowed)) {
+            $matches = array_merge($matches, $allowed);
+          }
+        }
+
+        // Try to Match the Origin against one of the allowed sources
+        $ok = false;
+        for ($i = 0, $length = count($matches); $i < $length; $i++) {
+          if (preg_match('/' . $matches[$i] . '/i', $host)) {
+            $ok = true;
+            break;
+          }
+        }
+
+        // Is the origin allowed?
+        if ($ok) { // YES
+          // TODO TD-042
+          $this->response->setHeader('Access-Control-Allow-Origin', $origin);
+          $this->response->setHeader('Access-Control-Allow-Credentials', 'true');
+        }
+      }
+    }
+  }
 
   /**
    * Perform Cleanup of a Single Request Parameter
