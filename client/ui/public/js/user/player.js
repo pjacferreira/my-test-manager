@@ -6,10 +6,8 @@
 /*******************************
  * INITIALZATION FUNCTIONS
  *******************************/
-
-var current_test = null, current_first_test = false;
-var current_step = null, current_first_step = false;
 var current_entry = null;
+var current_run_state = 0;
 
 /**
  * 
@@ -96,11 +94,12 @@ function onRunSelected(event, node) {
 
   // Get the Current Entry for the Selected Entry
   testcenter.services.call(['play', node.id.toString(), 'current']).
-    then(function(response) {
+    then(function (response) {
       $player.removeClass('loading');
 
       // TODO: Extract 1st Test/Step for Play from Response
       current_entry = response.return;
+      current_run_state = node.state;
 
       // Add Loading Class
       $('#test_cards').addClass('loading');
@@ -114,39 +113,10 @@ function onRunSelected(event, node) {
       $view.cardview('clear').
         cardview('load', node.id);
     }).
-    fail(function(code, message) {
+    fail(function (code, message) {
       $player.removeClass('loading');
       console.error('Failed to Open Run');
     });
-
-  /*
-   // Open Run for Playing
-   $player.addClass('loading');
-   testcenter.services.call(['play', node.id.toString(), 'open']).
-   then(function(entity) {
-   $player.removeClass('loading');
-   
-   // TODO: Extract 1st Test/Step for Play from Response
-   current_test = null;
-   current_step = null;
-   
-   // Add Loading Class
-   $('#test_cards').addClass('loading');
-   $('#step_cards').addClass('loading');
-   
-   // Save Run ID
-   $player.data('run.id', node.id);
-   
-   // Reload Tests View
-   var $view = $('#test_cards');
-   $view.cardview('clear').
-   cardview('load', node.id);
-   }).
-   fail(function(code, message) {
-   $player.removeClass('loading');
-   console.error('Failed to Open Run');
-   });
-   */
 }
 
 function onTestsLoaded(event) {
@@ -173,8 +143,11 @@ function onSetCurrentTest(event, card) {
   var $cv = $(this);
   var test = $cv.cardview('card.data', card);
 
-  // Add Buttons to Current Card
-  $cv.cardview('card.extras.set', card, $cv.data('cv.extras'));
+  // Are we dealing with an Open Run?
+  if ((current_run_state > 0) && (current_run_state < 9)) { // YES: Put the Button in 
+    // Add Buttons to Current Card
+    $cv.cardview('card.extras.set', card, $cv.data('cv.extras'));
+  }
 
   // Reload Steps View
   var $steps = $('#step_cards');
@@ -203,7 +176,7 @@ function onTestsRestart(event) {
 
       // Try to Restart Testing
       testcenter.services.call(['play', run.toString(), 'test', 'first']).
-        then(function(response) {
+        then(function (response) {
           // Remove Loader
           $cv.removeClass('loading');
 
@@ -225,7 +198,7 @@ function onTestsRestart(event) {
             console.log('Restart Test');
           }
         }).
-        fail(function(code, message) {
+        fail(function (code, message) {
           // Remove Loader
           $cv.removeClass('loading');
           console.error('Failed to Restart Run');
@@ -247,7 +220,7 @@ function onTestsPrevious(event) {
       $cv.addClass('loading');
 
       testcenter.services.call(['play', run.toString(), 'test', 'previous']).
-        then(function(response) {
+        then(function (response) {
           // Remove Loader
           $cv.removeClass('loading');
 
@@ -269,7 +242,7 @@ function onTestsPrevious(event) {
             console.log('Previous Test');
           }
         }).
-        fail(function(code, message) {
+        fail(function (code, message) {
           // Remove Loader
           $cv.removeClass('loading');
           console.error('Failed to Move to Previous Test');
@@ -290,7 +263,7 @@ function onTestsNext(event) {
       // Display Loading Icon
       $cv.addClass('loading');
       testcenter.services.call(['play', run.toString(), 'test', 'next']).
-        then(function(response) {
+        then(function (response) {
           // Is the Returned PLE different than the Current PLE?
           var ple = response['return'];
           if (current_entry.id !== ple.id) { // YES
@@ -309,7 +282,7 @@ function onTestsNext(event) {
             console.log('Next Test');
           }
         }).
-        fail(function(code, message) {
+        fail(function (code, message) {
           // Remove Loader
           $cv.removeClass('loading');
           console.error('Failed to Move to Next Step in Test');
@@ -342,8 +315,11 @@ function onStepsLoaded(event) {
 function onSetCurrentStep(event, card) {
   var $cv = $(this);
 
-  // Add Buttons to Current Card
-  $cv.cardview('card.extras.set', card, $cv.data('cv.extras'));
+  // Are we dealing with an Open Run?
+  if ((current_run_state > 0) && (current_run_state < 9)) { // YES: Put the Button in 
+    // Add Buttons to Current Card
+    $cv.cardview('card.extras.set', card, $cv.data('cv.extras'));
+  }
 }
 
 function onStepsPass(event) {
@@ -354,17 +330,17 @@ function onStepsPass(event) {
 
   // Display Loading Icon
   $cv.addClass('loading');
-  testcenter.services.call(['play', run.toString(), 'step', 'current', 'pass'], null, post_values, {
+  testcenter.services.call(['play', run.toString(), 'current', 'pass'], null, null, {
     type: 'POST'
   }).
-    then(function(entity) {
+    then(function (entity) {
       // Remove Loader
       $cv.removeClass('loading');
       console.log('Pass Step');
 
       // TODO: With Successfull Pass (Move onto the Next Step)
     }).
-    fail(function(code, message) {
+    fail(function (code, message) {
       // Remove Loader
       $cv.removeClass('loading');
       console.error('Failed to Mark Step as Passed');
@@ -377,23 +353,28 @@ function onStepsPassComment(event) {
   // Get the Run for the Current Run ID
   var run = $cv.data('player').data('run.id');
 
-  // Display Loading Icon
-  $cv.addClass('loading');
-  testcenter.services.call(['play', run.toString(), 'step', 'current', 'pass'], pass_code, post_values, {
-    type: 'POST'
-  }).
-    then(function(entity) {
-      // Remove Loader
-      $cv.removeClass('loading');
-      console.log('Pass Step with Comment');
-
-      // TODO: With Successfull Pass (Move onto the Next Step)
-    }).
-    fail(function(code, message) {
-      // Remove Loader
-      $cv.removeClass('loading');
-      console.error('Failed to Mark Step as Passed');
-    });
+  var $form = $('#form_step_complete');
+  $form.data('pass_mode',true);
+  form_show($form);
+  /*
+   // Display Loading Icon
+   $cv.addClass('loading');
+   testcenter.services.call(['play', run.toString(), 'current', 'pass'], pass_code, post_values, {
+   type: 'POST'
+   }).
+   then(function (entity) {
+   // Remove Loader
+   $cv.removeClass('loading');
+   console.log('Pass Step with Comment');
+   
+   // TODO: With Successfull Pass (Move onto the Next Step)
+   }).
+   fail(function (code, message) {
+   // Remove Loader
+   $cv.removeClass('loading');
+   console.error('Failed to Mark Step as Passed');
+   });
+   */
 }
 
 function onStepsRestart(event) {
@@ -409,7 +390,7 @@ function onStepsRestart(event) {
       // Display Loading Icon
       $cv.addClass('loading');
       testcenter.services.call(['play', run.toString(), 'test', 'step', 'first']).
-        then(function(response) {
+        then(function (response) {
           // Remove Loader
           $cv.removeClass('loading');
 
@@ -424,7 +405,7 @@ function onStepsRestart(event) {
             console.log('Restart Steps');
           }
         }).
-        fail(function(code, message) {
+        fail(function (code, message) {
           // Remove Loader
           $cv.removeClass('loading');
           console.error('Failed to Move to First Step in Test');
@@ -446,7 +427,7 @@ function onStepsPrevious(event) {
       // Display Loading Icon
       $cv.addClass('loading');
       testcenter.services.call(['play', run.toString(), 'test', 'step', 'previous']).
-        then(function(response) {
+        then(function (response) {
           // Remove Loader
           $cv.removeClass('loading');
 
@@ -461,7 +442,7 @@ function onStepsPrevious(event) {
             console.log('Previous Step');
           }
         }).
-        fail(function(code, message) {
+        fail(function (code, message) {
           // Remove Loader
           $cv.removeClass('loading');
           console.error('Failed to Move to Previous Step in Test');
@@ -485,7 +466,7 @@ function onStepsNext(event) {
       // Display Loading Icon
       $cv.addClass('loading');
       testcenter.services.call(['play', run.toString(), 'test', 'step', 'next']).
-        then(function(response) {
+        then(function (response) {
           // Remove Loader
           $cv.removeClass('loading');
 
@@ -500,7 +481,7 @@ function onStepsNext(event) {
             console.log('Next Step');
           }
         }).
-        fail(function(code, message) {
+        fail(function (code, message) {
           // Remove Loader
           $cv.removeClass('loading');
           console.error('Failed to Move to Next Step in Test');
@@ -515,23 +496,29 @@ function onStepsFail(event) {
   // Get the Run for the Current Run ID
   var run = $cv.data('player').data('run.id');
 
+  var $form = $('#form_step_complete');
+  $form.data('pass_mode',false);
+  form_show($form);
+  
+/*
   // Display Loading Icon
   $cv.addClass('loading');
   testcenter.services.call(['play', run.toString(), 'step', 'current', 'fail'], fail_code, post_values, {
     type: 'POST'
   }).
-    then(function(entity) {
+    then(function (entity) {
       // Remove Loader
       $cv.removeClass('loading');
       console.log('Fail Step with Comment');
 
       // TODO: With Fail, Allow for Terminating Run with Same Code/Comment
     }).
-    fail(function(code, message) {
+    fail(function (code, message) {
       // Remove Loader
       $cv.removeClass('loading');
       console.error('Failed to Mark Step as Passed');
     });
+*/  
 }
 
 function _changeCurrentCard($cardview, $current, $new) {
@@ -597,7 +584,7 @@ function folders_to_nodes(response) {
     lazy: true
   };
   // Build Initial Folder List
-  $.each(entities, function(i, entity) {
+  $.each(entities, function (i, entity) {
     var node = $.extend({}, defaults, {
       id: entity[key_field],
       title: entity[display_field]
@@ -618,15 +605,15 @@ function initialize_runs_list(selector) {
 
   $grid.gridlist({
     icon: 'tasks',
-    icon_color: function() {
+    icon_color: function () {
       if ($.isset(this.state)) {
         switch (this.state) {
           case 0:
-            return 'red';
+            return 'gray';
           case 9:
-            return 'green';
+            return 'red';
           default:
-            return 'blue';
+            return 'green';
         }
       } else {
         return 'black';
@@ -657,7 +644,7 @@ function runs_to_node(response) {
       var key_field = response.__key;
       var display_field = response.__display;
       // Build Nodes
-      $.each(entities, function(i, entity) {
+      $.each(entities, function (i, entity) {
         var node = $.extend(true, {}, defaults, {
           id: entity[key_field],
           text: entity[display_field],
@@ -681,17 +668,62 @@ function runs_to_node(response) {
 }
 
 function menu_items_runs($node) {
-  var items = {
-    'create': {'name': 'New Test..', 'icon': 'add'},
-    'seperator': '---------',
-    'delete': {'name': 'Delete', 'icon': 'delete'}
-  };
+  var items = false;
 
-  if (!$.isset($node)) {
-    items.delete.disabled = true;
+  if ($.isset($node)) {
+    items = {
+      'open': {'name': 'Open'},
+      'seperator': '---------',
+      'close': {'name': 'Close'}
+    };
+
+    var element = $node.data('node.element');
+    switch (element.state) {
+      case 1:
+        items.open.disabled = true;
+        break;
+      case 0:
+      case 9:
+        items.close.disabled = true;
+        break;
+    }
   }
 
   return items;
+}
+
+function onRunsOpen($node) {
+  var element = $node.data('node.element');
+
+  testcenter.services.call(['play', element.id.toString(), 'open']).
+    then(function (entity) {
+      var $folders = $('#folders');
+      var $runs = $('#list_runs');
+      // Reload Runs Grid Display
+      $folders.trigger('folder-view.folder-selected', $runs.data('folder.parent'));
+      // Select Run for Player
+      $runs.trigger('gridlist.item-selected', element);
+    }).
+    fail(function (code, message) {
+      console.error('Failed to Open Run');
+    });
+}
+
+function onRunsClose($node) {
+  var element = $node.data('node.element');
+
+  testcenter.services.call(['play', element.id.toString(), 'close']).
+    then(function (entity) {
+      var $folders = $('#folders');
+      var $runs = $('#list_runs');
+      // Reload Runs Grid Display
+      $folders.trigger('folder-view.folder-selected', $runs.data('folder.parent'));
+      // Select Run for Player
+      $runs.trigger('gridlist.item-selected', element);
+    }).
+    fail(function (code, message) {
+      console.error('Failed to Close Run');
+    });
 }
 
 function menu_handlers_runs($node, action, options) {
@@ -701,13 +733,20 @@ function menu_handlers_runs($node, action, options) {
   } else {
     console.log('Selected action "' + action + '"');
   }
-  var $form = $('#form_' + action + '_test');
-  if ($form.length) {
-    // NOTE: Handler Called in the Context of Grid List Object
-    $form.data('folder.parent', this.data('folder.parent'));
-    form_show($form);
+
+  var handler = 'onRuns' + $.ucfirst(action);
+  if ($.isFunction(window[handler])) {
+    console.log('CALLED Runs' + $.ucfirst(action) + ' Handler');
+    window[handler]($node);
   } else {
-    console.log('Missing Form for action[' + action + ']');
+    var $form = $('#form_' + action + '_test');
+    if ($form.length) {
+      // NOTE: Handler Called in the Context of Grid List Object
+      $form.data('folder.parent', this.data('folder.parent'));
+      form_show($form);
+    } else {
+      console.log('Missing Form for action[' + action + ']');
+    }
   }
 }
 
@@ -727,17 +766,17 @@ function initialize_player_tests_view($player, selector) {
   $cv.data('player', $player);
 
   var $restart = $('<i class="angle double up large icon"></i>').click(
-    function(event) {
+    function (event) {
       $cv.trigger('restart.player');
       return false;
     });
   var $previous = $('<i class="angle up large icon"></i>').click(
-    function(event) {
+    function (event) {
       $cv.trigger('previous.player');
       return false;
     });
   var $next = $('<i class="angle down large icon"></i>').click(
-    function(event) {
+    function (event) {
       $cv.trigger('next.player');
       return false;
     });
@@ -765,7 +804,7 @@ function tests_to_cards(response) {
     case 'entity-set':
       var entities = response.entities;
       // Build Nodes
-      $.each(entities, function(i, entity) {
+      $.each(entities, function (i, entity) {
         var node = $.extend(true, {}, defaults, {
           id: entity[response.__key],
           title: entity[response.__display],
@@ -805,32 +844,32 @@ function initialize_player_steps_view($player, selector) {
 
   // Create Buttons
   var $pass_no_comment = $('<i class="large green thumbs outline up icon"></i>').click(
-    function(event) {
+    function (event) {
       $cv.trigger('pass.player');
       return false;
     });
   var $pass_comment = $('<i class="large green thumbs up icon"></i>').click(
-    function(event) {
+    function (event) {
       $cv.trigger('pass-comment.player');
       return false;
     });
   var $restart = $('<i class="angle double up large icon"></i>').click(
-    function(event) {
+    function (event) {
       $cv.trigger('restart.player');
       return false;
     });
   var $previous = $('<i class="angle up large icon"></i>').click(
-    function(event) {
+    function (event) {
       $cv.trigger('previous.player');
       return false;
     });
   var $next = $('<i class="angle down large icon"></i>').click(
-    function(event) {
+    function (event) {
       $cv.trigger('next.player');
       return false;
     });
   var $fail_comment = $('<i class="thumbs down large red icon"></i>').click(
-    function(event) {
+    function (event) {
       $cv.trigger('fail.player');
       return false;
     });
@@ -861,7 +900,7 @@ function steps_to_cards(response) {
     case 'entity-set':
       var entities = response.entities;
       // Build Nodes
-      $.each(entities, function(i, entity) {
+      $.each(entities, function (i, entity) {
         var node = $.extend(true, {}, defaults, {
           id: entity[response.__key],
           test: entity['test'],
@@ -887,12 +926,116 @@ function steps_to_cards(response) {
 }
 
 /*******************************
- * CREATE FOLDER FORM
+ * FORM STEP PASS
+ *******************************/
+
+/**
+ * 
+ * @param {type} event
+ * @returns {undefined}
+ */
+function __button_step_pass(event) {
+  // Form jQuery Object is Store in the Event Data
+  var $form = event.data;
+  /* Load the Node if Not Already Loaded.
+   * Why? 
+   * Beacuse if we add a child node to a node, that hasn't been loaded,
+   * FancyTree will assume the node is loaded, and no the ajax request to load.
+   */
+  var node = $form.data('fv.node.selected');
+  node.load();
+  form_submit($form, {
+    pass_code: {
+      identifier: 'pass_code',
+      rules: [
+        {
+          type: 'empty',
+          prompt: 'Please choose you gender'
+        }
+      ]
+    },
+    name: {
+      identifier: 'name',
+      rules: [
+        {
+          type: 'empty',
+          prompt: 'Missing Folder Name'
+        }
+      ]
+    }
+  }, {
+    revalidate: false,
+    onSuccess: __do_mark_step,
+    onFailure: function () {
+      alert("Pass Code: Missing or Invalid Fields");
+    }
+  });
+}
+
+function __do_mark_step() {
+  var $form = $('#form_step_complete');
+  // Extract Field Values
+  var values = {};
+  $form.find('.field > :input').each(function () {
+    values[this.name] = $(this).val();
+  });
+  var node = $form.data('fv.node.selected');
+  var key = node.key.split(':');
+  console.log('Create Child Node [' + values.name + '] under Parent Node [' + key[1] + ':' + node.title + ']');
+  /*  
+   testcenter.services.call(['folder', 'create'], [key[1], values.name], null, {
+   call_ok: function(entity) {
+   var defaults = {
+   folder: true,
+   lazy: true
+   };
+   var key_field = entity.__key;
+   var display_field = entity.__display;
+   var child = $.extend({}, defaults, {
+   key: 'f:' + entity[key_field],
+   title: entity[display_field]
+   });
+   node.addChildren(child);
+   // Hide the Form 
+   form_hide($form);
+   },
+   call_nok: function(code, message) {
+   form_show_errors($form, message);
+   }
+   });
+   return values;
+   */
+}
+
+/*******************************
+ * FORM INITIALIZATION
+ *******************************/
+
+/**
+ * 
+ * @param {type} $form
+ * @returns {undefined}
+ */
+function __initialize_form_step_complete($form) {
+  __initialize_form($form);
+}
+
+/**
+ * 
+ * @param {type} $form
+ * @returns {undefined}
+ */
+function __load_form_step_complete($form) {
+  console.log('Loading Form [' + $form.attr('id') + ']');
+}
+
+/*******************************
+ * HELPER FORMS
  *******************************/
 
 function __initialize_form($form) {
   // Link Buttons to Handlers
-  $form.find(".button").each(function() {
+  $form.find(".button").each(function () {
     var $this = $(this);
     var name = $.strings.nullOnEmpty($this.attr('id'));
     if (name !== null) {
@@ -957,7 +1100,7 @@ function form_hide($form) {
 }
 
 function form_load($form, values, prefix) {
-  $form.find('.field > :input').each(function() {
+  $form.find('.field > :input').each(function () {
     var field = field_key(this.name, prefix);
 
     var value = $.objects.get(field, values);

@@ -18,6 +18,10 @@
     return $.type(value) === 'string';
   }
 
+  $.ucfirst = function (string) {
+    return $.isString(string) ? string.charAt(0).toUpperCase() + string.slice(1) : string;
+  }
+
   $.isObject = function (value) {
     return $.type(value) === 'object';
   }

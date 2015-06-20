@@ -31,6 +31,7 @@
   padding: 10px; 
   width: 500px; 
   border-radius: 10px;
+  display: block;
   /* CENTER HORIZONTALLY */  
   margin: 10px auto;
   z-index: 10;
@@ -42,7 +43,7 @@
 
 /* PLACE BEHIND BACKGROUND */
 .testcenter.ui.form.hidden {
-  z-index: -110;
+  display: none;
 }
 
 
