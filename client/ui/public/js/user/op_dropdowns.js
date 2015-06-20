@@ -145,7 +145,7 @@ function select_organization(element, value, selectedText, $selectedItem) {
         initialize_projects();
       },
       call_nok: function(code, message) {
-        console.log('ERROR: select_organization');
+        console.error('ERROR: select_organization');
       }
     });
   }
