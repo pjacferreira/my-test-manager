@@ -3,7 +3,7 @@
  * License http://opensource.org/licenses/AGPL-3.0 Affero GNU Public License v3.0
  */
 ; // For Minimification (If somebody forgot semicolon in another script file)
-(function($, undefined) {
+(function ($, undefined) {
   /*
    * LOCAL SCOPE
    */
@@ -48,14 +48,6 @@
     return (((1 + Math.random()) * 0x1000000) | 0).toString(16).substring(1).toUpperCase();
   }
 
-  function __dereference_value(value, context, parameter) {
-    if ($.isFunction(value)) {
-      return $.proxy(value, $.isObject(context) ? context : this)(parameter);
-    }
-
-    return value;
-  }
-
   function __build_container(settings) {
     var $grid = $('<div>', {
       id: 'GLC' + __randomID(),
@@ -63,6 +55,14 @@
     });
 
     return $grid;
+  }
+
+  function __dereference_value(value, context, parameter) {
+    if ($.isFunction(value)) {
+      return $.proxy(value, $.isObject(context) ? context : this)(parameter);
+    }
+
+    return value;
   }
 
   function __property_to_string(object, property, def) {
@@ -75,7 +75,7 @@
       if ($.isString(value)) {
         value = $.strings.nullOnEmpty(value);
       } else if ($.isFunction(value)) {
-        value = $.strings.nullOnEmpty(__dereference_value(value,object));
+        value = $.strings.nullOnEmpty(__dereference_value(value, object));
       } else {
         value = $.strings.nullOnEmpty(value.toString());
       }
@@ -165,7 +165,7 @@
       column = $row.children().length;
 
     // Append the Nodes to the Grid
-    $.each(nodes, function(i, node) {
+    $.each(nodes, function (i, node) {
       // Starting a New Row?
       var is_new_row = false;
       if (($row.length === 0) || ((column / columns) >= 1)) {
@@ -201,7 +201,7 @@
 
         var id_encoder = $.objects.get('callbacks.id_encoder', settings);
         if ($.isFunction(id_encoder)) {
-          $.each(nodes, function(i, node) {
+          $.each(nodes, function (i, node) {
             node.key = id_encoder(node);
           });
         }
@@ -216,10 +216,10 @@
 
   function __lazy_load($container, promise) {
     $container.addClass('loading');
-    promise.then(function(response) {
+    promise.then(function (response) {
       __load_data($container, response);
       $container.removeClass('loading');
-    }, function() {
+    }, function () {
       console.log("Error Loading Data");
       $container.removeClass('loading');
     });
@@ -278,11 +278,11 @@
 
     $.contextMenu({
       selector: selector,
-      build: function($trigger, event) {
+      build: function ($trigger, event) {
         return {
           reposition: false,
           items: menu_items,
-          callback: function(action, options) {
+          callback: function (action, options) {
             var item = options.items[action];
             var handler = item.hasOwnProperty('callback') ? item.callback : menu_handlers;
             if ($.isFunction(handler)) {
@@ -298,7 +298,7 @@
   }
 
   var commands = {
-    'destroy': function() {
+    'destroy': function () {
       // 1st Item in the Selector is the Container
       var $container = this.first();
       // Do we already have a Grid List in this Spot?
@@ -307,7 +307,7 @@
         $container.removeData('gl.grid');
       }
     },
-    'initialize': function(settings) {
+    'initialize': function (settings) {
       // Do we have a container to initialize?
       var $container = this.first();
       if ($container.length) { // YES
@@ -339,7 +339,7 @@
         }
       }
     },
-    'clear': function(parameter) {
+    'clear': function (parameter) {
       // Do we have a container to initialize?
       var $container = this.first();
       if ($container.length) { // YES
@@ -348,7 +348,7 @@
         }
       }
     },
-    'add': function(parameter) {
+    'add': function (parameter) {
       // Do we have a container to initialize?
       var $container = this.first();
       if ($container.length) { // YES
@@ -375,7 +375,7 @@
         console.log("Nothing to load nodes into.");
       }
     },
-    'load': function(parameter) {
+    'load': function (parameter) {
       // Do we have a container to initialize?
       var $container = this.first();
       if ($container.length) { // YES
@@ -419,7 +419,7 @@
   /*
    * PLUGIN Function (Create Initialization)
    */
-  $.fn.gridlist = function(command, parameters) {
+  $.fn.gridlist = function (command, parameters) {
     if (command === undefined) {
       return this.find('div[name="grid-list"]');
     } else {
