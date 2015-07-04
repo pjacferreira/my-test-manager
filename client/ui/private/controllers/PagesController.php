@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Test Center - Compliance Testing Application (Client UI)
  * Copyright (C) 2012 - 2015 Paulo Ferreira <pf at sourcenotes.org>
@@ -104,9 +105,8 @@ class PagesController extends Controller {
     // Locale Defaults
     list($path, $default) = $this->getDI()->getShared('locale');
 
-    // Is the Header Requesting a Specific Locale?
-    $locale = \Locale::acceptFromHttp($_SERVER['HTTP_ACCEPT_LANGUAGE']);
-    I18N::initialize($locale, $path, null, $default);
+    // Initialize Localization System from Header
+    I18N::initializeFromHeader($this->request->getHeader('HTTP_ACCEPT_LANGUAGE'), $path, null, $default);
   }
 
   protected function validNextPage($name) {
@@ -191,8 +191,8 @@ class PagesController extends Controller {
     if (isset($requirements)) {
       foreach ($requirements as $key => $value) {
         $function = 'Requirement' . implode('', array_map(function($word) {
-                          return ucfirst($word);
-                        }, explode(':', $key))
+              return ucfirst($word);
+            }, explode(':', $key))
         );
         if (method_exists($this, $function)) {
           if (!$this->$function($value)) {
@@ -291,7 +291,7 @@ class PagesController extends Controller {
     }
     return true;
   }
-  
+
   protected function RequirementSessionMode($req_mode) {
     $req_mode = Strings::nullOnEmpty($req_mode);
     if (isset($req_mode)) {
@@ -308,4 +308,5 @@ class PagesController extends Controller {
     }
     return null;
   }
+
 }

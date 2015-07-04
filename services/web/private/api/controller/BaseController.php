@@ -49,9 +49,8 @@ class BaseController extends Controller {
     // Locale Defaults
     list($path, $default) = $this->getDI()->getShared('locale');
 
-    // Is the Header Requesting a Specific Locale?
-    $locale = \Locale::acceptFromHttp($_SERVER['HTTP_ACCEPT_LANGUAGE']);
-    I18N::initialize($locale, $path, null, $default);
+    // Initialize Localization System from Header
+    I18N::initializeFromHeader($this->request->getHeader('HTTP_ACCEPT_LANGUAGE'), $path, null, $default);
 
     try {
       // Initialize Action/Checks
