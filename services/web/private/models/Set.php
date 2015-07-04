@@ -133,7 +133,7 @@ class Set extends \api\model\AbstractEntity {
     // A Single Projects can Contain Many Sets
     $this->hasMany("project", "models\Project", "id");
     // A Single Set has a Single Container
-    $this->hasOne("container", "models\Container", "id");
+//    $this->hasOne("container", "models\Container", "id");
   }
 
   /**
@@ -188,7 +188,7 @@ class Set extends \api\model\AbstractEntity {
     $this->renumber = (integer) $this->renumber;
     $this->creator = (integer) $this->creator;
     $this->modifier = isset($this->modifier) ? (integer) $this->modifier : null;
-    $this->owner = (integer) $this->owner;
+    $this->owner = isset($this->owner) ? (integer) $this->owner : null;
   }
 
   /*
@@ -397,7 +397,7 @@ class Set extends \api\model\AbstractEntity {
    * @return \models\Set[] Test Set in Container
    * @throws \Exception On Any Failure
    */
-  public static function listInFolder($containe, $filter = null, $order = null) {
+  public static function listInFolder($container, $filter = null, $order = null) {
     assert('isset($container)');
 
     // Are we able to extract the Container ID from the Parameter?
@@ -423,7 +423,9 @@ class Set extends \api\model\AbstractEntity {
         'id' => $id,
         'type' => 'S'
     ]);
-    return $sets !== FALSE ? $sets : [];
+    
+    // Return Result Set
+    return $sets === FALSE ? [] : $sets;
   }
 
   /**

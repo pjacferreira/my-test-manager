@@ -190,6 +190,7 @@ class Test extends \api\model\AbstractEntity {
     $this->renumber = (integer) $this->renumber;
     $this->creator = (integer) $this->creator;
     $this->modifier = isset($this->modifier) ? (integer) $this->modifier : null;
+    $this->owner = isset($this->owner) ? (integer) $this->owner : null;
   }
 
   /*

@@ -53,7 +53,7 @@ $app->map($prefix . '/folders/list[/]?{filter}[/]?{sort}', array($folders, 'list
 $app->map($prefix . '/folders/count[/]?{filter}', array($folders, 'countFolders'));
 $app->map($prefix . '/tests/list[/]?{filter}[/]?{sort}', array($folders, 'listTests'));
 $app->map($prefix . '/tests/count[/]?{filter}', array($folders, 'countTests'));
-$app->map($prefix . '/sets/list[/]?{filter}}[/]?{sort}', array($folders, 'listSets'));
+$app->map($prefix . '/sets/list[/]?{filter}[/]?{sort}', array($folders, 'listSets'));
 $app->map($prefix . '/sets/count[/]?{filter}', array($folders, 'countSets'));
 $app->map($prefix . '/runs/list[/]?{filter}[/]?{sort}', array($folders, 'listRuns'));
 $app->map($prefix . '/runs/count[/]?{filter}', array($folders, 'countRuns'));
