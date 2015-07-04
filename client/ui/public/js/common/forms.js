@@ -147,6 +147,11 @@ function form_reset($form) {
     $(this).val('');
   });
 
+  // Clear the DIV TextAreas
+  $form.find('.field > div.textarea').each(function () {
+    $(this).empty();
+  });
+
   // Remove Existing Field Errors
   $form.find('.field.error').removeClass('error');
 }

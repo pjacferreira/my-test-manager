@@ -9,7 +9,7 @@
 <div id="form_create_folder" class="testcenter ui form hidden">
   <h4 class="ui dividing header"><?php echo _("FORM:TITLE:FOLDER:CREATE") ?></h4>
   <div class="required field">
-    <input name="name" placeholder="<?php echo _("FIELD:FOLDER:NAME") ?>" type="text">
+    <input name="container-name" placeholder="<?php echo _("FIELD:FOLDER:NAME") ?>" type="text">
   </div>
   <div class="ui buttons">
     <div id="button_create_folder" class="ui positive button"><?php echo _("BUTTON:FOLDER:CREATE") ?></div>
@@ -22,7 +22,7 @@
 <div id="form_rename_folder" class="testcenter ui form hidden">
   <h4 class="ui dividing header"><?php echo _("FORM:TITLE:FOLDER:RENAME") ?></h4>
   <div class="required field">
-    <input name="name" placeholder="<?php echo _("FIELD:FOLDER:NEW-NAME") ?>" type="text">
+    <input name="container-name" placeholder="<?php echo _("FIELD:FOLDER:NEW-NAME") ?>" type="text">
   </div>
   <div class="ui buttons">
     <div id="button_rename_folder" class="ui positive button"><?php echo _("BUTTON:FOLDER:RENAME") ?></div>
@@ -61,7 +61,7 @@
 <div id="form_create_step" class="testcenter ui form hidden">
   <h4 class="ui dividing header"><?php echo _("FORM:TITLE:STEP:CREATE") ?></h4>
   <div class="required field">
-    <input name="title" placeholder="<?php echo _("FIELD:STEP:NAME") ?>" type="text">
+    <input name="step-title" placeholder="<?php echo _("FIELD:STEP:NAME") ?>" type="text">
   </div>
   <div class="ui buttons">
     <div id="button_create_step" class="ui positive button"><?php echo _("BUTTON:STEP:CREATE") ?></div>
@@ -78,7 +78,7 @@
   </div>
   <div class="field">
     <label><?php echo _("FIELD:TITLE:STEP:DESCRIPTION") ?></label>
-    <textarea name="step-description" placeholder="<?php echo _("FIELD:PLACEHOLDER:STEP:DESCRIPTION") ?>" type="text"></textarea>
+    <div name="step-description" class="textarea" data-placeholder="<?php echo _("FIELD:PLACEHOLDER:STEP:DESCRIPTION") ?>"></div>
   </div>
   <div class="ui buttons">
     <div id="button_update_step" class="ui positive button"><?php echo _("BUTTON:STEP:UPDATE") ?></div>
@@ -94,12 +94,12 @@
   </h3>
   <div class="ui attached segment">
     <div class="ui divided grid">
-      <div id="folders_1" class="four wide column">
+      <div id="folders" class="four wide column">
         <h3 class="ui header centered inverted" style="background-color: black">
           <?php echo _("PAGE:USER:TESTS:FOLDERS") ?>
         </h3>
       </div>
-      <div id="items_1" class="twelve wide column">
+      <div id="tests" class="twelve wide column">
         <h3 class="ui header centered inverted" style="background-color: blue">
           <?php echo _("PAGE:USER:TESTS:TESTS") ?>
         </h3>
@@ -119,7 +119,7 @@
       </div>
       <div class="field">
         <label><?php echo _("FIELD:TITLE:TEST:DESCRIPTION") ?></label>
-        <textarea name="test-description" placeholder="<?php echo _("FIELD:PLACEHOLDER:TEST:DESCRIPTION") ?>" type="text"></textarea>
+        <div name="test-description" class="textarea" data-placeholder="<?php echo _("FIELD:PLACEHOLDER:TEST:DESCRIPTION") ?>"></div>
       </div>
       <div id="button_update_test" class="ui positive button"><?php echo _("BUTTON:TEST:UPDATE") ?></div>
     </div>

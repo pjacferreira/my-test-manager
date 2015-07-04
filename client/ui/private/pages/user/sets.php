@@ -9,7 +9,7 @@
 <div id="form_create_folder" class="testcenter ui form hidden">
   <h4 class="ui dividing header"><?php echo _("FORM:TITLE:FOLDER:CREATE") ?></h4>
   <div class="required field">
-    <input name="name" placeholder="<?php echo _("FIELD:FOLDER:NAME") ?>" type="text">
+    <input name="container-name" placeholder="<?php echo _("FIELD:FOLDER:NAME") ?>" type="text">
   </div>
   <div class="ui buttons">
     <div id="button_create_folder" class="ui positive button"><?php echo _("BUTTON:FOLDER:CREATE") ?></div>
@@ -22,7 +22,7 @@
 <div id="form_rename_folder" class="testcenter ui form hidden">
   <h4 class="ui dividing header"><?php echo _("FORM:TITLE:FOLDER:RENAME") ?></h4>
   <div class="required field">
-    <input name="name" placeholder="<?php echo _("FIELD:FOLDER:NEW-NAME") ?>" type="text">
+    <input name="container-name" placeholder="<?php echo _("FIELD:FOLDER:NEW-NAME") ?>" type="text">
   </div>
   <div class="ui buttons">
     <div id="button_rename_folder" class="ui positive button"><?php echo _("BUTTON:FOLDER:RENAME") ?></div>
@@ -64,12 +64,12 @@
   </h3>
   <div class="ui attached segment">
     <div class="ui divided grid">
-      <div id="folders_1" class="four wide column">
+      <div id="sets_folders" class="four wide column">
         <h3 class="ui header centered inverted" style="background-color: black">
           <?php echo _("PAGE:USER:SETS:FOLDERS") ?>
         </h3>
       </div>
-      <div id="items_1" class="twelve wide column">
+      <div id="sets_grid" class="twelve wide column">
         <h3 class="ui header centered inverted" style="background-color: blue">
           <?php echo _("PAGE:USER:SETS:SETS") ?>
         </h3>
@@ -89,7 +89,7 @@
       </div>
       <div class="field">
         <label><?php echo _("FIELD:TITLE:SET:DESCRIPTION") ?></label>
-        <textarea name="set-description" placeholder="<?php echo _("FIELD:PLACEHOLDER:SET:DESCRIPTION") ?>" type="text"></textarea>
+        <div name="set-description" class="textarea" data-placeholder="<?php echo _("FIELD:PLACEHOLDER:SET:DESCRIPTION") ?>"></div>
       </div>
       <div id="button_update_set" class="ui positive button"><?php echo _("BUTTON:SET:UPDATE") ?></div>
     </div>
@@ -99,12 +99,12 @@
   </h3>
   <div class="ui attached segment">
     <div class="ui divided grid">
-      <div id="folders_2" class="four wide column">
+      <div id="tests_folders" class="four wide column">
         <h3 class="ui header centered inverted" style="background-color: black">
           <?php echo _("PAGE:USER:SETS:FOLDERS") ?>
         </h3>
       </div>
-      <div id="items_2" class="twelve wide column">
+      <div id="tests_grid" class="twelve wide column">
         <h3 class="ui header centered inverted" style="background-color: blue">
           <?php echo _("PAGE:USER:SETS:TESTS") ?>
         </h3>

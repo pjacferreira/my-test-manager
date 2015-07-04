@@ -18,88 +18,79 @@ function initialize() {
   // Initialize Forms
   initialize_forms();
 
-  // Capture Changes to Session Organization and Projects
-  $(document).on('testcenter.organization.change', function(event) {
-    console.log('Captured Organization Change');
-  });
-  $(document).on('testcenter.project.change', function(event) {
-    console.log('Captured Project Change');
-    initialize_folders_list_1();
-    initialize_items_grid_1();
-  });
+  // Attach Listeners to Organization and Project Change Events
+  $(document).on('testcenter.organization.change', onChangeOrganization);
+  $(document).on('testcenter.project.change', onChangeProject);
 
   // Initialize Organizations
   initialize_dropdowns();
 
-  $('#folders_1').on('folder-view.folder-selected', function(event, id) {
-    console.log('load-folder [' + id + ']');
-    // Clear the Form
-    form_reset($('#form_update_set'));
-    // Update Test List
-    var $list = $('#items_1');
-    $list.gridlist('clear').
-      data('folder.parent', id).
-      gridlist('load', id);
-  });
+  // Attach Other Listeners
+  $('#sets_folders').on('folder-view.folder-selected', onSetFolderSelected);
+  $('#sets_grid').on('gridlist.item-selected', onSetSelected);
+  $('#tests_folders').on('folder-view.folder-selected', onTestFolderSelected);
+  $('#tests_grid').on('gridlist.item-selected', onTestSelected);
 
-  $('#items_1').on('gridlist.item-selected', function(event, node) {
-    console.log('selected-node [' + node.id + ':' + node.text + ']');
-    load_set(node.id);
-    initialize_folders_list_2();
-    initialize_items_grid_2();
-    initialize_items_list_2(node.id);
-    $('#list_tests').orderedlist('load', node.id);
-  });
-
-  $('#folders_2').on('folder-view.folder-selected', function(event, id) {
-    console.log('load-folder [' + id + ']');
-    $('#items_2').gridlist('clear');
-    $('#items_2').gridlist('load', id);
-  });
-
-  $('#items_2').on('gridlist.item-selected', function(event, node) {
-    console.log('selected-node [' + node.id + ':' + node.text + ']');
-  });
+  // Activate HTML TextArea Editor
+  var editor = new MediumEditor('div.textarea');
 
   // Remove Loader
   $('#loader').removeClass('active');
 }
 
-function initialize_folders_list_1() {
-  var $view = $('#folders_1');
-
-  $view.folderview({
-    root: {
-      id: window.__session.project.container,
-      title: 'ROOT'
-    },
-    callbacks: {
-      data_promise: folder_loader,
-      data_to_nodes: folders_to_nodes,
-      menu: contextmenu_folder,
-      menu_handlers: menu_folder_action
-    }
-  });
+/*******************
+ * 
+ * EVENT HANDLERS
+ * 
+ *******************/
+function onChangeOrganization(event) {
+  console.info('Captured Organization Change');
 }
 
-function initialize_folders_list_2() {
-  var $view = $('#folders_2');
-
-  $view.folderview({
-    title: 'Folder View',
-    root: {
-      id: window.__session.project.container,
-      title: 'ROOT'
-    },
-    callbacks: {
-      data_promise: folder_loader,
-      data_to_nodes: folders_to_nodes
-    }
-  });
+function onChangeProject(event) {
+  console.info('Captured Project Change');
+  initialize_sets_folders_list();
+  initialize_sets_grid();
 }
+
+function onSetFolderSelected(event, id) {
+  console.info('load-folder [%s]', id);
+  // Clear the Form
+  form_reset($('#form_update_set'));
+  // Update Test List
+  var $list = $('#sets_grid');
+  $list.gridlist('clear').
+    data('folder.parent', id).
+    gridlist('load', id);
+}
+
+function onSetSelected(event, node) {
+  console.info('selected-node [%d:$s]', node.id, node.text);
+  load_set(node.id);
+  initialize_tests_folders_list();
+  initialize_tests_grid();
+  initialize_items_list_2(node.id);
+  $('#list_tests').orderedlist('load', node.id);
+}
+
+function onTestFolderSelected(event, id) {
+  console.info('load-folder [%s]', id);
+  $('#tests_grid').gridlist('clear');
+  $('#tests_grid').gridlist('load', id);
+}
+
+function onTestSelected(event, node) {
+  console.info('selected-node [%d:$s]', node.id, node.text);
+}
+
+/***********************
+ * 
+ * COMMON: FOLDER VIEW
+ * 
+ ***********************/
 
 function folder_loader(id) {
-  return testcenter.services.call(['folders', 'list'], [id, 'F']);
+  return testcenter.services.call(['folder', id.toString(), 'folders', 'list']);
 }
 
 function folders_to_nodes(response) {
@@ -113,7 +104,7 @@ function folders_to_nodes(response) {
     lazy: true
   };
   // Build Initial Folder List
-  $.each(entities, function(i, entity) {
+  $.each(entities, function (i, entity) {
     var node = $.extend({}, defaults, {
       id: entity[key_field],
       title: entity[display_field]
@@ -121,6 +112,31 @@ function folders_to_nodes(response) {
     nodes.push(node);
   });
   return nodes;
+}
+
+/*******************
+ * 
+ * SETS NAVIGATOR
+ * 
+ *******************/
+
+/* FOLDER VIEW */
+
+function initialize_sets_folders_list() {
+  var $view = $('#sets_folders');
+
+  $view.folderview({
+    root: {
+      id: window.__session.project.container,
+      title: 'ROOT'
+    },
+    callbacks: {
+      data_promise: folder_loader,
+      data_to_nodes: folders_to_nodes,
+      menu: contextmenu_folder,
+      menu_handlers: menu_folder_action
+    }
+  });
 }
 
 function contextmenu_folder(node) {
@@ -157,7 +173,7 @@ function menu_folder_action(node, action, options) {
       break;
     default:
       $form = $('#form_' + action + '_folder');
-      $form.data('fv.container', $('#folders_1'));
+      $form.data('fv.container', $('#sets_folders'));
       $form.data('fv.node.selected', node);
   }
 
@@ -168,11 +184,27 @@ function menu_folder_action(node, action, options) {
   }
 }
 
-function initialize_items_grid_1() {
-  var $grid = $('#items_1');
+/* SETS VIEW */
+
+function initialize_sets_grid() {
+  var $grid = $('#sets_grid');
 
   $grid.gridlist({
     icon: 'tasks',
+    icon_color: function () {
+      if ($.isset(this.state)) {
+        switch (this.state) {
+          case 0:
+            return 'red';
+          case 9:
+            return 'green';
+          default:
+            return 'orange';
+        }
+      } else {
+        return 'black';
+      }
+    },
     callbacks: {
       loader: load_sets,
       data_to_nodes: sets_to_node,
@@ -183,7 +215,7 @@ function initialize_items_grid_1() {
 }
 
 function load_sets(folder_id) {
-  return testcenter.services.call(['folders', 'list'], [folder_id, 'S']);
+  return testcenter.services.call(['folder', folder_id.toString(), 'sets', 'list']);
 }
 
 function sets_to_node(response) {
@@ -195,12 +227,14 @@ function sets_to_node(response) {
   switch (response.__type) {
     case 'entity-set':
       var entities = response.entities;
+      var key_field = response.__key;
       var display_field = response.__display;
       // Build Nodes
-      $.each(entities, function(i, entity) {
+      $.each(entities, function (i, entity) {
         var node = $.extend(true, {}, defaults, {
-          id: entity.link,
-          text: entity[display_field]
+          id: entity[key_field],
+          text: entity[display_field],
+          state: entity.state
         });
         nodes.push(node);
       });
@@ -208,95 +242,8 @@ function sets_to_node(response) {
     case 'entity':
       var node = $.extend(true, {}, defaults, {
         id: response[response.__key],
-        text: response[response.__display]
-      });
-      nodes.push(node);
-      break;
-    default:
-      console.log('Invalid Response');
-  }
-  return nodes;
-}
-
-function initialize_items_grid_2() {
-  var $grid = $('#items_2');
-
-  $grid.gridlist({
-    icon: 'file',
-    callbacks: {
-      loader: load_tests,
-      data_to_nodes: tests_to_node,
-      menu_items: menu_items_tests,
-      menu_handlers: menu_handlers_tests
-    }
-  });
-}
-
-function menu_items_tests($node) {
-  var items = {
-    'add': {'name': 'Add ...', 'icon': 'add'},
-  };
-
-  if (!$.isset($node)) {
-    items.add.disabled = true;
-  }
-
-  return items;
-}
-
-function menu_handlers_tests($node, action, options) {
-  var $list = $('#list_tests');
-  var set_id = $list.data('set');
-  var node = $node.data('node.element');
-
-  if (node) {
-    console.log('Selected action "' + action + '" on Test [' + node.id + ']');
-  } else {
-    console.log('Selected action "' + action + '"');
-  }
-
-  switch (action) {
-    case 'add':
-      // Load the Test Steps
-      testcenter.services.call(['set', set_id.toString(), 'test', node.id.toString(), 'add']).
-        then(function(response) {
-          $list.orderedlist('node.add', response);
-        }, function(code, message) {
-          console.log('ERROR: Failed to Reat Test [' + code + ':' + message + ']');
-        });
-
-  }
-}
-
-function load_tests(folder_id) {
-  return testcenter.services.call(['folders', 'list'], [folder_id, 'T']);
-}
-
-function tests_to_node(response) {
-  var response = response['return'];
-  var nodes = [];
-  var defaults = {
-  };
-
-  /* NOTE:
-   * Expected Incoming Entity Types = Container Links
-   */
-  switch (response.__type) {
-    case 'entity-set':
-      var entities = response.entities;
-      // Build Nodes
-      $.each(entities, function(i, entity) {
-        var node = $.extend(true, {}, defaults, {
-          id: entity.link,
-          text: entity[response.__display]
-        });
-        nodes.push(node);
-      });
-      break;
-    case 'entity':
-      var node = $.extend(true, {}, defaults, {
-        id: response.link,
-        text: response[response.__display]
+        text: response[response.__display],
+        state: response.state
       });
       nodes.push(node);
       break;
@@ -337,6 +284,143 @@ function menu_handlers_sets($node, action, options) {
   }
 }
 
+/*******************
+ * 
+ * TESTS NAVIGATOR
+ * 
+ *******************/
+
+/* FOLDER VIEW */
+
+function initialize_tests_folders_list() {
+  var $view = $('#tests_folders');
+
+  $view.folderview({
+    title: 'Folder View',
+    root: {
+      id: window.__session.project.container,
+      title: 'ROOT'
+    },
+    callbacks: {
+      data_promise: folder_loader,
+      data_to_nodes: folders_to_nodes
+    }
+  });
+}
+
+/* TESTS VIEW */
+
+function initialize_tests_grid() {
+  var $grid = $('#tests_grid');
+
+  $grid.gridlist({
+    icon: 'file',
+    icon_color: function () {
+      if ($.isset(this.state)) {
+        switch (this.state) {
+          case 0:
+            return 'red';
+          case 9:
+            return 'green';
+          default:
+            return 'orange';
+        }
+      } else {
+        return 'black';
+      }
+    },
+    callbacks: {
+      loader: load_tests,
+      data_to_nodes: tests_to_node,
+      menu_items: menu_items_tests,
+      menu_handlers: menu_handlers_tests
+    }
+  });
+}
+
+function load_tests(folder_id) {
+  return testcenter.services.call(['folder', folder_id.toString(), 'tests', 'list']);
+}
+
+function tests_to_node(response) {
+  var response = response['return'];
+  var nodes = [];
+  var defaults = {
+  };
+
+  switch (response.__type) {
+    case 'entity-set':
+      var entities = response.entities;
+      var key_field = response.__key;
+      var display_field = response.__display;
+      // Build Nodes
+      $.each(entities, function (i, entity) {
+        var node = $.extend(true, {}, defaults, {
+          id: entity[key_field],
+          text: entity[display_field],
+          state: entity.state
+        });
+        nodes.push(node);
+      });
+      break;
+    case 'entity':
+      var node = $.extend(true, {}, defaults, {
+        id: response[response.__key],
+        text: response[response.__display],
+        state: response.state
+      });
+      nodes.push(node);
+      break;
+    default:
+      console.log('Invalid Response');
+  }
+  return nodes;
+}
+
+function menu_items_tests($node) {
+  var items = {
+    'add': {'name': 'Add ...', 'icon': 'add'},
+  };
+
+  if (!$.isset($node)) {
+    items.add.disabled = true;
+  }
+
+  return items;
+}
+
+function menu_handlers_tests($node, action, options) {
+  var $list = $('#list_tests');
+  var set_id = $list.data('set');
+  var node = $node.data('node.element');
+
+  if (node) {
+    console.log('Selected action "' + action + '" on Test [' + node.id + ']');
+  } else {
+    console.log('Selected action "' + action + '"');
+  }
+
+  switch (action) {
+    case 'add':
+      // Load the Test Steps
+      testcenter.services.call(['set', set_id.toString(), 'test', node.id.toString(), 'add']).
+        then(function (response) {
+          $list.orderedlist('node.add', response);
+        }, function (code, message) {
+          console.log('ERROR: Failed to Reat Test [' + code + ':' + message + ']');
+        });
+
+  }
+}
+
+/****************************
+ * 
+ * TEST in CURRENT SET VIEW
+ * 
+ ****************************/
+
+/* ORDERED LIST */
+
 function initialize_items_list_2(set_id) {
   var $list = $('#list_tests');
   $list.data('set', set_id);
@@ -366,28 +450,6 @@ function load_set_tests(set_id) {
   return testcenter.services.call(['set', set_id.toString(), 'tests', 'list']);
 }
 
-function load_set(id) {
-  var $form = $('#form_update_set');
-  // Clear the Form
-  form_reset($form);
-  // Flag the DIV as Loading
-  $form.addClass('loading');
-  // Load the Sets into the Folder
-  testcenter.services.call(['set', 'read'], id, null, {
-    call_ok: function(set) {
-      // Save the Set Data Information with the Form
-      form_load($form, set, 'set');
-      $form.data('set', set);
-    },
-    call_nok: function(code, message) {
-      form_disable($form, message);
-      // Finished Loading
-      $form.removeClass('loading');
-      $form.data('set', null);
-    }
-  });
-}
-
 function set_tests_to_nodes(response) {
   var response = response['return'];
   var nodes = [];
@@ -399,7 +461,7 @@ function set_tests_to_nodes(response) {
       var entities = response.entities;
       var display_field = response.__display;
       // Build Nodes
-      $.each(entities, function(i, entity) {
+      $.each(entities, function (i, entity) {
         var node = $.extend(true, {}, defaults, {
           id: entity[response.__key],
           title: entity[response.__display],
@@ -422,16 +484,18 @@ function set_tests_to_nodes(response) {
   return nodes;
 }
 
+/* ORDERED LIST ACTION HANDLER */
+
 function set_test_move_up($node, node) {
   var $list = this;
   var set_id = $list.data('set');
 
   // Load the Test Steps
   testcenter.services.call(['set', set_id.toString(), 'test', node.id.toString(), 'move', 'up']).
-    then(function(response) {
+    then(function (response) {
       $list.orderedlist('node.update', $node, response);
       $list.orderedlist('node.up', $node);
-    }, function(code, message) {
+    }, function (code, message) {
       console.log('ERROR: Failed to Move Step [' + code + ':' + message + ']');
     });
   return true;
@@ -443,9 +507,9 @@ function set_test_delete($node, node) {
 
   // Load the Test Steps
   testcenter.services.call(['set', set_id.toString(), 'test', node.id.toString(), 'delete']).
-    then(function(response) {
+    then(function (response) {
       $list.orderedlist('node.remove', $node);
-    }, function(code, message) {
+    }, function (code, message) {
       console.log('ERROR: Failed to Delete Step [' + code + ':' + message + ']');
     });
   return true;
@@ -457,17 +521,96 @@ function set_test_down($node, node) {
 
   // Load the Test Steps
   testcenter.services.call(['set', set_id.toString(), 'test', node.id.toString(), 'move', 'down']).
-    then(function(response) {
+    then(function (response) {
       $list.orderedlist('node.update', $node, response);
       $list.orderedlist('node.down', $node);
-    }, function(code, message) {
+    }, function (code, message) {
       console.log('ERROR: Failed to Move Step [' + code + ':' + message + ']');
     });
   return true;
 }
 
+/*******************
+ * 
+ * SET UPDATE FORM
+ * 
+ *******************/
+
+function load_set(id) {
+  var $form = $('#form_update_set');
+  // Clear the Form
+  form_reset($form);
+  // Flag the DIV as Loading
+  $form.addClass('loading');
+  // Load the Sets into the Folder
+  testcenter.services.call(['set', 'read'], id, null, {
+    call_ok: function (set) {
+      // Save the Set Data Information with the Form
+      form_load($form, set, 'set');
+      $form.data('set', set);
+    },
+    call_nok: function (code, message) {
+      form_disable($form, message);
+      // Finished Loading
+      $form.removeClass('loading');
+      $form.data('set', null);
+    }
+  });
+}
+
+/**
+ * 
+ * @param {type} event
+ * @returns {undefined}
+ */
+function __button_update_set(event) {
+  // Form jQuery Object is Store in the Event Data
+  var $form = event.data;
+  form_submit($form,
+    {
+      name: {
+        identifier: 'name',
+        rules: [
+          {
+            type: 'empty',
+            prompt: 'Missing Test Name'
+          }
+        ]
+      }
+    }, {
+    revalidate: false,
+    onSuccess: __do_update_set,
+    onFailure: function () {
+      alert("Update Test: Missing or Invalid Fields");
+    }
+  });
+}
+
+function __do_update_set() {
+  var $form = $('#form_update_set');
+
+  // Get the Test Associated with the Form
+  var set = $form.data('set');
+
+  // Extract Field Values
+  var values = get_entity_values($form);
+
+  // Call Service to Update the Step
+  testcenter.services.call(['set', 'update'], set[set.__key], values, {
+    type: 'POST',
+    call_ok: function (entity) {
+      console.info('Updated Set [%d]', set[set.__key]);
+    },
+    call_nok: function (code, message) {
+      form_show_errors($form, message);
+    }
+  });
+
+  return values;
+}
+
 /*******************************
- * CREATE FOLDER FORM
+ * INITIALIZE FORMS
  *******************************/
 
 /**
@@ -535,7 +678,7 @@ function __initialize_form_edit_step($form) {
 
 function __initialize_form($form) {
   // Link Buttons to Handlers
-  $form.find(".button").each(function() {
+  $form.find(".button").each(function () {
     var $this = $(this);
     var name = $.strings.nullOnEmpty($this.attr('id'));
     if (name !== null) {
@@ -546,6 +689,7 @@ function __initialize_form($form) {
     }
   });
 }
+
 /**
  * 
  * @param {type} event
@@ -575,7 +719,7 @@ function __button_create_folder(event) {
     }, {
     revalidate: false,
     onSuccess: __do_create_folder,
-    onFailure: function() {
+    onFailure: function () {
       alert("Create Folder: Missing or Invalid Fields");
     }
   });
@@ -603,7 +747,7 @@ function __button_rename_folder(event) {
     }, {
     revalidate: false,
     onSuccess: __do_rename_folder,
-    onFailure: function() {
+    onFailure: function () {
       alert("Create Folder: Missing or Invalid Fields");
     }
   });
@@ -642,36 +786,8 @@ function __button_create_set(event) {
     }, {
     revalidate: false,
     onSuccess: __do_create_set,
-    onFailure: function() {
+    onFailure: function () {
       alert("Create Set: Missing or Invalid Fields");
-    }
-  });
-}
-
-/**
- * 
- * @param {type} event
- * @returns {undefined}
- */
-function __button_update_set(event) {
-  // Form jQuery Object is Store in the Event Data
-  var $form = event.data;
-  form_submit($form,
-    {
-      name: {
-        identifier: 'name',
-        rules: [
-          {
-            type: 'empty',
-            prompt: 'Missing Test Name'
-          }
-        ]
-      }
-    }, {
-    revalidate: false,
-    onSuccess: __do_update_set,
-    onFailure: function() {
-      alert("Update Test: Missing or Invalid Fields");
     }
   });
 }
@@ -691,100 +807,108 @@ function __button_cancel(event) {
 
 function __do_create_folder() {
   var $form = $('#form_create_folder');
+
   // Extract Field Values
-  var values = {};
-  $form.find('.field input').each(function() {
-    values[this.name] = $(this).val();
-  });
+  var values = get_entity_values($form);
+
+  // Get the Currently Selected Folder
   var node = $form.data('fv.node.selected');
   var key = node.key.split(':');
-  console.log('Create Child Node [' + values.name + '] under Parent Node [' + key[1] + ':' + node.title + ']');
-  testcenter.services.call(['folder', 'create'], [key[1], values.name], null, {
-    call_ok: function(entity) {
-      var defaults = {
-        folder: true,
-        lazy: true
-      };
-      var key_field = entity.__key;
-      var display_field = entity.__display;
-      var child = $.extend({}, defaults, {
-        key: 'f:' + entity[key_field],
-        title: entity[display_field]
-      });
-      node.addChildren(child);
-      // Hide the Form 
-      form_hide($form);
-    },
-    call_nok: function(code, message) {
-      form_show_errors($form, message);
-    }
-  });
+
+  // Call Service to Create the Folder
+  testcenter.services.call(['folder', 'create'], [key[1], values.name], null,
+    {
+      call_ok: function (entity) {
+        var defaults = {
+          folder: true,
+          lazy: true
+        };
+        var key_field = entity.__key;
+        var display_field = entity.__display;
+        var child = $.extend({}, defaults, {
+          key: 'f:' + entity[key_field],
+          title: entity[display_field]
+        });
+        node.addChildren(child);
+        // Hide the Form 
+        form_hide($form);
+
+        // Log Folder Create
+        console.info('Create Child Node [%s] under Parent Node [%d,%s]', values['container:name'], key[1], node.title);
+      },
+      call_nok: function (code, message) {
+        form_show_errors($form, message);
+      }
+    });
+
   return values;
 }
 
 function __do_rename_folder() {
   var $form = $('#form_rename_folder');
+
   // Extract Field Values
-  var values = {};
-  $form.find('.field input').each(function() {
-    values[this.name] = $(this).val();
-  });
+  var values = get_entity_values($form);
+
+  // Get the Currently Selected Folder
   var node = $form.data('fv.node.selected');
   var key = node.key.split(':');
-  console.log('Rename Folder [' + key[1] + ':' + node.title + '] to [' + values.name + ']');
-  testcenter.services.call(['folder', 'rename'], [key[1], values.name], null, {
-    call_ok: function(entity) {
-      // Change the Nodes Label      
-      var display_field = entity.__display;
-      node.setTitle(entity[display_field]);
-      // Hide the Form 
-      form_hide($form);
-    },
-    call_nok: function(code, message) {
-      form_show_errors($form, message);
-    }
-  });
+
+  // Call Service to Rename the Folder
+  testcenter.services.call(['folder', 'rename'], [key[1], values['container:name']], null,
+    {
+      call_ok: function (entity) {
+        // Change the Nodes Label      
+        var display_field = entity.__display;
+        node.setTitle(entity[display_field]);
+        // Hide the Form 
+        form_hide($form);
+
+        // Log Folder Rename
+        console.info('Rename Folder [%d:%s] to [%s]', key[1], node.title, values['container:name']);
+      },
+      call_nok: function (code, message) {
+        form_show_errors($form, message);
+      }
+    });
+
   return values;
 }
 
 function __do_delete_folder() {
   var $form = $('#form_delete_folder');
-  // Extract Field Values
-  var values = {};
-  $form.find('.field input').each(function() {
-    values[this.name] = $(this).val();
-  });
+
+  // Get the Currently Selected Folder
   var node = $form.data('fv.node.selected');
   var key = node.key.split(':');
-  console.log('Delete Folder [' + key[1] + ':' + node.title + ']');
-  testcenter.services.call(['folder', 'delete'], key[1], null, {
-    call_ok: function(entity) {
-      // Delete the Child Folder
-      var parent = node.getParent();
-      parent.removeChild(node);
-      // Hide the Form 
-      form_hide($form);
-    },
-    call_nok: function(code, message) {
-      form_show_errors($form, message);
-    }
-  });
-  return values;
+
+  // Call Service to Delete the Folder
+  testcenter.services.call(['folder', 'delete'], key[1], null,
+    {
+      call_ok: function (entity) {
+        // Delete the Folder from the Tree View
+        var parent = node.getParent();
+        parent.removeChild(node);
+
+        // Hide the Form 
+        form_hide($form);
+
+        // Log Folder Deleted
+        console.info('Delete Folder [%d:%s]', key[1], node.title);
+      },
+      call_nok: function (code, message) {
+        form_show_errors($form, message);
+      }
+    });
+
+  return null;
 }
 
 function __do_create_set() {
-  // Extract Field Values
-  var values = {};
   var $form = $('#form_create_set');
-  $form.find('.field > :input').each(function() {
-    var name = this.name;
-    if ($.isset(name)) {
-      // Remove Leading 'test'
-      var property = name.split('-');
-      property = (property.length > 1) ? property[1] : property[0];
-      values['set:' + property] = $(this).val();
-    }
-  });
+
+  // Extract Field Values
+  var values = get_entity_values($form);
 
   // Build Route Parameters
   var params = [values['set:name']];
@@ -794,13 +918,13 @@ function __do_create_set() {
   }
 
   // Add the Node to the Grid
-  var $grid = $('#items_1');
+  var $grid = $('#sets_grid');
   $grid.gridlist('add',
     testcenter.services.call(['set', 'create'], params, null, {
-      call_ok: function(entity) {
+      call_ok: function (entity) {
         form_hide($form);
       },
-      call_nok: function(code, message) {
+      call_nok: function (code, message) {
         form_show_errors($form, message);
       }
     })
@@ -813,6 +937,85 @@ function __do_create_set() {
 /*******************************
  * HELPER FUNCTIONS
  *******************************/
+
+function get_entity_values($form) {
+  var values = {};
+
+  // Extract Values from Standard Input Fields
+  $form.find('.field > :input').each(function () {
+    var $this = $(this);
+    var name = $this.attr('name');
+    if ($.isset(name)) {
+      // Explode Name based on concept (entity_name':'property_names)
+      var property = name.split('-');
+
+      // Do we have a valid entity property?
+      if (property.length > 1) { // YES: Add it to list
+        values[property.join(':')] = $this.val();
+      }
+    }
+  });
+
+  // Extract Values from HTML Editor Fields
+  $form.find('.field > div.textarea').each(function () {
+    var $this = $(this);
+    var name = $this.attr('name');
+    if ($.isset(name)) {
+      // Explode Name based on concept (entity_name':'property_names)
+      var property = name.split('-');
+
+      // Do we have a valid entity property?
+      if (property.length > 1) { // YES: Add it to list (NOTE: Escape HTML Tags)
+        values[property.join(':')] = $this.html();
+      }
+    }
+  });
+
+  return values;
+}
+
+function set_entity_values($form, values, entity) {
+
+  // Extract Values from Standard Input Fields
+  $form.find('.field > :input').each(function () {
+    var $this = $(this);
+
+    // Does the Field Input have Name Property?
+    var name = $this.attr('name');
+    if ($.isset(name)) { // YES      
+      // Do we have a Value for the Field?
+      var field = field_key(name, entity);
+      var value = $.objects.get(field, values);
+      if (value !== null) { // YES
+        if (this.type === 'checkbox') {
+          value = (value === 'true') ? true : false;
+          $this.prop('checked', value);
+        } else if ((this.type === 'hidden') && $this.parent().hasClass('dropdown')) {
+          $this.parent().dropdown('set selected', value).dropdown('set value', value);
+        } else {
+          $this.val(value);
+        }
+      }
+    }
+  });
+
+  // Extract Values from HTML Editor Fields
+  $form.find('.field > div.textarea').each(function () {
+    var $this = $(this);
+
+    // Does the Field Input have Name Property?
+    var name = $this.attr('name');
+    if ($.isset(name)) { // YES      
+      // Do we have a Value for the Field?
+      var field = field_key(name, entity);
+      var value = $.objects.get(field, values);
+      if (value !== null) { // YES : Encode HTML Tags
+        $this.click();
+        $this.html($('<div/>').html(value).text());
+      }
+    }
+  });
+}
 
 function form_show($form) {
   if (window.hasOwnProperty('__session')) {
@@ -851,22 +1054,8 @@ function form_hide($form) {
 }
 
 function form_load($form, values, prefix) {
-  $form.find('.field > :input').each(function() {
-    var field = field_key(this.name, prefix);
-
-    var value = $.objects.get(field, values);
-    if (value !== null) {
-      $this = $(this);
-      if (this.type === 'checkbox') {
-        value = (value === 'true') ? true : false;
-        $this.prop('checked', value);
-      } else if ((this.type === 'hidden') && $this.parent().hasClass('dropdown')) {
-        $this.parent().dropdown('set selected', value).dropdown('set value', value);
-      } else {
-        $this.val(value);
-      }
-    }
-  });
+  // Load the Form with the Incoming Value
+  set_entity_values($form, values, prefix);
 
   // Remove the Loading Symbol
   $form.removeClass('loading');

@@ -3,7 +3,7 @@
  * License http://opensource.org/licenses/AGPL-3.0 Affero GNU Public License v3.0
  */
 ; // For Minimification (If somebody forgot semicolon in another script file)
-(function($, undefined) {
+(function ($, undefined) {
   /*
    * LOCAL SCOPE
    */
@@ -95,6 +95,25 @@
       $.isFunction(value.then);
   }
 
+  function __property_to_string(object, property, def) {
+    var value = def;
+    if (object.hasOwnProperty(property)) {
+      value = object[property];
+    }
+
+    if ($.isset(value)) {
+      if ($.isString(value)) {
+        value = $.strings.nullOnEmpty(value);
+      } else if ($.isFunction(value)) {
+        value = $.strings.nullOnEmpty(value(object));
+      } else {
+        value = $.strings.nullOnEmpty(value.toString());
+      }
+    }
+
+    return value;
+  }
+
   function __list_click(event) {
     var $target = $(event.target);
     var $parent = $target.parent();
@@ -111,7 +130,7 @@
 
     // Prepare Button List
     var callback, order, sequence = [];
-    $.each(settings.buttons, function(button, options) {
+    $.each(settings.buttons, function (button, options) {
       callback = options.hasOwnProperty('callback') && $.isFunction(options.callback) ? options.callback : null;
       order = options.hasOwnProperty('order') && $.isNumeric(options.order) ? ((+(options.order)) | 0) : null;
       if (callback && (order !== null)) {
@@ -122,7 +141,7 @@
     });
 
     // Convert Sparse Array -> Dense Array with Holes Removed
-    settings.buttons.__sequence = sequence.filter(function(value) {
+    settings.buttons.__sequence = sequence.filter(function (value) {
       return true;
     });
 
@@ -170,19 +189,29 @@
   }
 
   function __build_details(node, settings) {
-    var description = __property_to_string(node, 'description');
+    // Create DETAILS Element
 
-    // Create ICON Element
-    var $details = null;
-    if ($.isset(description)) {
-      $details = $('<div>', {
+    // Is DETAILS in TEXT Format?
+    var text = __property_to_string(node, 'text');
+    if ($.isset(text)) { // YES
+      return $('<div>', {
         name: 'details',
         class: settings.classes.details,
-        text: description
+        text: text
       });
     }
 
-    return $details;
+    // Is DETAILS in HTML Format?
+    var html = __property_to_string(node, 'html');
+    if ($.isset(html)) { // YES
+      return $('<div>', {
+        name: 'details',
+        class: settings.classes.details,
+        html: $('<div/>').html(html).text()
+      });
+    }
+
+    return null;
   }
 
   function __build_button(name, settings, $node) {
@@ -197,7 +226,7 @@
       }));
 
       // Add On Click Handler
-      $button.click(function(event) {
+      $button.click(function (event) {
         // Make sure the On Click is Called in the Context of the Ordered List
         return $.proxy(button.callback, $node.closest('div[name="ordered-list"]'))($node, $node.data('item.node'));
       });
@@ -253,26 +282,6 @@
     return $container;
   }
 
-
-  function __property_to_string(object, property, def) {
-    var value = def;
-    if (object.hasOwnProperty(property)) {
-      value = object[property];
-    }
-
-    if ($.isset(value)) {
-      if ($.isString(value)) {
-        value = $.strings.nullOnEmpty(value);
-      } else if ($.isFunction(value)) {
-        value = $.strings.nullOnEmpty(value(object));
-      } else {
-        value = $.strings.nullOnEmpty(value.toString());
-      }
-    }
-
-    return value;
-  }
-
   function __add_button_bar($container, $node, exclude_1st, exclude_last) {
     var settings = $container.data('ol.settings');
     var sequence = settings.buttons.__sequence;
@@ -302,7 +311,7 @@
           $buttons.append($button);
         } else {
           var current, name, $after = null;
-          $.each($buttons.children, function(i, $element) {
+          $.each($buttons.children, function (i, $element) {
             current = $.inArray($element.attr('name'), settings.buttons.__sequence);
             if (current > position) {
               return false;
@@ -341,7 +350,7 @@
       var $last = BOL ? null : $list.children().last();
 
       // Append the Nodes to the List
-      $.each(nodes, function(i, node) {
+      $.each(nodes, function (i, node) {
         exclude = [];
         if (BOL && (i === 0)) {
           exclude.push('up');
@@ -374,7 +383,7 @@
       var $previous = $after;
 
       // Add the Nodes to the List after the Specified Node
-      $.each(nodes, function(i, node) {
+      $.each(nodes, function (i, node) {
         $node = __build_node(node, settings);
         __add_button_bar($container, $node, false, EOL && (i === (nodes.length - 1)));
         $previous.after($node);
@@ -437,7 +446,7 @@
         }
       }
 
-      $.each(additions, function(p, $element) {
+      $.each(additions, function (p, $element) {
         var $placeholder;
         if (additions.hasOwnProperty(p)) {
           switch (p) {
@@ -515,10 +524,10 @@
   function lazy_load(promise, $after) {
     var $container = this;
     $container.addClass('loading');
-    promise.then(function(response) {
+    promise.then(function (response) {
       __load_data($container, response, $after);
       $container.removeClass('loading');
-    }, function() {
+    }, function () {
       console.log("Error Loading Data");
       $container.removeClass('loading');
     });
@@ -527,10 +536,10 @@
   function lazy_update($node, promise) {
     var $container = this;
     $container.addClass('loading');
-    promise.then(function(response) {
+    promise.then(function (response) {
       __update_data($container, response, $node);
       this.removeClass('loading');
-    }, function() {
+    }, function () {
       console.log("Error Loading Data");
       $container.removeClass('loading');
     });
@@ -649,14 +658,14 @@
   }
 
   var commands = {
-    'destroy': function() {
+    'destroy': function () {
       // Do we already have a Grid List in this Spot?
       if (this.data('ol.list')) { // YES: Remove It
         this.remove(this.data('ol.list'));
         this.removeData('ol.list');
       }
     },
-    'initialize': function(settings) {
+    'initialize': function (settings) {
       // Make sure we have all the possible settings, with default values
       settings = __initialize_settings(settings);
 
@@ -681,13 +690,13 @@
         this.data('ol.settings', settings);
       }
     },
-    'clear': function(parameter) {
+    'clear': function (parameter) {
       // Do we have a container to initialize?
       if (this.data('ol.list')) { // YES
         this.data('ol.list').empty();
       }
     },
-    'load': function(parameter) {
+    'load': function (parameter) {
       // Do we have a container to initialize?
       if (this.data('ol.list')) { // YES
         if ($.isset(parameter)) {
@@ -732,7 +741,7 @@
   /*
    * PLUGIN Function (Create Initialization)
    */
-  $.fn.orderedlist = function(command) {
+  $.fn.orderedlist = function (command) {
     if (command === undefined) {
       return this.find('div[name="ordered-list"]');
     } else {
@@ -745,7 +754,7 @@
           command = 'initialize';
         } else { // NO: Is it a function?
           // Build Arguments Array
-          $.each(arguments, function(i, v) {
+          $.each(arguments, function (i, v) {
             if (i) {
               args.push(v);
             }

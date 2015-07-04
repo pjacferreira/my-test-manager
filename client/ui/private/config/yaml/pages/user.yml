@@ -133,13 +133,13 @@ user:
     title: 'PAGE:TITLE:USER:TESTS'
     includes:
       content: 'user/tests.php'
-    required: ['jquery-contextmenu', 'tc-folderview', 'tc-gridlist', 'tc-orderedlist']
+    required: ['jquery-contextmenu', 'tc-folderview', 'tc-gridlist', 'tc-orderedlist', 'medium-editor']
     js:
       files: ['common/session.js', 'common/forms.js', 'user/tests.js']
       scripts:
         on-load: |
           initialize();
-    css: 'user-tests.css'
+    css: ['common/medium-textarea.css', 'user-tests.css']
 
   ##
   # User Test Sets Management Page
@@ -150,13 +150,13 @@ user:
     title: 'PAGE:TITLE:USER:SETS'
     includes:
       content: 'user/sets.php'
-    required: ['jquery-contextmenu', 'tc-folderview', 'tc-gridlist', 'tc-orderedlist']
+    required: ['jquery-contextmenu', 'tc-folderview', 'tc-gridlist', 'tc-orderedlist', 'medium-editor']
     js:
       files: ['common/session.js', 'common/forms.js', 'user/sets.js']
       scripts:
         on-load: |
           initialize();
-    css: 'user-sets.css'
+    css: ['common/medium-textarea.css', 'user-sets.css']
 
   ##
   # User Runs Management Page
