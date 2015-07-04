@@ -9,6 +9,22 @@
 
   // Set the Content Type
   header('Content-Type: application/javascript');
+  
+  function application_property($key, $default) {
+    global $config;
+    // Get Configuration Value
+    $value = array_key_exists($key, $config->application) ? $config->application[$key] : null;
+    
+    // Do we have a string value?
+    if(is_string($value)) { // YES: Trim it to see if it s empty?
+      $value = trim($value);
+      $value = count($value) ? $value : null;
+    } else { // NO: Ignore Value
+      $value = null;
+    }
+    
+    return isset($value) ? $value : $default;
+  }
 ?>
 
 // Does the Attach Point Exist?
@@ -17,11 +33,11 @@ if (!window.hasOwnProperty('testcenter')) { // NO: Create it
 } 
 
 testcenter.site = {
-  __server: <?php echo "'{$config->application->serverUrl}'" ?>,
-  __offset: <?php echo "'{$config->application->baseUri}'" ?>,
-  __assets: <?php echo "'{$config->application->baseAssets}'" ?>,
-  __js: <?php echo "'{$config->application->baseJS}'" ?>,
-  __css: <?php echo "'{$config->application->baseCSS}'" ?>,
+  __server: <?php echo "'".application_property('serverUrl', 'null')."'" ?>,
+  __offset: <?php echo "'".application_property('baseUri', '/')."'" ?>,
+  __assets: <?php echo "'".application_property('baseAssets', 'null')."'" ?>,
+  __js: <?php echo "'".application_property('baseJS', '')."'" ?>,
+  __css: <?php echo "'".application_property('baseCSS', '')."'" ?>,
   /**
    * Retrieve the Site's Base Relative or Complete URL
    * 
@@ -30,11 +46,11 @@ testcenter.site = {
    */
   base: function (relative) {
     relative = !!relative;
-    // Do we want a Relative URL?
-    if (relative) { // YES
-      return testcenter.site.__offset !== null ? testcenter.site.__offset : '/';
+    // Do we want a Relative URL (Always true if no server URL specified) ?
+    if (relative || (testcenter.site.__server === null)) { // YES
+      return testcenter.site.__offset;
     } else { // NO: Complete
-      return testcenter.site.__offset !== null ? testcenter.site.__server + testcenter.site.__offset : testcenter.site.__server;
+      return testcenter.site.__server + testcenter.site.__offset;
     }
   },
   /**
