@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: testcenter-site\n"
 "POT-Creation-Date: 2015-02-03 12:28+0100\n"
-"PO-Revision-Date: 2015-07-04 13:28+0100\n"
+"PO-Revision-Date: 2015-07-04 21:25+0100\n"
 "Last-Translator: Paulo Ferreira <pf@sourcenotes.org>\n"
 "Language-Team: TESTCENTER <test>\n"
 "MIME-Version: 1.0\n"
@@ -14,8 +14,17 @@ msgstr ""
 "Language: en_US\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 
-msgid "PAGE:TITLE:LANDING:HOME"
-msgstr "Your Online Test Manager"
+msgid "BUTTON:LOGIN"
+msgstr "Login"
+
+msgid "BUTTON:RCVPWD"
+msgstr "Recover Password"
+
+msgid "FIELD:PLACEHOLDER:USERNAME"
+msgstr "User"
+
+msgid "FIELD:PLACEHOLDER:PASSWORD"
+msgstr "Password"
 
 msgid "MENU:GROUP:ACTIONS"
 msgstr "Actions"
@@ -34,3 +43,6 @@ msgstr "Help"
 
 msgid "LANDING:BODY:CLICK"
 msgstr "Click me!"
+
+msgid "PAGE:TITLE:LANDING:HOME"
+msgstr "Your Online Test Manager"

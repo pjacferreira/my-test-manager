@@ -5,7 +5,7 @@
 <!-- LOGIN FORM -->
 <div id="form_login" class="ui form hidden">
   <div class="required field">
-    <input name="username" placeholder="<?php echo _("FORM:LOGIN:FIELD:USER") ?>" type="text">
+    <input name="username" placeholder="<?php echo _("FIELD:PLACEHOLDER:USERNAME") ?>" type="text">
   </div>
   <div class="required field">
     <div class="ui icon input">
@@ -14,9 +14,9 @@
     </div>
   </div>
   <div class="ui buttons">
-    <div id="button_login" class="ui positive button"><?php echo _("FORM:LOGIN:BUTTON:LOGIN") ?></div>
+    <div id="button_login" class="ui positive button"><?php echo _("BUTTON:LOGIN") ?></div>
     <div class="or"></div>
-    <div id="button_recover" class="ui button"><?php echo _("FORM:LOGIN:BUTTON:RCVPWD") ?></div>
+    <div id="button_recover" class="ui button"><?php echo _("BUTTON:RCVPWD") ?></div>
   </div>
   <div class="ui error message"></div>
 </div>      
