@@ -6,7 +6,7 @@
  --- FORMS
 -->
 <!-- CREATE FOLDER FORM -->
-<div id="form_create_folder" class="testcenter ui form hidden">
+<div id="form_create_folder" class="tc ui form hidden">
   <h4 class="ui dividing header"><?php echo _("FORM:TITLE:FOLDER:CREATE") ?></h4>
   <div class="required field">
     <input name="name" placeholder="<?php echo _("FIELD:FOLDER:NAME") ?>" type="text">
@@ -19,7 +19,7 @@
   <div class="ui error message"></div>
 </div>    
 <!-- RENAME FOLDER FORM -->
-<div id="form_rename_folder" class="testcenter ui form hidden">
+<div id="form_rename_folder" class="tc ui form hidden">
   <h4 class="ui dividing header"><?php echo _("FORM:TITLE:FOLDER:RENAME") ?></h4>
   <div class="required field">
     <input name="name" placeholder="<?php echo _("FIELD:FOLDER:NEW-NAME") ?>" type="text">
@@ -32,7 +32,7 @@
   <div class="ui error message"></div>
 </div>      
 <!-- DELETE FOLDER FORM -->
-<div id="form_delete_folder" class="testcenter ui form hidden">
+<div id="form_delete_folder" class="tc ui form hidden">
   <h4 class="ui dividing header"><?php echo _("FORM:TITLE:FOLDER:DELETE") ?></h4>
   <div class="ui header">
     <?php echo _("TEXT:QUESTION:FOLDER:DELETE:CONFIRMATION") ?>
@@ -45,7 +45,7 @@
   <div class="ui error message"></div>
 </div>      
 <!-- CREATE RUN FORM -->
-<div id="form_create_run" class="testcenter ui form hidden">
+<div id="form_create_run" class="tc ui form hidden">
   <h4 class="ui dividing header"><?php echo _("FORM:TITLE:RUN:CREATE") ?></h4>
   <div class="required field">
     <input name="run-name" placeholder="<?php echo _("FIELD:RUN:NAME") ?>" type="text">

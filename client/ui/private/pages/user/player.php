@@ -6,7 +6,7 @@
  --- FORMS
 -->
 <!-- CREATE FOLDER FORM -->
-<div id="form_step_complete" class="testcenter ui form hidden">
+<div id="form_step_complete" class="tc ui form hidden">
   <h4 class="ui dividing header"><?php echo _("FORM:TITLE:STEP:COMPLETE") ?></h4>
   <div class="field">
     <select name="pass_code" class="ui search dropdown">

@@ -3,7 +3,7 @@
  --- license http://opensource.org/licenses/AGPL-3.0 Affero GNU Public License v3.0
  -->
 <!-- LOGIN FORM -->
-<div id="form_login" class="ui form hidden">
+<div id="form_login" class="tc ui form hidden">
   <div class="required field">
     <input name="username" placeholder="<?php echo _("FIELD:PLACEHOLDER:USERNAME") ?>" type="text">
   </div>

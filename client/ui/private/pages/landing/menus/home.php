@@ -39,12 +39,12 @@
     <h3><?php echo _("MENU:GROUP:HELP") ?></h3>
     <div class="pointing menu">
       <a name="help" class="item" href=<?php echo "'" . $this->url->get('page/landing:introduction') . "'" ?> >
-        <i class="help icon"></i><?php echo _("MENU:HELP:INTRODUCTION") ?>
+        <i class="help icon"></i><?php echo _("MENU:ACTION:INTRODUCTION") ?>
       </a>
     </div>
     <div class="pointing menu">
       <a name="help" class="item" href=<?php echo "'" . $this->url->get('page/landing:help') . "'" ?> >
-        <i class="help icon"></i><?php echo _("MENU:HELP:HELP") ?>
+        <i class="help icon"></i><?php echo _("MENU:ACTION:HELP") ?>
       </a>
     </div>
   </div>
