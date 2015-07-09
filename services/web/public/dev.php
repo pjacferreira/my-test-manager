@@ -22,8 +22,12 @@
  * @copyright 2015 Paulo Ferreira
  * @author Paulo Ferreira <pf at sourcenotes.org>
  */
+
+// LOAD BASE FILE
+require_once '../private/base.php';
+
 // PHP Console Library to be used with PHP Console Chromium Extension
-require_once 'phar://' . __DIR__ . '/../../shared/PhpConsole.phar';
+require_once 'phar://' . PATH_SHARED . '/PhpConsole.phar';
 if (PhpConsole\Connector::getInstance()->isActiveClient()) {
   // if you're calling PC::debug() or any other PC class methods in your code, so PhpConsole\Helper::register() must be called anyway
   PhpConsole\Helper::register();
@@ -38,30 +42,37 @@ function include_with_dev($file) {
   global $config, $di, $app, $router;
 
   // Include the Normal Configuration File
-  $result = include __DIR__ . "/../private/config/{$file}.php";
+  $result = include PATH_PRIVATE . "/config/{$file}.php";
 
   // If a Development File Exists - Include it as well
-  file_exists(__DIR__ . "/../private/config/{$file}_dev.php") && include __DIR__ . "/../private/config/{$file}_dev.php";
+  file_exists(PATH_PRIVATE . "/config/{$file}_dev.php") &&
+    include PATH_PRIVATE . "/config/{$file}_dev.php";
 
-  return $result;
+  return isset($result_dev) ? $result_dev : $result;
 }
 
 try {
 
+  // Make sure that any included files know we are using PHALCON
+  $FLAG_PHALCON = true;
+  
   /**
    * Read the configuration
    */
   $config = include_with_dev('config');
 
   /**
-   * Include Services
-   */
-  $di = include_with_dev('services');
-
-  /**
    * Include Autoloader
    */
   include_with_dev('loader');
+
+  // Make sure that any included files know we have the Autoloader Setup
+  $FLAG_PHALCON_LOADER = true;
+  
+  /**
+   * Include Services
+   */
+  $di = include_with_dev('services');
 
   /**
    * Starting the application
@@ -76,7 +87,7 @@ try {
   /**
    * Incude Application (and Default Routes)
    */
-  include __DIR__ . '/../private/app.php';
+  include PATH_PRIVATE . '/app.php';
 
   /*
    * Include Specific Application Specific Routes

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Test Center - Compliance Testing Application (Web Services)
  * Copyright (C) 2012 - 2015 Paulo Ferreira <pf at sourcenotes.org>
@@ -16,30 +17,39 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 /*
  * @license http://opensource.org/licenses/AGPL-3.0 Affero GNU Public License v3.0
  * @copyright 2015 Paulo Ferreira
  * @author Paulo Ferreira <pf at sourcenotes.org>
  */
+
+// LOAD BASE FILE
+require_once '../private/base/base.php';
+
 error_reporting(E_ALL);
 
 try {
 
+  // Make sure that any included files know we are using PHALCON
+  $FLAG_PHALCON = true;
+
   /**
    * Read the configuration
    */
-  $config = include __DIR__ . "/../private/config/config.php";
-
-  /**
-   * Include Services
-   */
-  include __DIR__ . '/../private/config/services.php';
+  $config = include PATH_PRIVATE . "/config/config.php";
 
   /**
    * Include Autoloader
    */
-  include __DIR__ . '/../private/config/loader.php';
+  include PATH_PRIVATE . '/config/loader.php';
+
+  // Make sure that any included files know we have the Autoloader Setup
+  $FLAG_PHALCON_LOADER = true;
+
+  /**
+   * Include Services
+   */
+  include PATH_PRIVATE . '/config/services.php';
 
   /**
    * Starting the application
@@ -54,12 +64,12 @@ try {
   /**
    * Incude Application
    */
-  include __DIR__ . '/../private/app.php';
+  include PATH_PRIVATE . '/app.php';
 
   /*
    * Include Specific Application Specific Routes
    */
-  include __DIR__ . '/../private/config/routes.php';
+  include PATH_PRIVATE . '/config/routes.php';
 
   /**
    * Handle the request

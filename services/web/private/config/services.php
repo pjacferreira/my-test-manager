@@ -121,7 +121,7 @@ $di['view'] = function () use ($config) {
   /**
    * Included Shared Services
    */
-  include __DIR__ . '/../../../shared/config/services.php';
+  include PATH_SHARED . '/config/services.php';
 
   /*
    *  MUST BE THE LAST LINE IN THE FILE

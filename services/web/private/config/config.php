@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Test Center - Compliance Testing Application (Web Services)
  * Copyright (C) 2012 - 2015 Paulo Ferreira <pf at sourcenotes.org>
@@ -16,38 +17,45 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 /*
  * @license http://opensource.org/licenses/AGPL-3.0 Affero GNU Public License v3.0
  * @copyright 2015 Paulo Ferreira
  * @author Paulo Ferreira <pf at sourcenotes.org>
  */
+
+// LOAD BASE FILE and \common\config\Config Class
+require_once __DIR__ . '/../base.php';
+require_once PATH_SHARED . '/common/config/Config.php';
+
 // Include Shared Configuration (if it exists)
-$shared = include __DIR__ . '/../../../shared/config/config.php';
+$shared = include PATH_SHARED . '/config/config.php';
 
 // Local Configuration 
 $config = array(
-    'database' => array(
-        'adapter' => 'Mysql',
-        'host' => '10.193.0.200',
-        'username' => 'root',
-        'password' => 'testcenter',
-        'dbname' => 'testcenter'
-    ),
-    'application' => array(
-        /* PHALCON SYSTEM PATHS */
-        'viewsDir' => __DIR__ . '/../views/',
-        'cacheDir' => __DIR__ . '/../cache/',
-        /* APPPLICATION PATHS */
-        'localesDir' => __DIR__ . '/../locales/',
-        /* APPPLICATION RESOURCES */
-        'baseUri' => '/services/',
-    ),
-    'namespaces' => array(
-        'controllers' => __DIR__ . '/../controllers/',
-        'models' => __DIR__ . '/../models/',
-        'api' => __DIR__ . '/../api/'
-    )
+  'database' => array(
+    'adapter' => 'Mysql',
+    'host' => '10.193.0.200',
+    'username' => 'root',
+    'password' => 'testcenter',
+    'dbname' => 'testcenter'
+  ),
+  'application' => array(
+    /* PHALCON SYSTEM PATHS */
+    'viewsDir' => PATH_PRIVATE . '/views/',
+    'cacheDir' => PATH_PRIVATE . '/cache/',
+    /* APPPLICATION PATHS */
+    'localesDir' => PATH_PRIVATE . '/locales/',
+    /* APPPLICATION RESOURCES */
+    'baseUri' => '/services/',
+  ),
+  'namespaces' => array(
+    'controllers' => PATH_PRIVATE . '/controllers/',
+    'models' => PATH_PRIVATE . '/models/',
+    'api' => PATH_PRIVATE . '/api/'
+  ),
+  'properties' => array(
+//        'allowed-origins' => '(.*\.)?test-to.com$'
+  )
 );
 
 // Do we have shared configuration options?
@@ -56,4 +64,4 @@ if (isset($shared)) { // YES: Merge the the arrays, recursively (Local Config ta
 }
 
 // Return Configuration Container
-return new \Phalcon\Config($config);
+return new \common\config\Config($config);
