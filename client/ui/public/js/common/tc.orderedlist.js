@@ -73,7 +73,7 @@
   };
 
   function fire_event($container, name, data) {
-    console.log("Event [" + name + "] -  Node [" + data + "]");
+    console.log("Event [orderedlist.%s]", name);
     $container.trigger('orderedlist.' + name, data);
   }
 
@@ -199,16 +199,16 @@
         class: settings.classes.details,
         text: text
       });
-    }
-
-    // Is DETAILS in HTML Format?
-    var html = __property_to_string(node, 'html');
-    if ($.isset(html)) { // YES
-      return $('<div>', {
-        name: 'details',
-        class: settings.classes.details,
-        html: $('<div/>').html(html).text()
-      });
+    } else { // NO: Try HTML
+      // Is DETAILS in HTML Format?
+      var html = __property_to_string(node, 'html');
+      if ($.isset(html)) { // YES
+        return $('<div>', {
+          name: 'details',
+          class: settings.classes.details,
+          html: $('<div/>').html(html).text()
+        });
+      }
     }
 
     return null;
@@ -482,112 +482,160 @@
   }
 
   function __update_data($container, $node, data) {
-    var $list = $container.data('ol.list');
-    if ($list) {
-      var settings = $container.data('ol.settings');
-      if (settings) {
-        var nodes = data;
-        var transform = $.objects.get('callbacks.data_to_nodes', settings);
-        if ($.isFunction(transform)) {
-          nodes = $.proxy(transform, $container)(data);
-        }
+    var settings = $container.data('ol.settings');
+    if (settings) {
+      var nodes = data;
+      var transform = $.objects.get('callbacks.data_to_nodes', settings);
+      if ($.isFunction(transform)) {
+        nodes = $.proxy(transform, $container)(data);
       }
-
-      return $.isset(nodes) && nodes.length ? __update_node($container, $node, nodes[0]) : false;
     }
 
-    console.log("Invalid System State.");
+    if ($.isset(nodes) && nodes.length) {
+      return __update_node($container, $node, nodes[0]);
+    }
+
     return false;
   }
 
   function __load_data($container, data, $after) {
-    var $list = $container.data('ol.list');
-    if ($list) {
-      var settings = $container.data('ol.settings');
-      if (settings) {
-        var nodes = data;
-        var transform = $.objects.get('callbacks.data_to_nodes', settings);
-        if ($.isFunction(transform)) {
-          nodes = $.proxy(transform, $container)(data);
-        }
+    var settings = $container.data('ol.settings');
+    if (settings) {
+      var nodes = data;
+      var transform = $.objects.get('callbacks.data_to_nodes', settings);
+      if ($.isFunction(transform)) {
+        nodes = $.proxy(transform, $container)(data);
       }
-
-      return $.isset($after) && $after.length ?
-        __add_nodes($container, nodes, $after) :
-        __append_nodes($container, nodes);
     }
 
-    console.log("Invalid System State.");
-    return false;
+    // Are we adding after a Specific Node?
+    if ($.isset($after) && $after.length) { // YES
+      __add_nodes($container, nodes, $after);
+    } else { // NO: Append to End of List
+      __append_nodes($container, nodes);
+    }
+
+    return true;
   }
 
   function lazy_load(promise, $after) {
-    var $container = this;
-    $container.addClass('loading');
-    promise.then(function (response) {
-      __load_data($container, response, $after);
-      $container.removeClass('loading');
-    }, function () {
-      console.log("Error Loading Data");
-      $container.removeClass('loading');
-    });
+    // List Initialized?
+    if (this.data('ol.list')) { // YES
+      var $container = this;
+      $container.addClass('loading');
+      promise.then(function (response) {
+        __load_data($container, response, $after);
+        $container.removeClass('loading');
+        fire_event($container, 'loaded');
+      }, function () {
+        console.error("Error Loading Data");
+        $container.removeClass('loading');
+        fire_event($container, 'error.load');
+      });
+    } else {
+      fire_event(this, 'error.not_ready');
+      console.error("List hasn't been initialized.");
+    }
+
+    return this;
   }
 
   function lazy_update($node, promise) {
-    var $container = this;
-    $container.addClass('loading');
-    promise.then(function (response) {
-      __update_data($container, response, $node);
-      this.removeClass('loading');
-    }, function () {
-      console.log("Error Loading Data");
-      $container.removeClass('loading');
-    });
+    // List Initialized?
+    if (this.data('ol.list')) { // YES
+      var $container = this;
+      $container.addClass('loading');
+      promise.then(function (response) {
+        if (__update_data($container, response, $node)) {
+          fire_event(this, 'node.updated', $node);
+        }
+        this.removeClass('loading');
+      }, function () {
+        fire_event($container, 'error.load');
+        console.error("Error Loading Data");
+        $container.removeClass('loading');
+      });
+    } else {
+      fire_event(this, 'error.not_ready');
+      console.error("List hasn't been initialized.");
+    }
+
+    return this;
+  }
+
+  function node_count($node) {
+    // List Initialized?
+    var $list = this.data('ol.list');
+    if ($.isset($list)) { // YES
+      return $list.find('.item').length;
+    } else {
+      fire_event(this, 'error.not_ready');
+      console.error("List hasn't been initialized.");
+    }
+
+    return 0;
   }
 
   function node_up($node) {
-    // Reposition Node
-    var $previous = $node.prev();
-    $node.detach();
-    $previous.before($node);
+    // List Initialized?
+    if (this.data('ol.list')) { // YES
+      // Reposition Node
+      var $previous = $node.prev();
+      $node.detach();
+      $previous.before($node);
 
-    // Make Sure that Previous has an 'up' Button
-    __add_button(this, $previous, 'up');
-    // Make Sure that Node has a 'down' Button
-    __add_button(this, $node, 'down');
+      // Make Sure that Previous has an 'up' Button
+      __add_button(this, $previous, 'up');
+      // Make Sure that Node has a 'down' Button
+      __add_button(this, $node, 'down');
 
-    // Do we have a previous node?
-    if ($node.prev().length === 0) { // No
-      __remove_button(this, $node, 'up');
+      // Do we have a previous node?
+      if ($node.prev().length === 0) { // No
+        __remove_button(this, $node, 'up');
+      }
+      // Do we have a next node?
+      if ($previous.next().length === 0) { // No
+        __remove_button(this, $previous, 'down');
+      }
+    } else {
+      fire_event(this, 'error.not_ready');
+      console.error("List hasn't been initialized.");
     }
-    // Do we have a next node?
-    if ($previous.next().length === 0) { // No
-      __remove_button(this, $previous, 'down');
-    }
+
+    return this;
   }
 
   function node_down($node) {
-    // Reposition Node
-    var $next = $node.next();
-    $node.detach();
-    $next.after($node);
+    // List Initialized?
+    if (this.data('ol.list')) { // YES
+      // Reposition Node
+      var $next = $node.next();
+      $node.detach();
+      $next.after($node);
 
-    // Make Sure that Next has an 'down' Button
-    __add_button(this, $next, 'down');
-    // Make Sure that Node has a 'up' Button
-    __add_button(this, $node, 'up');
+      // Make Sure that Next has an 'down' Button
+      __add_button(this, $next, 'down');
+      // Make Sure that Node has a 'up' Button
+      __add_button(this, $node, 'up');
 
-    // Do we now have a next node?
-    if ($node.next().length === 0) { // No
-      __remove_button(this, $node, 'down');
+      // Do we now have a next node?
+      if ($node.next().length === 0) { // No
+        __remove_button(this, $node, 'down');
+      }
+      // Do we have a previous node?
+      if ($next.prev().length === 0) { // No
+        __remove_button(this, $next, 'up');
+      }
+    } else {
+      fire_event(this, 'error.not_ready');
+      console.error("List hasn't been initialized.");
     }
-    // Do we have a previous node?
-    if ($next.prev().length === 0) { // No
-      __remove_button(this, $next, 'up');
-    }
+
+    return this;
   }
 
   function node_add(parameter, $after) {
+    // List Initialized?
     if (this.data('ol.list')) { // YES
       if ($.isset(parameter)) {
         // Is the Parameter a Function?
@@ -600,39 +648,56 @@
         return $.proxy(lazy_load, this)(parameter, $after);
       }
 
-      return __load_data(this, parameter, $after);
+      // Node Added
+      // TODO: Event Should Contain Reference to the New Node (JQuery Element)
+      if (__load_data(this, parameter, $after)) {
+        fire_event(this, 'node.added');
+      }
     } else {
-      console.log("List hasn't been initialized.");
+      fire_event(this, 'error.not_ready');
+      console.error("List hasn't been initialized.");
     }
 
-    return false;
+    return this;
   }
 
   function node_remove($node) {
-    var $previous = $node.prev();
-    var $next = $node.next();
+    // List Initialized?
+    if (this.data('ol.list')) { // YES
+      var $previous = $node.prev();
+      var $next = $node.next();
 
-    // Remove the Current Node
-    $node.remove();
+      // Remove the Current Node
+      $node.remove();
 
-    // Is there a Next Node?
-    if ($next.length === 0) { // NO
-      // Do we have a Previous Node?
-      if ($previous.length) { // YES: Remove the DOWN Button
-        __remove_button(this, $previous, 'down');
+      // Is there a Next Node?
+      if ($next.length === 0) { // NO
+        // Do we have a Previous Node?
+        if ($previous.length) { // YES: Remove the DOWN Button
+          __remove_button(this, $previous, 'down');
+        }
       }
+
+      // Is there a Previous Node?
+      if ($previous.length === 0) { // NO
+        // Do we have a next Node?
+        if ($next.length) { // YES: Remove the UP Button
+          __remove_button(this, $next, 'up');
+        }
+      }
+
+      // Node Removed
+      fire_event(this, 'node.removed', $node.data('item.node'));
+    } else {
+      fire_event(this, 'error.not_ready');
+      console.error("List hasn't been initialized.");
     }
 
-    // Is there a Previous Node?
-    if ($previous.length === 0) { // NO
-      // Do we have a next Node?
-      if ($next.length) { // YES: Remove the UP Button
-        __remove_button(this, $next, 'up');
-      }
-    }
+    return this;
   }
 
   function node_update($node, data) {
+    // List Initialized?
     if (this.data('ol.list')) { // YES
       if ($.isset(data)) {
         // Is the Parameter a Function?
@@ -645,12 +710,16 @@
         return $.proxy(lazy_update, this)($node, data);
       }
 
-      return __update_data(this, $node, data);
+      // Update the Node
+      if (__update_data(this, $node, data)) {
+        fire_event(this, 'node.updated', $node);
+      }
     } else {
-      console.log("List hasn't been initialized.");
+      fire_event(this, 'error.not_ready');
+      console.error("List hasn't been initialized.");
     }
 
-    return false;
+    return this;
   }
 
   function node_data($node) {
@@ -660,18 +729,23 @@
   var commands = {
     'destroy': function () {
       // Do we already have a Grid List in this Spot?
-      if (this.data('ol.list')) { // YES: Remove It
-        this.remove(this.data('ol.list'));
+      var $list = this.data('ol.list');
+      if ($list) { // YES: Clean it and Remove the Container
+        $list.empty();
+        this.remove($list);
         this.removeData('ol.list');
+        fire_event(this, 'destroyed');
       }
+
+      return this;
     },
     'initialize': function (settings) {
       // Make sure we have all the possible settings, with default values
       settings = __initialize_settings(settings);
 
-      // Has the Grid Already been Initialized?
-      var $list = null;
-      if (this.data('ol.list')) { // YES
+      // Has the List Already been Initialized?
+      var $list = this.data('ol.list');
+      if ($.isset($list)) { // YES
         $list = this.data('ol.list');
         $list.empty();
       } else { // NO
@@ -683,18 +757,27 @@
 
         // Attach onClick Listener
         this.click(__list_click);
+
+        // Notify that the List is Ready
+        fire_event(this, 'ready');
       }
 
-      // Build Grid List Container
-      if ($list) {
+      // Do we have a List Container?
+      if ($list) { // YES: Save Settings
         this.data('ol.settings', settings);
       }
+
+      return this;
     },
     'clear': function (parameter) {
       // Do we have a container to initialize?
-      if (this.data('ol.list')) { // YES
-        this.data('ol.list').empty();
+      var $list = this.data('ol.list');
+      if ($list) { // YES
+        $list.empty();
+        fire_event(this, 'clear');
       }
+
+      return this;
     },
     'load': function (parameter) {
       // Do we have a container to initialize?
@@ -724,75 +807,105 @@
         }
 
         return __load_data(this, parameter, null);
-      } else {
-        console.error("List hasn't been initialized.");
       }
+
+      fire_event(this, 'error.not_ready');
+      console.error("List hasn't been initialized.");
+      return this;
     },
     'node': {
-      'up': node_up,
-      'down': node_down,
       'add': node_add,
+      'count': node_count,
+      'data': node_data,
+      'down': node_down,
       'remove': node_remove,
-      'update': node_update,
-      'data': node_data
+      'up': node_up,
+      'update': node_update
     }
 
   };
+
   /*
-   * PLUGIN Function (Create Initialization)
+   * PLUGIN: (JQuery Object Method) Ordered List Plugin Interface
    */
   $.fn.orderedlist = function (command) {
     if (command === undefined) {
       return this.find('div[name="ordered-list"]');
-    } else {
-      var $container = this.first();
-      var args = [];
-      if ($container.length) {
-        // Is 'command' parameter an object?
-        if ($.isPlainObject(command)) { // YES: Then we just want to initialize
-          args.push(command);
-          command = 'initialize';
-        } else { // NO: Is it a function?
-          // Build Arguments Array
-          $.each(arguments, function (i, v) {
-            if (i) {
-              args.push(v);
-            }
-          });
-          if ($.isFunction(command)) { // YES: Then the result of the call will be the tree settings
-            if (args.length) {
-              args = command.apply($container, args);
-            } else {
-              args = command.call($container);
-            }
-            if (!$.isArray(args)) {
-              args = [args];
-            }
-            command = 'initialize';
-          } else { // NO: It must be a string
-            command = $.strings.nullOnEmpty(command);
-          }
-        }
-
-        // Do we have a command set?
-        if ($.isset(command)) { // YES
-          // Do we have a handler for the command?
-          command = $.objects.get(command, commands);
-          if ($.isset(command)) { // YES: Call it
-            if (args.length) {
-              command.apply($container, args);
-            } else {
-              command.call($container);
-            }
-          }
-        }
-      } else {
-        console.error('No Container for Ordered List.');
-      }
-
-      return this;
     }
 
+    var $container = this.first();
+    var args = [];
+    if ($container.length) {
+      // Is 'command' parameter an object?
+      if ($.isPlainObject(command)) { // YES: Then we just want to initialize
+        args.push(command);
+        command = 'initialize';
+      } else { // NO: Is it a function?
+        // Build Arguments Array
+        $.each(arguments, function (i, v) {
+          if (i) {
+            args.push(v);
+          }
+        });
+        if ($.isFunction(command)) { // YES: Then the result of the call will be the tree settings
+          if (args.length) {
+            args = command.apply($container, args);
+          } else {
+            args = command.call($container);
+          }
+          if (!$.isArray(args)) {
+            args = [args];
+          }
+          command = 'initialize';
+        } else { // NO: It must be a string
+          command = $.strings.nullOnEmpty(command);
+        }
+      }
+
+      // Do we have a command set?
+      if ($.isset(command)) { // YES
+        // Do we have a handler for the command?
+        command = $.objects.get(command, commands);
+        if ($.isset(command)) { // YES: Call it
+          if (args.length) {
+            return command.apply($container, args);
+          } else {
+            return command.call($container);
+          }
+        }
+      }
+
+      throw 'Command Invalid';
+    }
+
+    throw 'No Container for Ordered List';
+  };
+
+  /*
+   * PLUGIN: (STATIC FUNCTION) Build Ordered List(s) from JQuery Selector
+   */
+  $.orderedlist = function (selector, settings) {
+    var $container = null;
+    // Is the Selector a String?
+    if ($.isString(selector)) { // YES: Use JQuery to Extract the Objects
+      $container = $(selector);
+    } else // NO: Is Selector a JQuery Object?
+    if (selector instanceof $) { // YES: Just Initialize it then
+      $container = selector;
+    }
+
+    if ($.isset($container) && $container.length) {
+      // Do we have an extra classes to add to the container?
+      var extra = $.strings.nullOnEmpty($.objects.get('classes.container', settings, defaults.classes.container));
+      if ($.isset(extra)) {
+        $container.addClass(extra);
+      }
+
+      // Initialize Container
+      return $container.orderedlist('initialize', settings);
+    }
+
+    console.warn('OrderedList: Selector Invalid or Empty');
   };
 }(jQuery));
 

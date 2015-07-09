@@ -3,7 +3,7 @@
  * License http://opensource.org/licenses/AGPL-3.0 Affero GNU Public License v3.0
  */
 ; // For Minimification (If somebody forgot semicolon in another script file)
-(function($, undefined) {
+(function ($, undefined) {
   /*
    * LOCAL SCOPE
    */
@@ -59,6 +59,25 @@
     return $.isset(extra) ? base + ' ' + extra : base;
   }
 
+  function __property_to_string(object, property, def) {
+    var value = def;
+    if (object.hasOwnProperty(property)) {
+      value = object[property];
+    }
+
+    if ($.isset(value)) {
+      if ($.isString(value)) {
+        value = $.strings.nullOnEmpty(value);
+      } else if ($.isFunction(value)) {
+        value = $.strings.nullOnEmpty(value(object));
+      } else {
+        value = $.strings.nullOnEmpty(value.toString());
+      }
+    }
+
+    return value;
+  }
+
   function fire_event($container, name, data) {
     console.log("Event [" + name + "] -  Node [" + data + "]");
     $container.trigger(name + '.cardview', data);
@@ -110,15 +129,29 @@
   }
 
   function __build_description(card, settings) {
-    var description = $.strings.nullOnEmpty(card.description);
-    if ($.isset(description)) {
-      return $('<div>', {
-        html: description,
-        class: __append_classes('description', settings.classes.description)
+    var $description = null;
+
+    // Is DETAILS in TEXT Format?
+    var text = __property_to_string(card, 'text');
+    if ($.isset(text)) { // YES
+      $description = $('<div>', {
+        name: 'title',
+        class: __append_classes('description', settings.classes.description),
+        text: text
       });
+    } else { // NO: Try HTML
+      // Is DETAILS in HTML Format?
+      var html = __property_to_string(card, 'html');
+      if ($.isset(html)) {
+        $description = $('<div>', {
+          name: 'title',
+          class: __append_classes('description', settings.classes.description),
+          html: $('<div/>').html(html).text()
+        });
+      }
     }
 
-    return null;
+    return $description;
   }
 
   function __build_contents(card, settings) {
@@ -172,7 +205,7 @@
       var $last = BOL ? null : $container.children().last();
 
       // Append the Nodes to the List
-      $.each(cards, function(i, card) {
+      $.each(cards, function (i, card) {
         $card = __build_card(card, settings);
         $container.append($card);
       });
@@ -191,7 +224,7 @@
       var $previous = $after;
 
       // Add the Nodes to the List after the Specified Node
-      $.each(nodes, function(i, node) {
+      $.each(nodes, function (i, node) {
         $node = __build_node(node, settings);
         __add_button_bar($container, $node, false, EOL && (i === (nodes.length - 1)));
         $previous.after($node);
@@ -302,10 +335,10 @@
   function lazy_load(promise, $after) {
     var $container = this;
     $container.addClass('loading');
-    promise.then(function(response) {
+    promise.then(function (response) {
       __load_data($container, response, $after);
       $container.removeClass('loading');
-    }, function() {
+    }, function () {
       console.log("Error Loading Data");
       $container.removeClass('loading');
     });
@@ -314,10 +347,10 @@
   function lazy_update($card, promise) {
     var $container = this;
     $container.addClass('loading');
-    promise.then(function(response) {
+    promise.then(function (response) {
       __update_data($container, response, $card);
       this.removeClass('loading');
-    }, function() {
+    }, function () {
       console.log("Error Loading Data");
       $container.removeClass('loading');
     });
@@ -480,7 +513,7 @@
   function card_byid(id) {
     // Are we dealing with Card View?
     if (this.data('cv.settings')) { // YES
-      return this.find('.card').filter(function(i, el) {
+      return this.find('.card').filter(function (i, el) {
         return $(this).data('cv.data').id === id;
       });
     } // ELSE: NO
@@ -544,7 +577,7 @@
    * COMMANDS (Handlers)
    */
   var commands = {
-    'destroy': function() {
+    'destroy': function () {
       // Do we already have a Card View in this Spot?
       if (this.data('cv.settings')) { // YES: Remove It
         this.empty();
@@ -553,7 +586,7 @@
 
       return this;
     },
-    'initialize': function(settings) {
+    'initialize': function (settings) {
       // Make sure we have all the possible settings, with default values
       settings = __initialize_settings(settings);
 
@@ -568,7 +601,7 @@
       // Save Settings for Container
       return this.data('cv.settings', settings);
     },
-    'clear': function(parameter) {
+    'clear': function (parameter) {
       // Do we have a container to initialize?
       if (this.data('cv.settings')) { // YES
         this.empty();
@@ -576,7 +609,7 @@
 
       return this;
     },
-    'load': function(parameter) {
+    'load': function (parameter) {
       // Do we have a container to initialize?
       if (this.data('cv.settings')) { // YES
         if ($.isset(parameter)) {
@@ -634,9 +667,9 @@
   };
 
   /*
-   * PLUGIN Function (Create Initialization)
+   * PLUGIN: (JQuery Object Method) Card View Plugin Interface
    */
-  $.fn.cardview = function(command) {
+  $.fn.cardview = function (command) {
     if (command === undefined) {
       return this.find('div[name="cardview"]');
     }
@@ -650,7 +683,7 @@
         command = 'initialize';
       } else { // NO: Is it a function?
         // Build Arguments Array
-        $.each(arguments, function(i, v) {
+        $.each(arguments, function (i, v) {
           if (i) {
             args.push(v);
           }
@@ -689,11 +722,16 @@
     throw 'No Container for Card View';
   };
 
-  $.cardview = function(selector, settings) {
+  /*
+   * PLUGIN: (STATIC FUNCTION) Build Card View(s) from JQuery Selector
+   */
+  $.cardview = function (selector, settings) {
     var $container = null;
-    if ($.isString(selector)) {
+    // Is the Selector a String?
+    if ($.isString(selector)) { // YES: Use JQuery to Extract the Objects
       $container = $(selector);
-    } else if (selector instanceof $) {
+    } else // NO: Is Selector a JQuery Object?
+    if (selector instanceof $) { // YES: Just Initialize it then
       $container = selector;
     }
 
@@ -708,7 +746,7 @@
       return $container.cardview('initialize', settings);
     }
 
-    throw 'No Container for Card View';
+    console.warn('Card View: Selector Invalid or Empty');
   };
 
 }(jQuery));

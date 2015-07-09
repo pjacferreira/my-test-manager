@@ -111,7 +111,6 @@
       var id = 'GN:' + id;
       var icon = __property_to_string(node, 'icon', settings.icon);
       var colour = __property_to_string(node, 'color', settings.icon_color);
-      var text = __property_to_string(node, 'text');
       var html = $.isset(text) ? null : __property_to_string(node, 'html');
 
       // Create ICON Element
@@ -131,10 +130,23 @@
 
       // Create Display Element
       var $display = null;
-      if ((text !== null) || (html !== null)) {
+
+      // Is DETAILS in TEXT Format?
+      var text = __property_to_string(node, 'text');
+      if ($.isset(text)) { // YES
         $display = $('<div>', {
-          text: text !== null ? text : html
+          name: 'title',
+          text: text
         });
+      } else { // NO: Try HTML
+        // Is DETAILS in HTML Format?
+        var html = __property_to_string(node, 'html');
+        if ($.isset(html)) {
+          $display = $('<div>', {
+            name: 'title',
+            html: $('<div/>').html(html).text()
+          });
+        }
       }
 
       // Create Node Element
