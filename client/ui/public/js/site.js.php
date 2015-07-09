@@ -5,26 +5,10 @@
    */
 
   // Include the Normal Configuration File
-  $config = include __DIR__ . "/../../private/config/config.php";
+  $config = require_once __DIR__ . "/../../private/config/config.php";
 
   // Set the Content Type
   header('Content-Type: application/javascript');
-  
-  function application_property($key, $default) {
-    global $config;
-    // Get Configuration Value
-    $value = array_key_exists($key, $config->application) ? $config->application[$key] : null;
-    
-    // Do we have a string value?
-    if(is_string($value)) { // YES: Trim it to see if it s empty?
-      $value = trim($value);
-      $value = count($value) ? $value : null;
-    } else { // NO: Ignore Value
-      $value = null;
-    }
-    
-    return isset($value) ? $value : $default;
-  }
 ?>
 
 // Does the Attach Point Exist?
@@ -33,11 +17,11 @@ if (!window.hasOwnProperty('testcenter')) { // NO: Create it
 } 
 
 testcenter.site = {
-  __server: <?php echo "'".application_property('serverUrl', 'null')."'" ?>,
-  __offset: <?php echo "'".application_property('baseUri', '/')."'" ?>,
-  __assets: <?php echo "'".application_property('baseAssets', 'null')."'" ?>,
-  __js: <?php echo "'".application_property('baseJS', '')."'" ?>,
-  __css: <?php echo "'".application_property('baseCSS', '')."'" ?>,
+  __server: <?php echo "'".$config->extract_string('application.site.url', 'null')."'" ?>,
+  __offset: <?php echo "'".$config->extract_string('application.site.offset')."'" ?>,
+  __assets: <?php echo "'".$config->extract_string('application.site.assets')."'" ?>,
+  __js: <?php echo "'".$config->extract_string('application.site.js')."'" ?>,
+  __css: <?php echo "'".$config->extract_string('application.site.css')."'" ?>,
   /**
    * Retrieve the Site's Base Relative or Complete URL
    * 

@@ -49,7 +49,7 @@ $di['view'] = function () use ($config) {
 /**
  * Shared Flag : Are we in degug mode
  */
-$di->setShared('debug',function () use ($config) {
+$di->setShared('debug', function () use ($config) {
   return key_exists('debug', $config->application) ? $config->application->debug : false;
 });
 
@@ -57,12 +57,17 @@ $di->setShared('debug',function () use ($config) {
  * Shared Service : The URL component is used to generate all kind of urls in the application
  */
 $di->setShared('url', function () use ($config) {
-  $url = new api\services\SiteURL($config->application->baseJS, $config->application->baseCSS, $config->application->baseAssets);
+  $url = new api\services\SiteURL(
+    $config->extract_string('application.site.js'),
+    $config->extract_string('application.site.css'), 
+    $config->extract_string('application.site.assets')
+  );
 
   // Try to Build a Base URI
-  $base = key_exists('serverUrl', $config->application) ? $config->application->serverUrl : null;
-  if (isset($base) && key_exists('baseUri', $config->application)) {
-    $base = ltrim($base . $config->application->baseUri);
+  $base = $config->extract_string('application.site.url');
+  $offset = $config->extract_string('application.site.offset');
+  if (isset($base) && isset($offset)) {
+    $base = ltrim($base . $offset);
   }
 
   // Do we have a base URI?
@@ -106,7 +111,7 @@ $di->setShared('pageManager', function () {
 });
 
 # Include Shared Configuration (if it exists)
-include __DIR__ . '/../../../shared/config/services.php';
+include PATH_SHARED . '/config/services.php';
 
 /*
  *  MUST BE THE LAST LINE IN THE FILE

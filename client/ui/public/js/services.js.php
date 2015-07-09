@@ -4,8 +4,8 @@
    * License http://opensource.org/licenses/AGPL-3.0 Affero GNU Public License v3.0
    */
 
-// Include the Normal Configuration File
-  $config = include __DIR__ . "/../../private/config/config.php";
+  // Include the Normal Configuration File
+  $config = require_once __DIR__ . "/../../private/config/config.php";
 
   // Set the Content Type
   header('Content-Type: application/javascript');
@@ -55,10 +55,9 @@
       return answer.hasOwnProperty('return') ? answer.return : null;
     }
   };
+  
   // Create Service Defaults
   var defaults = services.defaults = {
-    urlServer: 'http://10.193.0.201/',
-    urlOffset: 'services/',
     ajax: {
       // jQuery ajax success handler
       success: function (data, textStatus, jqXHR) {
@@ -159,6 +158,8 @@
   };
 
   var url = services.url = {
+    __server: <?php echo "'".$config->extract_string('application.services.url', 'null')."'" ?>,
+    __offset: <?php echo "'".$config->extract_string('application.services.offset')."'" ?>,
     /**
      * Retrieve the Site's Base Relative or Complete URL
      * 
@@ -167,11 +168,11 @@
      */
     base: function (relative) {
       relative = !!relative;
-      // Do we want a Relative URL?
-      if (relative) { // YES
-        return defaults.urlOffset !== null ? defaults.urlOffset : '/';
+      // Do we want a Relative URL (Always true if no server URL specified) ?
+      if (relative || (url.__server === null)) { // YES
+        return url.__offset;
       } else { // NO: Complete
-        return defaults.urlOffset !== null ? defaults.urlServer + defaults.urlOffset : defaults.urlServer;
+        return url.__server + url.__offset;
       }
     },
     /**

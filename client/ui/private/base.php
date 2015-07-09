@@ -1,7 +1,8 @@
 <?php
+
 /**
  * Test Center - Compliance Testing Application (Client UI)
- * Copyright (C) 2012-2015 Paulo Ferreira <pf at sourcenotes.org>
+ * Copyright (C) 2012 - 2015 Paulo Ferreira <pf at sourcenotes.org>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -16,17 +17,24 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 /*
  * @license http://opensource.org/licenses/AGPL-3.0 Affero GNU Public License v3.0
  * @copyright 2015 Paulo Ferreira
  * @author Paulo Ferreira <pf at sourcenotes.org>
  */
 
-// Load Config Extension
-require_once PATH_SHARED . '/common/config/Config.php';
+// DIRECTORY THAT CONTAINS THIS FILE
+define('PATH_BASE', __DIR__);
 
-$config['application']['debug'] = true;
+// **SERVER** ROOT DIRECTORY FOR THIS PROJECT
+define('PATH_ROOT', dirname(PATH_BASE));
 
-// Return Configuration Container
-return new \common\config\Config($config);
+// **SERVER** PRIVATE PATH
+define('PATH_PRIVATE', PATH_ROOT . DIRECTORY_SEPARATOR . 'private');
+
+// **SERVER** PUBLIC PATH
+define('PATH_PUBLIC', PATH_ROOT . DIRECTORY_SEPARATOR . 'public');
+
+// **SERVER** ROOT PATH FOR COMMON PROJECT
+define('PATH_SHARED', dirname(PATH_ROOT) . DIRECTORY_SEPARATOR . 'shared');
+
