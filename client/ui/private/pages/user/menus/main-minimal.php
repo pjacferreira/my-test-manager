@@ -17,10 +17,10 @@
     <h3><?php echo _("MENU:GROUP:US") ?></h3>
     <div class="pointing menu">
       <a name="contact" class="item" <?php $this->pageLink('institutional:contact', 'href') ?> >
-        <i class="mail icon"></i><?php echo _("MENU:US:CONTACT") ?>
+        <i class="mail icon"></i><?php echo _("MENU:ACTION:CONTACT") ?>
       </a>
       <a name="about" class="item" <?php $this->pageLink('institutional:about', 'href') ?> >
-        <i class="info circle icon"></i><?php echo _("MENU:US:ABOUT") ?>
+        <i class="info circle icon"></i><?php echo _("MENU:ACTION:ABOUT") ?>
       </a>
     </div>
   </div>
@@ -28,7 +28,7 @@
     <h3><?php echo _("MENU:GROUP:HELP") ?></h3>
     <div class="pointing menu">
       <a name="help" class="item" href=<?php echo "'" . $this->url->get('page/institutional:help') . "'" ?> >
-        <i class="help icon"></i><?php echo _("MENU:HELP:HELP") ?>
+        <i class="help icon"></i><?php echo _("MENU:ACTION:HELP") ?>
       </a>
     </div>
   </div>
