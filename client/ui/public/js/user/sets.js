@@ -465,7 +465,7 @@ function set_tests_to_nodes(response) {
         var node = $.extend(true, {}, defaults, {
           id: entity[response.__key],
           title: entity[response.__display],
-          description: entity['description']
+          html: entity['description']
         });
         nodes.push(node);
       });
@@ -474,7 +474,7 @@ function set_tests_to_nodes(response) {
       var node = $.extend(true, {}, defaults, {
         id: response[response.__key],
         title: response[response.__display],
-        description: response['description']
+        html: response['description']
       });
       nodes.push(node);
       break;

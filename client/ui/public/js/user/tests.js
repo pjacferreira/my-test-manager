@@ -71,7 +71,7 @@ function onFolderSelected(event, id) {
 }
 
 function onTestSelected(event, node) {
-  console.info('selected-node [%d:$s]', node.id, node.text);
+  console.info('selected-node [%d:%s]', node.id, node.text);
   load_test(node.id);
 
   var $list = $('#list_steps');
@@ -300,6 +300,9 @@ function initialize_steps_list($list, test_id) {
   var $list = $('#list_steps');
   $list.data('test', test_id);
 
+  // Setup Initial Event Handler
+  $list.on('orderedlist.ready', onStepsReady);
+
   var settings = {
     callbacks: {
       loader: load_steps,
@@ -367,6 +370,66 @@ function steps_to_nodes(response) {
       console.log('Invalid Response');
   }
   return nodes;
+}
+
+/* ORDERED LIST EVENT HANDLERs */
+function onStepsReady(event) {
+  // Event is Called in the Context of the List Container
+  var $list = $(this);
+
+  // Attach Event Listeners
+  $list.on('orderedlist.destroyed', onListDestroyed);
+  $list.on('orderedlist.loaded', onStepsLoaded);
+  $list.on('orderedlist.clear', onStepsRemoved);
+  $list.on('orderedlist.node.added', onStepAdded);
+  $list.on('orderedlist.node.removed', onStepRemoved);
+
+  // Add Handler To the Ordered List so that we can add a 1st Step on New Tests
+  $list.find('#button_first_step').click(function () {
+    var $form = $('#form_create_step');
+    $form.data('list', $list);
+    form_show($form);
+  });
+}
+
+/* MASS STEPS FUNCTION */
+function onListDestroyed(event) {
+  // Make Sure the 1st Step Button is Hidden
+  $(this).find('#button_first_step').addClass('hidden');
+}
+
+function onStepsLoaded(event) {
+  // Event is Called in the Context of the List Container
+  var $list = $(this);
+
+  // Does the Test have any Steps?
+  var steps = $list.orderedlist('node.count');
+  if (steps === 0) { // NO: Display 1st Step Button
+    $list.find('#button_first_step').removeClass('hidden');
+  } else { // YES
+    $list.find('#button_first_step').addClass('hidden');
+  }
+}
+
+function onStepsRemoved(event) {
+  // Make Sure the 1st Step Button is Visible
+  $(this).find('#button_first_step').removeClass('hidden');
+}
+
+/* SINGLE STEP EVENTS */
+function onStepAdded(event) {
+  // Make Sure the 1st Step Button is Hidden
+  $(this).find('#button_first_step').addClass('hidden');
+}
+
+function onStepRemoved(event) {
+  var $list = $(this);
+
+  // Does the Test Still Have any Steps?
+  var steps = $list.orderedlist('node.count');
+  if (steps === 0) { // NO: Add 1st Step Button
+    $list.find('#button_first_step').removeClass('hidden');
+  }
 }
 
 /* ORDERED LIST ACTION HANDLER */
@@ -463,7 +526,10 @@ function load_test(id) {
     call_ok: function (test) {
       // Save the Test Data Information with the Form
       form_load($form, test, 'test');
+
+      // Tag the Forms with the Test Information
       $form.data('test', test);
+      $('#form_create_step').data('test', test);
     },
     call_nok: function (code, message) {
       form_disable($form, message);
@@ -932,8 +998,9 @@ function __do_create_step() {
     service = ['step', 'create', 'after'];
     params = [after.test, after.id, values['step:title']];
   } else {
+    var test = $form.data('test');
     service = ['step', 'create'];
-    params = [after.test, values['step:title']];
+    params = [test.id, values['step:title']];
   }
 
   // Call Service to Create the Step

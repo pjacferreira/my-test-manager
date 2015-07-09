@@ -808,7 +808,7 @@ function tests_to_cards(response) {
         var node = $.extend(true, {}, defaults, {
           id: entity[response.__key],
           title: entity[response.__display],
-          description: entity['description']
+          html: entity['description']
         });
         nodes.push(node);
       });
@@ -817,7 +817,7 @@ function tests_to_cards(response) {
       var node = $.extend(true, {}, defaults, {
         id: response[response.__key],
         title: response[response.__display],
-        description: response['description']
+        html: response['description']
       });
       nodes.push(node);
       break;
@@ -905,7 +905,7 @@ function steps_to_cards(response) {
           id: entity[response.__key],
           test: entity['test'],
           title: entity[response.__display],
-          description: entity['description']
+          html: entity['description']
         });
         nodes.push(node);
       });
@@ -915,7 +915,7 @@ function steps_to_cards(response) {
         id: response[response.__key],
         test: response['test'],
         title: response[response.__display],
-        description: response['description']
+        html: response['description']
       });
       nodes.push(node);
       break;
