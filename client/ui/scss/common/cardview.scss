@@ -1,0 +1,33 @@
+/* 
+ * Copyright 2015 Paulo Ferreira <pf at sourcenotes.org>
+ * License http://opensource.org/licenses/AGPL-3.0 Affero GNU Public License v3.0
+ */
+@import "compass/css3/box-shadow";
+
+/* CARDVIEW Namespace */
+.cardview {  
+  /* SEMANTIC-UI CARD Namespace */
+  &.ui.card {
+    width: auto;
+    
+    .content .description { 
+      display: none;
+    }
+
+    &:hover {
+      @include box-shadow(0px 0px 0px 2px #a4a4b5, 4px 4px 0px 0px #a4a4a5);
+    }
+
+    &.current {
+      @include box-shadow(0px 4px 0px 0px #949495, 0px 0px 0px 2px #9494a5);
+
+      &:hover {
+        @include box-shadow(0px 0px 0px 2px #848485, 4px 4px 0px 0px #848485);
+      }  
+      
+      & .content .description {
+        display: block;
+      }
+    }
+  }
+}
