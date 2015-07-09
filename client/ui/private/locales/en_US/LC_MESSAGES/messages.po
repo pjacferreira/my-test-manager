@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: testcenter-site\n"
 "POT-Creation-Date: 2015-02-03 12:28+0100\n"
-"PO-Revision-Date: 2015-07-04 21:25+0100\n"
+"PO-Revision-Date: 2015-07-08 17:44+0100\n"
 "Last-Translator: Paulo Ferreira <pf@sourcenotes.org>\n"
 "Language-Team: TESTCENTER <test>\n"
 "MIME-Version: 1.0\n"
@@ -14,17 +14,104 @@ msgstr ""
 "Language: en_US\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 
+msgid "BUTTON:CREATE"
+msgstr "Create"
+
+msgid "BUTTON:CANCEL"
+msgstr "Cancel"
+
+msgid "BUTTON:DELETE"
+msgstr "Delete"
+
 msgid "BUTTON:LOGIN"
 msgstr "Login"
 
 msgid "BUTTON:RCVPWD"
 msgstr "Recover Password"
 
-msgid "FIELD:PLACEHOLDER:USERNAME"
-msgstr "User"
+msgid "BUTTON:RENAME"
+msgstr "Rename"
+
+msgid "BUTTON:UPDATE"
+msgstr "Update"
+
+msgid "FIELD:GROUP:TEST:DETAILS"
+msgstr "Details"
+
+msgid "FIELD:GROUP:SET:DETAILS"
+msgstr "Details"
+
+msgid "FIELD:PLACEHOLDER:FOLDER:NAME"
+msgstr "Name..."
+
+msgid "FIELD:PLACEHOLDER:FOLDER:NEW-NAME"
+msgstr "New Name..."
 
 msgid "FIELD:PLACEHOLDER:PASSWORD"
-msgstr "Password"
+msgstr "Password..."
+
+msgid "FIELD:PLACEHOLDER:SET:DESCRIPTION"
+msgstr "Description..."
+
+msgid "FIELD:PLACEHOLDER:SET:NAME"
+msgstr "Name..."
+
+msgid "FIELD:PLACEHOLDER:STEP:DESCRIPTION"
+msgstr "Description..."
+
+msgid "FIELD:PLACEHOLDER:STEP:NAME"
+msgstr "Name..."
+
+msgid "FIELD:PLACEHOLDER:TEST:DESCRIPTION"
+msgstr "Description..."
+
+msgid "FIELD:PLACEHOLDER:TEST:NAME"
+msgstr "Name..."
+
+msgid "FIELD:PLACEHOLDER:USERNAME"
+msgstr "User..."
+
+msgid "FIELD:TITLE:SET:DESCRIPTION"
+msgstr "Set Description"
+
+msgid "FIELD:TITLE:SET:NAME"
+msgstr "Set Name"
+
+msgid "FIELD:TITLE:STEP:DESCRIPTION"
+msgstr "Step Description"
+
+msgid "FIELD:TITLE:TEST:DESCRIPTION"
+msgstr "Test Description"
+
+msgid "FIELD:TITLE:TEST:NAME"
+msgstr "Test Name"
+
+msgid "FORM:TITLE:FOLDER:CREATE"
+msgstr "Create New Folder"
+
+msgid "FORM:TITLE:FOLDER:DELETE"
+msgstr "Delete Folder"
+
+msgid "FORM:TITLE:FOLDER:RENAME"
+msgstr "Rename Folder"
+
+msgid "FORM:TITLE:SET:CREATE"
+msgstr "Create New Test Set"
+
+msgid "FORM:TITLE:STEP:EDIT"
+msgstr "Edit Step"
+
+msgid "FORM:TITLE:STEP:CREATE"
+msgstr "Create New Test Step"
+
+msgid "FORM:TITLE:TEST:CREATE"
+msgstr "Create New Test"
+
+msgid "LABEL:USER:CHOOSE"
+msgstr "Choose"
+
+msgid "LANDING:BODY:CLICK"
+msgstr "Click me!"
 
 msgid "MENU:GROUP:ACTIONS"
 msgstr "Actions"
@@ -32,17 +119,80 @@ msgstr "Actions"
 msgid "MENU:GROUP:HELP"
 msgstr "Help"
 
+msgid "MENU:GROUP:LOGOUT"
+msgstr "Logout"
+
+msgid "MENU:GROUP:US"
+msgstr "Us"
+
+msgid "MENU:GROUP:YOUR"
+msgstr "Your"
+
+msgid "MENU:ACTION:ABOUT"
+msgstr "About"
+
+msgid "MENU:ACTION:CONTACT"
+msgstr "Contact"
+
+msgid "MENU:ACTION:HELP"
+msgstr "Help"
+
+msgid "MENU:ACTION:HOME"
+msgstr "Home"
+
+msgid "MENU:ACTION:INTRODUCTION"
+msgstr "Introduction"
+
 msgid "MENU:ACTION:LOGIN"
 msgstr "Login"
 
-msgid "MENU:HELP:INTRODUCTION"
-msgstr "Introduction"
+msgid "MENU:ACTION:LOGOUT"
+msgstr "Logout"
 
-msgid "MENU:HELP:HELP"
-msgstr "Help"
+msgid "MENU:ACTION:PLAYER"
+msgstr "Player"
 
-msgid "LANDING:BODY:CLICK"
-msgstr "Click me!"
+msgid "MENU:ACTION:PROFILE"
+msgstr "Profile"
+
+msgid "MENU:ACTION:RUNS"
+msgstr "Runs"
+
+msgid "MENU:ACTION:SETS"
+msgstr "Sets"
+
+msgid "MENU:ACTION:TESTS"
+msgstr "Tests"
+
+msgid "NAVIGATOR:PANE:FOLDERS"
+msgstr "Folders"
+
+msgid "NAVIGATOR:PANE:SETS"
+msgstr "Test Sets"
+
+msgid "NAVIGATOR:PANE:TESTS"
+msgstr "Tests"
 
 msgid "PAGE:TITLE:LANDING:HOME"
 msgstr "Your Online Test Manager"
+
+msgid "PAGE:SECTION:SET:DETAILS"
+msgstr "Test Set Information"
+
+msgid "PAGE:SECTION:SET:NAVIGATOR"
+msgstr "Test Sets Navigator"
+
+msgid "PAGE:SECTION:TEST:DETAILS"
+msgstr "Test Information"
+
+msgid "PAGE:SECTION:TEST:NAVIGATOR"
+msgstr "Tests Navigator"
+
+msgid "PAGE:SECTION:TEST:STEPS"
+msgstr "Test Steps"
+
+msgid "PLACEHOLDER:ORGANIZATION"
+msgstr "Organization"
+
+msgid "PLACEHOLDER:PROJECT"
+msgstr "Project"
