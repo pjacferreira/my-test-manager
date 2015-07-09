@@ -54,9 +54,16 @@ class Strings {
    */
   public static function defaultOnEmpty($string, $default) {
     $string = self::nullOnEmpty($string);
-    return $string === null ? $default : null;
+    return $string === null ? $default : $string;
   }
 
+  /**
+   * Varifies if the string starts with the given string.
+   * 
+   * @param type $haystack String being checked
+   * @param type $needle Value to Check for
+   * @return boolean 'true' if haystack starts with the needle, 'false' otherwise
+   */
   public static function startsWith($haystack, $needle) {
     if (!isset($needle) || !is_string($needle) || ($needle === '')) {
       return true;
