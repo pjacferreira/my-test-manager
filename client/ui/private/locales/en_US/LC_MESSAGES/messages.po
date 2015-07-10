@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: testcenter-site\n"
 "POT-Creation-Date: 2015-02-03 12:28+0100\n"
-"PO-Revision-Date: 2015-07-08 17:44+0100\n"
+"PO-Revision-Date: 2015-07-10 09:43+0100\n"
 "Last-Translator: Paulo Ferreira <pf@sourcenotes.org>\n"
 "Language-Team: TESTCENTER <test>\n"
 "MIME-Version: 1.0\n"
@@ -50,6 +50,12 @@ msgstr "New Name..."
 msgid "FIELD:PLACEHOLDER:PASSWORD"
 msgstr "Password..."
 
+msgid "FIELD:PLACEHOLDER:RUN:DESCRIPTION"
+msgstr "Description..."
+
+msgid "FIELD:PLACEHOLDER:RUN:NAME"
+msgstr "Name..."
+
 msgid "FIELD:PLACEHOLDER:SET:DESCRIPTION"
 msgstr "Description..."
 
@@ -70,6 +76,12 @@ msgstr "Name..."
 
 msgid "FIELD:PLACEHOLDER:USERNAME"
 msgstr "User..."
+
+msgid "FIELD:TITLE:RUN:DESCRIPTION"
+msgstr "Run Description"
+
+msgid "FIELD:TITLE:RUN:NAME"
+msgstr "Run Name"
 
 msgid "FIELD:TITLE:SET:DESCRIPTION"
 msgstr "Set Description"
@@ -95,6 +107,9 @@ msgstr "Delete Folder"
 msgid "FORM:TITLE:FOLDER:RENAME"
 msgstr "Rename Folder"
 
+msgid "FORM:TITLE:RUN:CREATE"
+msgstr "Create New Run"
+
 msgid "FORM:TITLE:SET:CREATE"
 msgstr "Create New Test Set"
 
@@ -106,6 +121,9 @@ msgstr "Create New Test Step"
 
 msgid "FORM:TITLE:TEST:CREATE"
 msgstr "Create New Test"
+
+msgid "HELPER:CLASS:OR"
+msgstr "or"
 
 msgid "LABEL:USER:CHOOSE"
 msgstr "Choose"
@@ -167,14 +185,50 @@ msgstr "Tests"
 msgid "NAVIGATOR:PANE:FOLDERS"
 msgstr "Folders"
 
+msgid "NAVIGATOR:PANE:RUNS"
+msgstr "Runs"
+
 msgid "NAVIGATOR:PANE:SETS"
-msgstr "Test Sets"
+msgstr "Sets"
 
 msgid "NAVIGATOR:PANE:TESTS"
 msgstr "Tests"
 
+msgid "PAGE:TITLE:INSTITUTIONAL:INTRO"
+msgstr "TestCenter - Introduction"
+
+msgid "PAGE:TITLE:INSTITUTIONAL:HELP"
+msgstr "TestCenter - Help"
+
 msgid "PAGE:TITLE:LANDING:HOME"
-msgstr "Your Online Test Manager"
+msgstr "TestCenter - Your Online Test Manager"
+
+msgid "PAGE:TITLE:USER:HOME"
+msgstr "TestCenter - Home"
+
+msgid "PAGE:TITLE:USER:PLAYER"
+msgstr "TestCenter - Runs Player"
+
+msgid "PAGE:TITLE:USER:PROFILE"
+msgstr "TestCenter - Your Profile"
+
+msgid "PAGE:TITLE:USER:RECOVER"
+msgstr "TestCenter - Password Recovery"
+
+msgid "PAGE:TITLE:USER:RUNS"
+msgstr "TestCenter - Runs Manager"
+
+msgid "PAGE:TITLE:USER:SETS"
+msgstr "TestCenter - Sets Manager"
+
+msgid "PAGE:TITLE:USER:TESTS"
+msgstr "TestCenter - Tests Manager"
+
+msgid "PAGE:SECTION:RUN:DETAILS"
+msgstr "Run Information"
+
+msgid "PAGE:SECTION:RUNS:NAVIGATOR"
+msgstr "Runs Navigator"
 
 msgid "PAGE:SECTION:SET:DETAILS"
 msgstr "Test Set Information"
@@ -196,3 +250,6 @@ msgstr "Organization"
 
 msgid "PLACEHOLDER:PROJECT"
 msgstr "Project"
+
+msgid "TEXT:QUESTION:FOLDER:DELETE:CONFIRMATION"
+msgstr "Do you REALLY want to delete this folder?"

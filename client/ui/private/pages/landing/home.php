@@ -15,7 +15,7 @@
   </div>
   <div class="ui buttons">
     <div id="button_login" class="ui positive button"><?php echo _("BUTTON:LOGIN") ?></div>
-    <div class="or"></div>
+    <div class="<?php echo _("HELPER:CLASS:OR") ?>"></div>
     <div id="button_recover" class="ui button"><?php echo _("BUTTON:RCVPWD") ?></div>
   </div>
   <div class="ui error message"></div>

@@ -13,7 +13,7 @@
   </div>
   <div class="ui buttons">
     <div id="button_create_folder" class="ui positive button"><?php echo _("BUTTON:CREATE") ?></div>
-    <div class="or"></div>
+    <div class="<?php echo _("HELPER:CLASS:OR") ?>"></div>
     <div id="button_cancel" class="ui negative button"><?php echo _("BUTTON:CANCEL") ?></div>
   </div>
   <div class="ui error message"></div>
@@ -26,7 +26,7 @@
   </div>
   <div class="ui buttons">
     <div id="button_rename_folder" class="ui positive button"><?php echo _("BUTTON:RENAME") ?></div>
-    <div class="or"></div>
+    <div class="<?php echo _("HELPER:CLASS:OR") ?>"></div>
     <div id="button_cancel" class="ui negative button"><?php echo _("BUTTON:CANCEL") ?></div>
   </div>
   <div class="ui error message"></div>
@@ -39,7 +39,7 @@
   </div>
   <div class="ui buttons">
     <div id="button_delete_folder" class="ui negative button"><?php echo _("BUTTON:DELETE") ?></div>
-    <div class="or"></div>
+    <div class="<?php echo _("HELPER:CLASS:OR") ?>"></div>
     <div id="button_cancel" class="ui positive button"><?php echo _("BUTTON:CANCEL") ?></div>
   </div>
   <div class="ui error message"></div>
@@ -52,7 +52,7 @@
   </div>
   <div class="ui buttons">
     <div id="button_create_set" class="ui positive button"><?php echo _("BUTTON:CREATE") ?></div>
-    <div class="or"></div>
+    <div class="<?php echo _("HELPER:CLASS:OR") ?>"></div>
     <div id="button_cancel" class="ui negative button"><?php echo _("BUTTON:CANCEL") ?></div>
   </div>
   <div class="ui error message"></div>
