@@ -86,7 +86,7 @@
 
   function __create_row(settings) {
     return $('<div>', {
-      class: $.objects.get('classes.row', settings, 'centered row')
+      class: $.objects.get('classes.row', settings, 'row')
     });
   }
 
@@ -153,7 +153,7 @@
       if (($icon !== null) || ($display !== null)) {
         $element = $('<div/>', {
           id: id,
-          class: __property_to_string(node, 'class', $.objects.get('classes.node', settings, 'aligned column'))
+          class: __property_to_string(node, 'class', $.objects.get('classes.node', settings, 'column'))
         });
 
         if ($icon) {
