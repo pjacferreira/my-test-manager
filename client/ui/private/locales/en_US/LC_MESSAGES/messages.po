@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: testcenter-site\n"
 "POT-Creation-Date: 2015-02-03 12:28+0100\n"
-"PO-Revision-Date: 2015-07-10 09:43+0100\n"
+"PO-Revision-Date: 2015-07-10 10:37+0100\n"
 "Last-Translator: Paulo Ferreira <pf@sourcenotes.org>\n"
 "Language-Team: TESTCENTER <test>\n"
 "MIME-Version: 1.0\n"
@@ -32,6 +32,9 @@ msgstr "Recover Password"
 msgid "BUTTON:RENAME"
 msgstr "Rename"
 
+msgid "BUTTON:STEP:PASS"
+msgstr "Pass"
+
 msgid "BUTTON:UPDATE"
 msgstr "Update"
 
@@ -49,6 +52,12 @@ msgstr "New Name..."
 
 msgid "FIELD:PLACEHOLDER:PASSWORD"
 msgstr "Password..."
+
+msgid "FIELD:PLACEHOLDER:PASS:CODE"
+msgstr "Code..."
+
+msgid "FIELD:PLACEHOLDER:PASS:COMMENT"
+msgstr "Comment..."
 
 msgid "FIELD:PLACEHOLDER:RUN:DESCRIPTION"
 msgstr "Description..."
@@ -106,6 +115,9 @@ msgstr "Delete Folder"
 
 msgid "FORM:TITLE:FOLDER:RENAME"
 msgstr "Rename Folder"
+
+msgid "FORM:TITLE:PASS:STEP"
+msgstr "Step Passed?"
 
 msgid "FORM:TITLE:RUN:CREATE"
 msgstr "Create New Run"
@@ -223,6 +235,15 @@ msgstr "TestCenter - Sets Manager"
 
 msgid "PAGE:TITLE:USER:TESTS"
 msgstr "TestCenter - Tests Manager"
+
+msgid "PAGE:SECTION:PLAYER:DETAILS"
+msgstr "Run Player"
+
+msgid "PAGE:SECTION:PLAYER:TESTS"
+msgstr "Tests List"
+
+msgid "PAGE:SECTION:PLAYER:STEPS"
+msgstr "Steps List"
 
 msgid "PAGE:SECTION:RUN:DETAILS"
 msgstr "Run Information"
