@@ -134,7 +134,7 @@ default:
       cache: true
       i18n: true
     libraries:
-      google-tag:
+      google-analytics:
         js:
           scripts:
             head: |
@@ -256,10 +256,9 @@ default:
         js: 'common/tc.cardview.js'
         required: ['jquery.utils.js']
       medium-editor: 
-        css: ['medium-editor/medium-editor.min.css', 'medium-editor/themes/default.min.css']
+        css: ['medium-editor/medium-editor.css', 'medium-editor/themes/default.css']
         js: 'vendor/medium-editor.min.js'
         debug:
-          css: ['medium-editor/medium-editor.css', 'medium-editor/themes/default.css']
           js: 'vendor/medium-editor.js'
     content:
       copyright: 'Copyright &copy; 2012-2015 TESTCENTER All Rights Reserved'

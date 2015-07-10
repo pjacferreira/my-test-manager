@@ -32,7 +32,9 @@ landing:
     group: landing
     page: 'page.php'
     includes:
-      head: 'landing/head.php'
+      head: 
+        file: 'landing/head.php'
+#        required: 'google-analytics'
       body: 'landing/body.php'
     css:
       styles:

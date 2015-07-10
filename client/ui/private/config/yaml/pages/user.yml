@@ -31,7 +31,9 @@ user:
     template: true
     page: 'page.php'
     includes:
-      head: 'head.php'
+      head:
+        file: 'head.php'
+#        required: 'google-analytics'
       body: 'no-menu.php'
       header:
         file: 'user/partials/header.php'
