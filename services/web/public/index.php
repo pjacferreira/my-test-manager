@@ -24,7 +24,7 @@
  */
 
 // LOAD BASE FILE
-require_once '../private/base/base.php';
+require_once '../private/base.php';
 
 error_reporting(E_ALL);
 
