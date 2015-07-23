@@ -412,7 +412,7 @@ class PlayerController extends EntityServiceController {
    * @param integer $code [OPTIONAL: Project Default will be used] Run's Pass/Fail Code
    * @return string HTTP Body Response
    */
-  public function stepPass($run, $code = null) {
+  public function stepPass($run, $code = 1) {
     // Create Action Context
     $context = new ActionContext('step_pass');
 
@@ -433,7 +433,7 @@ class PlayerController extends EntityServiceController {
    * @param integer $code [OPTIONAL: Project Default will be used] Run's Pass/Fail Code
    * @return string HTTP Body Response
    */
-  public function stepFail($run, $code = null) {
+  public function stepFail($run, $code = 2) {
     // Create Action Context
     $context = new ActionContext('step_fail');
 
@@ -441,6 +441,25 @@ class PlayerController extends EntityServiceController {
     $context = $context
       ->setRequiredInteger('run:id', $run)
       ->setOptionalInteger('player:run_code', $code);
+
+    // Call Action
+    return $this->doAction($context);
+  }
+
+  /**
+   * Add/Remove Comment from Current Step for the given run.
+   * 
+   * @param integer $run Run's Unique Identifier
+   * @return string HTTP Body Response
+   */
+  public function stepComment($run) {
+    // Create Action Context
+    $context = new ActionContext('step_comment');
+
+    // Extract Clean (Security) URL Parameters (Overwriting with route parameters where necessary)
+    $context = $context
+      ->setRequiredInteger('run:id', $run)
+      ->setOptionalString('player:comment', $this->request->getPost('comment'));
 
     // Call Action
     return $this->doAction($context);
@@ -1032,18 +1051,14 @@ class PlayerController extends EntityServiceController {
 
     // Does the Step Already Have a Comment?
     if (isset($ple->comment)) { // YES
-      if (isset($comment)) {
-        if (count($comment) > 0) {
-          $ple->comment = $comment;
-        } else {
-          $comment = null;
-        }
-        $flush = true;
-      }
+      // Set or Clear the Current Comment
+      $ple->comment = isset($comment) && count($comment) ? $comment : null;
+      $flush = true;
     } else { // NO
       // Do we want to add a comment?
       if (isset($comment) && count($comment) > 0) { // YES
         $ple->comment = $comment;
+        $flush = true;
       }
     }
 
@@ -1084,14 +1099,46 @@ class PlayerController extends EntityServiceController {
 
     // Does the Step Already Have a Comment?
     if (isset($ple->comment)) { // YES
-      if (isset($comment)) {
-        if (count($comment) > 0) {
-          $ple->comment = $comment;
-        } else {
-          $comment = null;
-        }
+      // Set or Clear the Current Comment
+      $ple->comment = isset($comment) && count($comment) ? $comment : null;
+      $flush = true;
+    } else { // NO
+      // Do we want to add a comment?
+      if (isset($comment) && count($comment) > 0) { // YES
+        $ple->comment = $comment;
         $flush = true;
       }
+    }
+
+    // Do we need to Modify the PLE?
+    if ($flush) { // YES
+      $this->setModifier($ple, $context->getParameter('user'));
+      $this->_persist($ple);
+    }
+
+    return $ple;
+  }
+
+  /**
+   * Mark the Current Play Entry as Failed.
+   * 
+   * @param \api\controller\ActionContext $context Context for Action
+   * @return  \models\PlayEntry New Current PlayEntry
+   * @throws \Exception On failure to perform the action
+   */
+  protected function doStepCommentAction($context) {
+    // Get Required Action Parameters
+    $ple = $context->getParameter('ple');
+    $comment = $context->getParameter('player:comment');
+
+    // Are we modifying the Run Code for the Step?
+    $flush = false;
+
+    // Does the Step Already Have a Comment?
+    if (isset($ple->comment)) { // YES
+      // Set or Clear the Current Comment
+      $ple->comment = isset($comment) && count($comment) ? $comment : null;
+      $flush = true;
     } else { // NO
       // Do we want to add a comment?
       if (isset($comment) && count($comment) > 0) { // YES
@@ -1397,20 +1444,13 @@ class PlayerController extends EntityServiceController {
 
       return $context;
     }, null, '*');
-    /*
-      [
-      'Open', 'Close',
-      'TestFirst', 'TestPrevious', 'TestNext', 'TestLast',
-      'StepFirst', 'StepPrevious', 'StepNext', 'StepLast',
-      'CurrentTest', 'CurrentStep', 'StepPass', 'StepFail'
-      ]);
-     */
 
+    // Get the Current Play Entry for the Given Run 
     $context = $this->onActionDo($context, [
       'TestFirst', 'TestPrevious', 'TestNext', 'TestLast',
       'TestStepFirst', 'TestStepPrevious', 'TestStepNext', 'TestStepLast',
       'StepPrevious', 'StepNext',
-      'CurrentTest', 'CurrentStep', 'StepPass', 'StepFail'
+      'CurrentTest', 'CurrentStep', 'StepPass', 'StepFail', 'StepComment'
       ], function($controller, $context, $action) {
       // Get Required Context Parameters
       $run = $context->getParameter('run');
@@ -1436,7 +1476,7 @@ class PlayerController extends EntityServiceController {
       // Get the Settings for the Session Project
       $settings = \models\ProjectSettings::findFirstByProject($project->id);
       if ($settings === FALSE) {
-        throw new \Exception("[SYSTEM ERROR] Project[{$project->id}] has an invalid current state.", 1);
+        throw new \Exception("[SYSTEM ERROR] Project[{$project->id}] does not have default settings.", 1);
       }
 
       // Save the Play Entry for the Action
@@ -1477,6 +1517,9 @@ class PlayerController extends EntityServiceController {
       case 'StepPrevious':
       case 'StepNext':
       case 'StepLast':
+      case 'StepPass':
+      case 'StepFail':
+      case 'StepComment':
       case 'Current':
       case 'CurrentTest':
       case 'CurrentStep':
