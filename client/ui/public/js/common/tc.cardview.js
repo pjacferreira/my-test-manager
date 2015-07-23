@@ -184,11 +184,15 @@
       var $card = $('<div>', {
         id: 'C' + card.id,
         class: __append_classes('ui card cardview', settings.classes.card)
-      });
+      }).data('id', card.id);
 
+      // Does the Card Have Extra Data to be set?
+      if(card.hasOwnProperty('data') && $.isset(card.data)) {
+        $card.data('cv.data', card.data);
+      }
+      
       return $card.append($contents).
-        data('cv.contents', $contents).
-        data('cv.data', card);
+        data('cv.contents', $contents);
     }
 
     return null;
@@ -514,7 +518,7 @@
     // Are we dealing with Card View?
     if (this.data('cv.settings')) { // YES
       return this.find('.card').filter(function (i, el) {
-        return $(this).data('cv.data').id === id;
+        return $(this).data('id') === id;
       });
     } // ELSE: NO
     throw "Not a Valid Card View";
