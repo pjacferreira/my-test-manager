@@ -300,11 +300,12 @@ CREATE TABLE IF NOT EXISTS `t_runs` (
 
 CREATE TABLE IF NOT EXISTS `t_playlists` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Play List Entry Unique ID',
-  `id_run` int(11) DEFAULT NULL COMMENT 'Play List''s Run',
+  `id_run` int(11)  NOT NULL COMMENT 'Play List''s Run',
   `sequence` int(11) NOT NULL COMMENT 'Play List Entry Sequence Number',
-  `id_test` int(11) DEFAULT NULL COMMENT 'Play List Entry Direct Link to Test',
-  `id_step` int(11) DEFAULT NULL COMMENT 'Play List Entry Direct Link to Test Step',
-  `run_code` int(11) DEFAULT NULL COMMENT 'Result Code for Run',
+  `id_test` int(11)  NOT NULL COMMENT 'Play List Entry Direct Link to Test',
+  `id_step` int(11)  NOT NULL COMMENT 'Play List Entry Direct Link to Test Step',
+  `run_code` int(11) NOT NULL DEFAULT 0 COMMENT 'Run State 0-Not Run, 1-Passed, 2-Failed',
+  `conditioned` boolean NOT NULL DEFAULT 0 COMMENT 'Pass/Fail with Conditions',
   `comment` longtext DEFAULT NULL COMMENT 'Entry Comment on Result of Run',
   `id_modifier` int(11) DEFAULT NULL COMMENT 'Last User to Run the Entry',
   `dt_modified` datetime DEFAULT NULL COMMENT 'Timestamp of Last Run',

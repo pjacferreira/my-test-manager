@@ -72,6 +72,12 @@ class PlayEntry extends \api\model\AbstractEntity {
 
   /**
    *
+   * @var boolean
+   */
+  public $conditioned;
+  
+  /**
+   *
    * @var string
    */
   public $comment;
@@ -106,6 +112,16 @@ class PlayEntry extends \api\model\AbstractEntity {
   }
 
   /**
+   * PHALCON per instance Contructor
+   */
+  public function onConstruct() {
+    // DEFAULT: Not Entry has not been Executed
+    $this->run_code=0;
+    // DEFAULT: No Special Execute Condition
+    $this->conditioned=0;
+  }
+  
+  /**
    * Define alternate table name for Play Lists
    * 
    * @return string Play Lists Table Name
@@ -127,6 +143,7 @@ class PlayEntry extends \api\model\AbstractEntity {
       'id_test' => 'test',
       'id_step' => 'step',
       'run_code' => 'run_code',
+      'conditioned' => 'conditioned',
       'comment' => 'comment',
       'id_modifier' => 'modifier',
       'dt_modified' => 'date_modified'
@@ -142,7 +159,8 @@ class PlayEntry extends \api\model\AbstractEntity {
     $this->sequence = (integer) $this->sequence;
     $this->test = (integer) $this->test;
     $this->step = (integer) $this->step;
-    $this->run_code = isset($this->run_code) ? (integer) $this->run_code : null;
+    $this->run_code = (integer) $this->run_code;
+    $this->conditioned = (integer) $this->conditioned;
     $this->modifier = isset($this->modifier) ? (integer) $this->modifier : null;
   }
 
