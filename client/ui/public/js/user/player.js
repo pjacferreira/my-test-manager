@@ -51,10 +51,10 @@ function initialize() {
   $steps.on('loaded.cardview', onStepsLoaded);
   $steps.on('set-current.cardview', onSetCurrentStep);
   $steps.on('pass.player', onStepsPass);
-  $steps.on('pass-comment.player', onStepsPassComment);
   $steps.on('next.player', onStepsNext);
   $steps.on('restart.player', onStepsRestart);
   $steps.on('previous.player', onStepsPrevious);
+  $steps.on('comment.player', onStepsComment);
   $steps.on('fail.player', onStepsFail);
 
   // Remove Loader
@@ -330,51 +330,17 @@ function onStepsPass(event) {
 
   // Display Loading Icon
   $cv.addClass('loading');
-  testcenter.services.call(['play', run.toString(), 'current', 'pass'], null, null, {
-    type: 'POST'
-  }).
-    then(function (entity) {
-      // Remove Loader
-      $cv.removeClass('loading');
-      console.log('Pass Step');
-
-      // TODO: With Successfull Pass (Move onto the Next Step)
-    }).
-    fail(function (code, message) {
-      // Remove Loader
-      $cv.removeClass('loading');
-      console.error('Failed to Mark Step as Passed');
-    });
-}
-
-function onStepsPassComment(event) {
-  var $cv = $(this);
-
-  // Get the Run for the Current Run ID
-  var run = $cv.data('player').data('run.id');
-
-  var $form = $('#form_step_complete');
-  $form.data('pass_mode',true);
-  form_show($form);
-  /*
-   // Display Loading Icon
-   $cv.addClass('loading');
-   testcenter.services.call(['play', run.toString(), 'current', 'pass'], pass_code, post_values, {
-   type: 'POST'
-   }).
-   then(function (entity) {
-   // Remove Loader
-   $cv.removeClass('loading');
-   console.log('Pass Step with Comment');
-   
-   // TODO: With Successfull Pass (Move onto the Next Step)
-   }).
-   fail(function (code, message) {
-   // Remove Loader
-   $cv.removeClass('loading');
-   console.error('Failed to Mark Step as Passed');
-   });
-   */
+  testcenter.services.call(['play', run.toString(), 'current', 'pass']
+    ).then(function (entity) {
+    // Remove Loader
+    $cv.removeClass('loading');
+    console.log('Pass Step');
+    // TODO: With Successfull Pass (Move onto the Next Step)
+  }).fail(function (code, message) {
+    // Remove Loader
+    $cv.removeClass('loading');
+    console.error('Failed to Mark Step as Passed');
+  });
 }
 
 function onStepsRestart(event) {
@@ -490,35 +456,40 @@ function onStepsNext(event) {
   }
 }
 
+function onStepsComment(event) {
+  var $cv = $(this);
+
+  // Comment Form
+  var $form = $('#form_step_comment');
+
+  // Get Data Parameters for Form
+  var run = $cv.data('player').data('run.id');
+  var step = $cv.cardview('card.data', $cv.cardview('card.current.get'));
+
+  // Set Form Parameters
+  $form.data('run', run);
+  $form.data('step', step);
+  form_show($form);
+}
+
 function onStepsFail(event) {
   var $cv = $(this);
 
-  // Get the Run for the Current Run ID
+  // Get the Run for the Current Player
   var run = $cv.data('player').data('run.id');
 
-  var $form = $('#form_step_complete');
-  $form.data('pass_mode',false);
-  form_show($form);
-  
-/*
   // Display Loading Icon
   $cv.addClass('loading');
-  testcenter.services.call(['play', run.toString(), 'step', 'current', 'fail'], fail_code, post_values, {
-    type: 'POST'
-  }).
-    then(function (entity) {
-      // Remove Loader
-      $cv.removeClass('loading');
-      console.log('Fail Step with Comment');
-
-      // TODO: With Fail, Allow for Terminating Run with Same Code/Comment
-    }).
-    fail(function (code, message) {
-      // Remove Loader
-      $cv.removeClass('loading');
-      console.error('Failed to Mark Step as Passed');
-    });
-*/  
+  testcenter.services.call(['play', run.toString(), 'current', 'fail']
+    ).then(function (entity) {
+    // Remove Loader
+    $cv.removeClass('loading');
+    console.log('Fail Step');
+  }).fail(function (code, message) {
+    // Remove Loader
+    $cv.removeClass('loading');
+    console.error('Failed to Mark Step as Failed');
+  });
 }
 
 function _changeCurrentCard($cardview, $current, $new) {
@@ -808,7 +779,8 @@ function tests_to_cards(response) {
         var node = $.extend(true, {}, defaults, {
           id: entity[response.__key],
           title: entity[response.__display],
-          html: entity['description']
+          html: entity['description'],
+          data: entity
         });
         nodes.push(node);
       });
@@ -817,7 +789,8 @@ function tests_to_cards(response) {
       var node = $.extend(true, {}, defaults, {
         id: response[response.__key],
         title: response[response.__display],
-        html: response['description']
+        html: response['description'],
+        data: response
       });
       nodes.push(node);
       break;
@@ -843,16 +816,6 @@ function initialize_player_steps_view($player, selector) {
   $cv.data('player', $player);
 
   // Create Buttons
-  var $pass_no_comment = $('<i class="large green thumbs outline up icon"></i>').click(
-    function (event) {
-      $cv.trigger('pass.player');
-      return false;
-    });
-  var $pass_comment = $('<i class="large green thumbs up icon"></i>').click(
-    function (event) {
-      $cv.trigger('pass-comment.player');
-      return false;
-    });
   var $restart = $('<i class="angle double up large icon"></i>').click(
     function (event) {
       $cv.trigger('restart.player');
@@ -868,16 +831,26 @@ function initialize_player_steps_view($player, selector) {
       $cv.trigger('next.player');
       return false;
     });
-  var $fail_comment = $('<i class="thumbs down large red icon"></i>').click(
+  var $pass = $('<i class="large green thumbs up icon"></i>').click(
+    function (event) {
+      $cv.trigger('pass.player');
+      return false;
+    });
+  var $comment = $('<i class="large black comment icon"></i>').click(
+    function (event) {
+      $cv.trigger('comment.player');
+      return false;
+    });
+  var $fail = $('<i class="thumbs down large red icon"></i>').click(
     function (event) {
       $cv.trigger('fail.player');
       return false;
     });
 
   // Create Button Bar
-  var $left = $('<div class="column"></div>').append($pass_no_comment).append($pass_comment);
+  var $left = $('<div class="column"></div>');
   var $middle = $('<div class="center aligned column"></div>').append($next).append($restart).append($previous);
-  var $right = $('<div class="right aligned column"></div>').append($fail_comment);
+  var $right = $('<div class="right aligned column"></div>').append($pass).append($comment).append($fail);
 
   var $button_bar = $('<div class="ui three column grid">').append($left).append($middle).append($right);
 
@@ -904,8 +877,9 @@ function steps_to_cards(response) {
         var node = $.extend(true, {}, defaults, {
           id: entity[response.__key],
           test: entity['test'],
-          title: entity[response.__display],
-          html: entity['description']
+//          title: entity[response.__display],
+          html: entity['description'],
+          data: entity
         });
         nodes.push(node);
       });
@@ -914,8 +888,9 @@ function steps_to_cards(response) {
       var node = $.extend(true, {}, defaults, {
         id: response[response.__key],
         test: response['test'],
-        title: response[response.__display],
-        html: response['description']
+//        title: response[response.__display],
+        html: response['description'],
+        data: response
       });
       nodes.push(node);
       break;
@@ -926,7 +901,7 @@ function steps_to_cards(response) {
 }
 
 /*******************************
- * FORM STEP PASS
+ * FORM STEP COMMENT
  *******************************/
 
 /**
@@ -934,7 +909,7 @@ function steps_to_cards(response) {
  * @param {type} event
  * @returns {undefined}
  */
-function __button_step_pass(event) {
+function __button_submit_comment(event) {
   // Form jQuery Object is Store in the Event Data
   var $form = event.data;
   /* Load the Node if Not Already Loaded.
@@ -942,69 +917,53 @@ function __button_step_pass(event) {
    * Beacuse if we add a child node to a node, that hasn't been loaded,
    * FancyTree will assume the node is loaded, and no the ajax request to load.
    */
-  var node = $form.data('fv.node.selected');
-  node.load();
   form_submit($form, {
-    pass_code: {
-      identifier: 'pass_code',
+    comment: {
+      identifier: 'comment',
       rules: [
         {
           type: 'empty',
-          prompt: 'Please choose you gender'
-        }
-      ]
-    },
-    name: {
-      identifier: 'name',
-      rules: [
-        {
-          type: 'empty',
-          prompt: 'Missing Folder Name'
+          prompt: 'Missing Comment for Step'
         }
       ]
     }
   }, {
     revalidate: false,
-    onSuccess: __do_mark_step,
+    onSuccess: __do_comment_step,
     onFailure: function () {
       alert("Pass Code: Missing or Invalid Fields");
     }
   });
 }
 
-function __do_mark_step() {
-  var $form = $('#form_step_complete');
-  // Extract Field Values
-  var values = {};
-  $form.find('.field > :input').each(function () {
-    values[this.name] = $(this).val();
+function __do_comment_step() {
+  var $form = $('#form_step_comment');
+
+  // Extract Form Values
+  var values = get_entity_values($form);
+
+  // Get the Step to Modify 
+  var run = $form.data('run');
+  var step = $form.data('step');
+  console.log('Comment Run [%d] Step [%d:%d:%d] with Comment[%s].', run, step.id, step.test, step.sequence, values['comment']);
+
+  // Display Loading Icon
+  $form.addClass('loading');
+  testcenter.services.call(['play', run.toString(), 'current', 'comment'], null, values, {
+    type: 'POST'
+  }).then(function (entity) {
+    // Remove Loader
+    $form.removeClass('loading');
+    // Hide the Form
+    form_hide($form);
+    console.log('Commented Step');
+  }).fail(function (code, message) {
+    // Remove Loader
+    $form.removeClass('loading');
+    // Show Form Errors
+    form_show_errors($form, message);
+    console.error('Failed to Comment Step');
   });
-  var node = $form.data('fv.node.selected');
-  var key = node.key.split(':');
-  console.log('Create Child Node [' + values.name + '] under Parent Node [' + key[1] + ':' + node.title + ']');
-  /*  
-   testcenter.services.call(['folder', 'create'], [key[1], values.name], null, {
-   call_ok: function(entity) {
-   var defaults = {
-   folder: true,
-   lazy: true
-   };
-   var key_field = entity.__key;
-   var display_field = entity.__display;
-   var child = $.extend({}, defaults, {
-   key: 'f:' + entity[key_field],
-   title: entity[display_field]
-   });
-   node.addChildren(child);
-   // Hide the Form 
-   form_hide($form);
-   },
-   call_nok: function(code, message) {
-   form_show_errors($form, message);
-   }
-   });
-   return values;
-   */
 }
 
 /*******************************
@@ -1016,7 +975,7 @@ function __do_mark_step() {
  * @param {type} $form
  * @returns {undefined}
  */
-function __initialize_form_step_complete($form) {
+function __initialize_form_step_comment($form) {
   __initialize_form($form);
 }
 
@@ -1025,7 +984,7 @@ function __initialize_form_step_complete($form) {
  * @param {type} $form
  * @returns {undefined}
  */
-function __load_form_step_complete($form) {
+function __load_form_step_comment($form) {
   console.log('Loading Form [' + $form.attr('id') + ']');
 }
 
@@ -1062,6 +1021,42 @@ function __button_cancel(event) {
 /*******************************
  * HELPER FUNCTIONS
  *******************************/
+
+function get_entity_values($form) {
+  var values = {};
+
+  // Extract Values from Standard Input Fields
+  $form.find('.field > :input').each(function () {
+    var $this = $(this);
+    var name = $this.attr('name');
+    if ($.isset(name)) {
+      // Explode Name based on concept (entity_name':'property_names)
+      var property = name.split('-');
+
+      // Do we have a valid entity property?
+      if (property.length >= 1) { // YES: Add it to list
+        values[property.join(':')] = $this.val();
+      }
+    }
+  });
+
+  // Extract Values from HTML Editor Fields
+  $form.find('.field > div.textarea').each(function () {
+    var $this = $(this);
+    var name = $this.attr('name');
+    if ($.isset(name)) {
+      // Explode Name based on concept (entity_name':'property_names)
+      var property = name.split('-');
+
+      // Do we have a valid entity property?
+      if (property.length > 1) { // YES: Add it to list (NOTE: Escape HTML Tags)
+        values[property.join(':')] = $this.html();
+      }
+    }
+  });
+
+  return values;
+}
 
 function form_show($form) {
   if (window.hasOwnProperty('__session')) {

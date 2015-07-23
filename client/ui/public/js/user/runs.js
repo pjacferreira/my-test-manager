@@ -454,6 +454,7 @@ function __initialize_form($form) {
     }
   });
 }
+
 /**
  * 
  * @param {type} event
