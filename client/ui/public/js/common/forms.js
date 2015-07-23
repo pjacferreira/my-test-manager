@@ -163,9 +163,14 @@ function form_reset($form) {
  * @returns {undefined}
  */
 function form_show_errors($form, errors) {
+  // Split out multiple lines into seperate messages
+  if($.isString(errors)) {
+    errors = errors.split('\\n');
+  }
+  
   if (errors !== undefined) {
     // Add an Error Message to the Display
-    $form.form('add errors', [errors]).addClass('error');
+    $form.form('add errors', errors).addClass('error');
   }
 }
 

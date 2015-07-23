@@ -153,7 +153,7 @@
       if (($icon !== null) || ($display !== null)) {
         $element = $('<div/>', {
           id: id,
-          class: __property_to_string(node, 'class', $.objects.get('classes.node', settings, 'column'))
+          class: __property_to_string(node, 'class', $.objects.get('classes.node', settings, 'center aligned column'))
         });
 
         if ($icon) {

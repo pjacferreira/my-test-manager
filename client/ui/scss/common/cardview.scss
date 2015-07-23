@@ -10,12 +10,16 @@
   &.ui.card {
     width: auto;
     
-    .content .description { 
+    .content .description, .extra { 
       display: none;
     }
 
     &:hover {
       @include box-shadow(0px 0px 0px 2px #a4a4b5, 4px 4px 0px 0px #a4a4a5);
+      
+      .content .description {
+        display: block;
+      }
     }
 
     &.current {
@@ -25,7 +29,7 @@
         @include box-shadow(0px 0px 0px 2px #848485, 4px 4px 0px 0px #848485);
       }  
       
-      & .content .description {
+      .content .description, .extra { 
         display: block;
       }
     }
