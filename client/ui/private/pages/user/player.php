@@ -5,19 +5,14 @@
 <!--
  --- FORMS
 -->
-<!-- CREATE FOLDER FORM -->
-<div id="form_step_complete" class="tc ui form hidden">
-  <h3 class="ui dividing inverted header"><?php echo _("FORM:TITLE:PASS:STEP") ?></h3>
+<!-- FORM STEP COMPLETE -->
+<div id="form_step_comment" class="tc ui form hidden">
+  <h3 class="ui dividing inverted header"><?php echo _("FORM:TITLE:PLAYENTRY:COMMENT") ?></h3>
   <div class="field">
-    <select name="pass_code" class="ui search dropdown">
-      <option value=""><?php echo _("FIELD:PLACEHOLDER:PASS:CODE") ?></option>
-    </select>
-  </div>
-  <div class="field">
-    <textarea name="comment" placeholder="<?php echo _("FIELD:PLACEHOLDER:PASS:COMMENT") ?>" type="text"></textarea>
+    <textarea name="comment" placeholder="<?php echo _("FIELD:PLACEHOLDER:PLAYENTRY:COMMENT") ?>" type="text"></textarea>
   </div>
   <div class="ui buttons">
-    <div id="button_step_complete" class="ui positive button"><?php echo _("BUTTON:STEP:PASS") ?></div>
+    <div id="button_submit_comment" class="ui positive button"><?php echo _("BUTTON:SUBMIT") ?></div>
     <div class="<?php echo _("HELPER:CLASS:OR") ?>"></div>
     <div id="button_cancel" class="ui negative button"><?php echo _("BUTTON:CANCEL") ?></div>
   </div>
@@ -61,3 +56,4 @@
       </div>
     </div>
   </div>
+</div>

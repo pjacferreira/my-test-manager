@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: testcenter-site\n"
 "POT-Creation-Date: 2015-02-03 12:28+0100\n"
-"PO-Revision-Date: 2015-07-10 10:37+0100\n"
+"PO-Revision-Date: 2015-07-23 12:19+0100\n"
 "Last-Translator: Paulo Ferreira <pf@sourcenotes.org>\n"
 "Language-Team: TESTCENTER <test>\n"
 "MIME-Version: 1.0\n"
@@ -32,8 +32,8 @@ msgstr "Recover Password"
 msgid "BUTTON:RENAME"
 msgstr "Rename"
 
-msgid "BUTTON:STEP:PASS"
-msgstr "Pass"
+msgid "BUTTON:SUBMIT"
+msgstr "Submit"
 
 msgid "BUTTON:UPDATE"
 msgstr "Update"
@@ -53,10 +53,7 @@ msgstr "New Name..."
 msgid "FIELD:PLACEHOLDER:PASSWORD"
 msgstr "Password..."
 
-msgid "FIELD:PLACEHOLDER:PASS:CODE"
-msgstr "Code..."
-
-msgid "FIELD:PLACEHOLDER:PASS:COMMENT"
+msgid "FIELD:PLACEHOLDER:PLAYENTRY:COMMENT"
 msgstr "Comment..."
 
 msgid "FIELD:PLACEHOLDER:RUN:DESCRIPTION"
@@ -133,6 +130,9 @@ msgstr "Create New Test Step"
 
 msgid "FORM:TITLE:TEST:CREATE"
 msgstr "Create New Test"
+
+msgid "FORM:TITLE:PLAYENTRY:COMMENT"
+msgstr "Step Comment"
 
 msgid "HELPER:CLASS:OR"
 msgstr "or"
